@@ -6,3 +6,5 @@ notes.txt
 /archive
 slides.pptx
 /data/ksg_rpc_cache.npz
+/data/infomeasure_rpc_cache.npz
+__pycache__/
