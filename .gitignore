@@ -9,3 +9,4 @@ slides.pptx
 /data/infomeasure_rpc_cache.npz
 __pycache__/
 /data/ensemble_moments_cache.npz
+/data/granger_lin_cache.npz
