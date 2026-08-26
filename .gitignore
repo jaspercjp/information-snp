@@ -11,6 +11,5 @@ __pycache__/
 /data/ensemble_moments_cache.npz
 /data/granger_lin_cache.npz
 /data/granger_lin_obs_cache.npz
-/data/granger_lin_chain_cache.npz
 /data/gamma_info_cache.npz
-/data/granger_lin_chain7_cache.npz
+/data/granger_lin_chain_terms_cache.npz
