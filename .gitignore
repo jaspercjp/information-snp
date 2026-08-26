@@ -10,3 +10,4 @@ slides.pptx
 __pycache__/
 /data/ensemble_moments_cache.npz
 /data/granger_lin_cache.npz
+/data/granger_lin_obs_cache.npz
