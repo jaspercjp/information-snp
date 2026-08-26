@@ -211,6 +211,191 @@ def lam(I_bits):
 
 
 # --------------------------------------------------------------------------- #
+# gamma = I / H: matched estimator pairs
+# --------------------------------------------------------------------------- #
+
+#: level -> spec. One ``level`` string selects the MI approach, the entropy
+#: approach and the transform each one sees, so a gamma cannot be assembled from
+#: a numerator and a denominator of different kinds. That is the failure mode
+#: that broke three earlier versions of this metric: a discrete plug-in I over a
+#: differential kNN H, and a 1-D H normalising one side while a 49-D H
+#: normalised the other.
+#:
+#: ``kind`` records what the denominator is.
+#:
+#: * ``"shannon"`` -- H >= 0 and bounded by log2(n_states), so gamma is a
+#:   genuine fraction of the target's uncertainty and lies in [0, 1].
+#: * ``"differential"`` -- H is unbounded below and shifts by log2(scale) under
+#:   a change of units, so gamma means nothing until the scale is pinned. Every
+#:   differential rung therefore standardises, which fixes the denominator at
+#:   ``0.5*log2(2*pi*e) - J`` for negentropy J >= 0: bounded above by 2.047 bits,
+#:   a shape measure rather than a spread measure.
+#:
+#: ``mi_transform`` and ``h_transform`` differ on the kNN rung on purpose. MI is
+#: invariant to monotone marginal transforms, so the copula step there is an
+#: estimator-quality choice (worth 4x, see commit f8f1420) that does not change
+#: the population quantity. Differential entropy is *not* invariant, so its
+#: transform defines which quantity is being estimated -- and on copula data the
+#: answer is h(U[0,1]) = 0, leaving the estimator to report pure bias
+#: (+0.43 bits at T=120). The denominator must therefore see standardised
+#: values, never ranks.
+GAMMA_LADDER = {
+    "gaussian": dict(mi=None, h=None, param="", values=(0,), default_idx=0,
+                     mi_transform="standardize", h_transform="standardize",
+                     kind="differential"),
+    "discrete": dict(mi="discrete", h="discrete", param="nbins",
+                     values=(3, 5, 10), default_idx=1,
+                     mi_transform="width_bins", h_transform="width_bins",
+                     kind="shannon"),
+    "miller_madow": dict(mi="miller_madow", h="miller_madow", param="nbins",
+                         values=(3, 5, 10), default_idx=1,
+                         mi_transform="width_bins", h_transform="width_bins",
+                         kind="shannon"),
+    "ordinal": dict(mi="ordinal", h="ordinal", param="embedding_dim",
+                    values=(2, 3), default_idx=1,
+                    mi_transform="none", h_transform="none", kind="shannon"),
+    "kernel": dict(mi="kernel", h="kernel", param="bandwidth",
+                   values=(0.3, 0.5, 1.0), default_idx=1,
+                   mi_transform="standardize", h_transform="standardize",
+                   kind="differential"),
+    "knn": dict(mi="ksg", h="metric", param="k", values=(3, 5, 10), default_idx=1,
+                mi_transform="copula", h_transform="standardize",
+                kind="differential"),
+}
+
+#: H of a standardised Gaussian, in bits. The ceiling of every differential rung
+#: and the exact denominator of the analytic one.
+H_GAUSS = 0.5 * np.log2(2.0 * np.pi * np.e)
+
+#: gamma is a ratio, so a denominator near zero manufactures arbitrarily large
+#: values out of estimator noise. Below this many bits the point is dropped.
+H_FLOOR = 0.10
+
+KERNEL_NAME = "gaussian"      # infomeasure's kernel estimators require it by name
+
+
+def width_bins(x, nbins):
+    """Equal-width bins over the observed range -> integer labels.
+
+    ``rank_bins`` cannot be used for gamma. Equiprobable bins put exactly T/nbins
+    samples in every bin by construction, so H is identically log2(nbins) at
+    every grid point (verified exact) and the denominator carries no information
+    at all -- gamma would be I rescaled by a constant. Equal-width bins let H
+    respond to the shape of the distribution, which is the whole point of
+    normalising by it.
+    """
+    x = np.asarray(x, dtype=float)
+    edges = np.linspace(x.min(), x.max(), nbins + 1)
+    return np.clip(np.digitize(x, edges[1:-1]), 0, nbins - 1)
+
+
+def standardize(x):
+    """Zero mean, unit variance. Pins the scale of a differential entropy."""
+    x = np.asarray(x, dtype=float)
+    sd = x.std()
+    return (x - x.mean()) / sd if sd > 0 else np.zeros_like(x)
+
+
+def _apply(x, transform, param):
+    if transform == "copula":
+        return copula(x)
+    if transform == "standardize":
+        return standardize(x)
+    if transform == "width_bins":
+        return width_bins(x, param)
+    if transform == "none":
+        return np.asarray(x, dtype=float)
+    raise ValueError("transform %r not recognized" % transform)
+
+
+def _approach_kwargs(spec, param):
+    """The free parameter under the name infomeasure expects for this level."""
+    if spec["mi"] == "kernel":
+        return dict(kernel=KERNEL_NAME, bandwidth=param)
+    if spec["param"] in ("k", "embedding_dim"):
+        return {spec["param"]: param}
+    return {}
+
+
+def entropy_bits(x, level, param=None):
+    """H(x) in bits from the entropy estimator matched to ``level``.
+
+    Mirrors ``mi_bits``: ``base=2`` always, the level's own ``h_transform``
+    applied here rather than by the caller, and the level's free parameter
+    passed under whichever keyword infomeasure wants for that family.
+
+    The ``minkowski_p`` that ``mi_bits`` pins for KSG has no analogue to set
+    here: every Minkowski norm coincides in one dimension, and these entropies
+    are all of 1-D series, so ``metric`` returns the same value for p = 2 and
+    p = inf (verified). ``calc_RPC_KSG.ipynb``'s hand-written H used p = 2; the
+    distinction is moot at this dimension.
+    """
+    spec = GAMMA_LADDER[level]
+    if param is None:
+        param = spec["values"][spec["default_idx"]]
+    z = _apply(x, spec["h_transform"], param)
+    if spec["h"] is None:                       # analytic Gaussian rung
+        return float(H_GAUSS)
+    return float(im.entropy(z, approach=spec["h"], base=2,
+                            **_approach_kwargs(spec, param)))
+
+
+def mi_bits_matched(x, y, level, param=None):
+    """I(x; y) in bits from the MI estimator matched to ``level``.
+
+    Separate from ``mi_bits`` because that function is pinned to the three
+    lambda estimators and their transforms; this one follows ``GAMMA_LADDER``.
+    """
+    spec = GAMMA_LADDER[level]
+    if param is None:
+        param = spec["values"][spec["default_idx"]]
+    a = _apply(x, spec["mi_transform"], param)
+    b = _apply(y, spec["mi_transform"], param)
+    if spec["mi"] is None:                      # analytic Gaussian rung
+        r = float(np.corrcoef(a, b)[0, 1])
+        r = min(abs(r), 1.0 - 1e-12)
+        return float(-0.5 * np.log2(1.0 - r * r))
+    if spec["mi"] == "ksg":
+        return float(im.mutual_information(a, b, approach="ksg", base=2, k=param,
+                                           noise_level=0, minkowski_p=np.inf,
+                                           normalize=False))
+    return float(im.mutual_information(a, b, approach=spec["mi"], base=2,
+                                       **_approach_kwargs(spec, param)))
+
+
+def gamma_pair(x, y, level, param=None, n_perm=0, seed=SEED):
+    """I(x; y), H(y) and gamma = I/H from one matched estimator family.
+
+    ``y`` is the prediction target and the variable whose entropy normalises, so
+    gamma reads as the fraction of the target's uncertainty that ``x`` accounts
+    for. Both sides of a gamma ratio must use the same convention: it is the
+    mismatch, not the choice, that produced gamma = 121.
+
+    ``n_perm`` > 0 adds ``I_null``, the mean I over time-permuted targets, and
+    ``gamma_excess`` built from ``I - I_null``. There is deliberately no entropy
+    null: every estimator here except ``ordinal`` reads only the sample
+    distribution of ``y``, so permuting time leaves H exactly unchanged and a
+    permutation test says nothing about its bias. Use the bias-corrected rung
+    (``miller_madow``) to address that instead.
+    """
+    spec = GAMMA_LADDER[level]
+    if param is None:
+        param = spec["values"][spec["default_idx"]]
+
+    I = mi_bits_matched(x, y, level, param)
+    H = entropy_bits(y, level, param)
+    out = dict(I=I, H=H, gamma=I / H if H > H_FLOOR else np.nan, kind=spec["kind"])
+
+    if n_perm:
+        rng = np.random.default_rng(seed)
+        I_null = float(np.mean([mi_bits_matched(x, rng.permutation(y), level, param)
+                                for _ in range(n_perm)]))
+        out["I_null"] = I_null
+        out["gamma_excess"] = ((I - I_null) / H) if H > H_FLOOR else np.nan
+    return out
+
+
+# --------------------------------------------------------------------------- #
 # one grid point
 # --------------------------------------------------------------------------- #
 
@@ -461,6 +646,214 @@ def lambda_fields(result, estimator, floor=False):
         I_m = I_m - result[estimator]["null_m"]
     lo, lm = lam(I_o), lam(I_m)
     return lo, lm, np.where(lm > 0, lo / np.where(lm > 0, lm, 1.0), np.nan)
+
+
+# --------------------------------------------------------------------------- #
+# gamma over the grid
+# --------------------------------------------------------------------------- #
+
+GAMMA_TREATMENTS = ("as-is", "deseasonalised")
+
+#: fields returned per level per treatment, all shape (n_lat, n_lon)
+GAMMA_FIELDS = ("I_o", "H_o", "gamma_o", "I_o_null", "gamma_o_excess",
+                "I_m", "H_m", "gamma_m", "I_m_null", "gamma_m_excess")
+
+
+def deseason(a, period=12):
+    """Subtract the month-of-year climatology along the leading (time) axis.
+
+    The preprocessing in ``load_data`` removes a linear trend and no seasonal
+    cycle, and these are monthly fields, so gamma on the raw series is largely
+    measuring agreement of the annual cycle. Both treatments are always computed.
+    """
+    a = np.asarray(a, dtype=float)
+    out = a.copy()
+    for phase in range(period):
+        sel = slice(phase, None, period)
+        out[sel] = a[sel] - a[sel].mean(axis=0, keepdims=True)
+    return out
+
+
+def _loo_means(members):
+    """(n_members, T) -> (n_members, T) of the nan-aware mean over the others."""
+    valid = ~np.isnan(members)
+    total = np.nansum(members, axis=0)
+    count = valid.sum(axis=0)
+    num = total - np.where(valid, np.nan_to_num(members, nan=0.0), 0.0)
+    den = count - valid
+    with np.errstate(invalid="ignore", divide="ignore"):
+        out = np.where(den > 0, num / np.maximum(den, 1), np.nan)
+    return np.nan_to_num(out, nan=0.0)
+
+
+def gamma_point(members, target, level, param=None, held_out=None,
+                n_perm=N_PERM, seed=SEED, post=None):
+    """Observation- and model-side gamma at one grid point.
+
+    ``members`` is ``(n_members, T)`` with NaNs intact so the leave-one-out means
+    can skip them; ``target`` is the ``(T,)`` observation series, zero-filled.
+
+    The model side forms gamma per held-out member and averages, matching the
+    lambda convention -- averaging I and H first and dividing once is a different
+    number. The observation side normalises by H of the observations and the
+    model side by H of the held-out member, so each gamma is the fraction of
+    *its own* prediction target's uncertainty that is accounted for. Using one
+    side's denominator for both is what produced gamma = 121.
+
+    ``post`` is applied to each 1-D series *after* the leave-one-out and ensemble
+    means are formed -- ``deseason`` for the anomaly treatment. The order is not
+    cosmetic: members 10..19 are NaN for all of calendar 1971, so subtracting a
+    month-of-year climatology from the raw ensemble first would return NaN for
+    every January..December of those members and delete them from the mean. The
+    means are nan-aware, so they must come first and the anomalies second.
+    """
+    filled = np.nan_to_num(members, nan=0.0)
+    loo = _loo_means(members)
+    n_members = members.shape[0]
+    if held_out is None:
+        held_out = np.unique(np.linspace(0, n_members - 1, LOO_MEMBERS)
+                             .round().astype(int))
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        signal = np.nan_to_num(np.nanmean(members, axis=0), nan=0.0)
+
+    if post is not None:
+        signal, target = post(signal), post(target)
+        filled = np.stack([post(filled[i]) for i in range(n_members)])
+        loo = np.stack([post(loo[i]) for i in range(n_members)])
+
+    obs_side = gamma_pair(signal, target, level, param, n_perm=n_perm, seed=seed)
+
+    # The model-side null is measured on one member and reused for the rest, as
+    # `point_metrics` does: it costs n_perm estimator calls per member otherwise,
+    # and the floor is a property of the estimator at this T and dimension rather
+    # than of the member. The middle held-out member stands in for all of them.
+    rows = [gamma_pair(loo[i], filled[i], level, param,
+                       n_perm=n_perm if i == held_out[len(held_out) // 2] else 0,
+                       seed=seed + 1)
+            for i in held_out]
+    nulls = [r["I_null"] for r in rows if "I_null" in r]
+    I_m_null = nulls[0] if nulls else np.nan
+
+    return dict(
+        I_o=obs_side["I"], H_o=obs_side["H"], gamma_o=obs_side["gamma"],
+        I_o_null=obs_side.get("I_null", np.nan),
+        gamma_o_excess=obs_side.get("gamma_excess", np.nan),
+        I_m=float(np.mean([r["I"] for r in rows])),
+        H_m=float(np.mean([r["H"] for r in rows])),
+        gamma_m=float(np.nanmean([r["gamma"] for r in rows])),
+        I_m_null=I_m_null,
+        gamma_m_excess=float(np.nanmean(
+            [(r["I"] - I_m_null) / r["H"] if r["H"] > H_FLOOR else np.nan
+             for r in rows])) if nulls else np.nan,
+    )
+
+
+def _gamma_row(task):
+    """One latitude row, every level and treatment. Row slices travel in the
+    payload for the same reason ``_do_row`` does it: the full ensemble is 385 MB
+    and macOS spawns rather than forks."""
+    lat, F_row, G_row, kw = task          # F_row: (N, T, n_lon)  G_row: (T, n_lon)
+    n_lon = G_row.shape[1]
+    levels, treatments = kw["levels"], kw["treatments"]
+
+    post = {"as-is": None, "deseasonalised": deseason}
+
+    out = {(level, treatment): {field: np.full(n_lon, np.nan)
+                                for field in GAMMA_FIELDS}
+           for level in levels for treatment in treatments}
+
+    held_out = np.unique(np.linspace(0, F_row.shape[0] - 1, LOO_MEMBERS)
+                         .round().astype(int))
+    for lon in range(n_lon):
+        for treatment in treatments:
+            for level in levels:
+                res = gamma_point(F_row[:, :, lon], G_row[:, lon], level,
+                                  param=kw["params"].get(level),
+                                  held_out=held_out, n_perm=kw["n_perm"],
+                                  seed=kw["seed"] + lat * 1000 + lon,
+                                  post=post[treatment])
+                for field in GAMMA_FIELDS:
+                    out[(level, treatment)][field][lon] = res[field]
+    return lat, out
+
+
+def gamma_grid(ensemble, observation, levels=None, treatments=GAMMA_TREATMENTS,
+               params=None, n_perm=N_PERM, seed=SEED, processes=None, progress=True):
+    """Run the whole gamma ladder over the lat/lon grid, both treatments.
+
+    Returns
+    -------
+    dict
+        ``result[level][treatment][field]`` -> ``(n_lat, n_lon)``, with ``field``
+        drawn from ``GAMMA_FIELDS``. ``result["params"][level]`` records which
+        free parameter value was used.
+    """
+    levels = list(GAMMA_LADDER) if levels is None else list(levels)
+    params = dict(params or {})
+    for level in levels:
+        spec = GAMMA_LADDER[level]
+        params.setdefault(level, spec["values"][spec["default_idx"]])
+
+    F = ensemble.psl.to_numpy()
+    G = np.nan_to_num(observation.psl.to_numpy(), nan=0.0)
+    n_lat, n_lon = G.shape[1], G.shape[2]
+
+    result = {"params": params, "levels": levels, "treatments": list(treatments)}
+    for level in levels:
+        result[level] = {t: {field: np.full((n_lat, n_lon), np.nan)
+                             for field in GAMMA_FIELDS} for t in treatments}
+
+    kwargs = dict(levels=levels, treatments=list(treatments), params=params,
+                  n_perm=n_perm, seed=seed)
+    tasks = [(lat, F[:, :, lat, :], G[:, lat, :], kwargs) for lat in range(n_lat)]
+
+    if processes == 1:
+        it, pool = map(_gamma_row, tasks), None
+    else:
+        pool = Pool(processes=processes)
+        it = pool.imap_unordered(_gamma_row, tasks)
+    try:
+        if progress:
+            try:
+                from tqdm import tqdm
+                it = tqdm(it, total=n_lat, desc="gamma ladder (lat rows)")
+            except ImportError:
+                pass
+        for lat, out in it:
+            for (level, treatment), fields in out.items():
+                for field, arr in fields.items():
+                    result[level][treatment][field][lat, :] = arr
+    finally:
+        if pool is not None:
+            pool.close()
+            pool.join()
+    return result
+
+
+def save_gamma_cache(path, result):
+    flat = {"__levels": np.array(result["levels"]),
+            "__treatments": np.array(result["treatments"]),
+            "__params": np.array([result["params"][l] for l in result["levels"]],
+                                 dtype=float)}
+    for level in result["levels"]:
+        for treatment in result["treatments"]:
+            for field, arr in result[level][treatment].items():
+                flat["%s|%s|%s" % (level, treatment, field)] = arr
+    np.savez_compressed(path, **flat)
+
+
+def load_gamma_cache(path):
+    z = np.load(path, allow_pickle=False)
+    levels = [str(x) for x in z["__levels"]]
+    treatments = [str(x) for x in z["__treatments"]]
+    result = {"levels": levels, "treatments": treatments,
+              "params": dict(zip(levels, z["__params"]))}
+    for level in levels:
+        result[level] = {t: {field: z["%s|%s|%s" % (level, t, field)]
+                             for field in GAMMA_FIELDS} for t in treatments}
+    return result
 
 
 def area_weighted_fraction(field, lats, threshold=1.0):
