@@ -27,7 +27,7 @@ import xarray as xr
 
 warnings.simplefilter("ignore")
 
-ROOT = "/Users/jasperchen/Academics/Research/SNP/information-snp"
+ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 SMYLE = f"{ROOT}/data/smyle/PSL"
 # Prefer the tracked copy built by scripts/fetch_hadslp2r.py; fall back to the
 # original under .scratch, which is untracked and absent in a fresh clone.

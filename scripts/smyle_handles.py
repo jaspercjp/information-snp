@@ -27,11 +27,12 @@ import numpy as np
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
-# The cube lives in the main checkout and is not duplicated into a worktree; look
-# next to the script first, then fall back, so this works from either.
-_MAIN = "/Users/jasperchen/Academics/Research/SNP/information-snp/data"
-_DATA = next((d for d in (os.path.join(_HERE, "..", "data"), _MAIN)
-              if os.path.exists(os.path.join(d, "smyle_cube.npz"))), _MAIN)
+# Normally data/ sits next to scripts/. A git worktree is the exception: the cube is
+# too big to duplicate, so it stays in the main checkout. Look for it in both.
+_CANDIDATES = [os.path.join(_HERE, "..", "data"),
+               os.path.join(_HERE, "..", "..", "..", "..", "data")]   # from a worktree
+_DATA = next((d for d in _CANDIDATES
+              if os.path.exists(os.path.join(d, "smyle_cube.npz"))), _CANDIDATES[0])
 
 NLEAD = 3                                # lead months 1-3
 

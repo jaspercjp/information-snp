@@ -34,7 +34,8 @@ from urllib.error import HTTPError, URLError
 # /thredds/fileServer path and a much lower time-to-first-byte.
 BASE = ("https://data.gdex.ucar.edu/d651065/SMYLE/archive/"
         "{case}/atm/proc/tseries/month_1/{case}.cam.h0.{var}.{span}.nc")
-DEST = "/Users/jasperchen/Academics/Research/SNP/information-snp/data/smyle"
+_HERE = os.path.dirname(os.path.abspath(__file__))
+DEST = os.path.join(_HERE, "..", "data", "smyle")
 VARS = ["PSL", "TREFHT", "PRECT"]
 YEARS = range(1958, 2020)          # main BSMYLE
 INITS = ["02", "05", "08", "11"]
