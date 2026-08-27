@@ -9,8 +9,10 @@ Replaces the hand-written estimators used by `calc_RPC_KSG.ipynb` with
 
 Conventions pinned here, because every one of them silently changes the numbers:
 
-* ``base=2`` on every call. infomeasure returns nats by default; the whole
-  project works in bits and ``lambda = sqrt(1 - 2^-2I)`` requires bits.
+* **No ``base`` argument**, i.e. nats, which is infomeasure's own default. The
+  matching transform is ``lambda = sqrt(1 - exp(-2I))``. ``mi_bits`` and ``lam``
+  are the base-2 pair, kept for the notebooks not yet converted; the two give
+  the same lambda, since I_nats = I_bits * ln 2.
 * ``noise_level=0`` for KSG. infomeasure dithers by 1e-10 by default; the
   hand-written estimator did not, and NaNs are filled with 0.0 here, so
   dithering changes how the resulting exact ties are broken.
@@ -164,8 +166,11 @@ def rank_bins(x, nbins):
     return np.minimum((copula(x) * nbins).astype(int), nbins - 1)
 
 
-def mi_bits(x, y, estimator, param=None):
-    """I(x; y) in bits via infomeasure, with this project's conventions pinned.
+def mi_nats(x, y, estimator, param=None):
+    """I(x; y) in nats via infomeasure, with this project's conventions pinned.
+
+    Nats is infomeasure's own default, so no ``base`` is passed. ``lambda =
+    sqrt(1 - exp(-2I))`` is the matching transform.
 
     Parameters
     ----------
@@ -185,7 +190,7 @@ def mi_bits(x, y, estimator, param=None):
         x = (np.column_stack([copula(x[:, j]) for j in range(x.shape[1])])
              if np.ndim(x) == 2 else copula(x))
         return float(im.mutual_information(
-            x, copula(y), approach=approach, base=2, k=param,
+            x, copula(y), approach=approach, k=param,
             noise_level=0, minkowski_p=np.inf, normalize=False))
 
     if np.ndim(x) == 2:
@@ -195,14 +200,33 @@ def mi_bits(x, y, estimator, param=None):
 
     if estimator == "discrete":
         return float(im.mutual_information(
-            rank_bins(x, param), rank_bins(y, param), approach=approach, base=2))
+            rank_bins(x, param), rank_bins(y, param), approach=approach))
 
     return float(im.mutual_information(
-        x, y, approach=approach, base=2, embedding_dim=param))
+        x, y, approach=approach, embedding_dim=param))
+
+
+def mi_bits(x, y, estimator, param=None):
+    """``mi_nats`` in bits, for the notebooks still written against ``lam``.
+
+    Kept because ``lam`` below is defined on bits and several notebooks call it
+    directly. Dividing by ln 2 is what ``base=2`` did inside infomeasure, and
+    agrees with it to 5e-16 across all three estimators.
+    """
+    return mi_nats(x, y, estimator, param) / np.log(2.0)
+
+
+def lam_nats(I_nats):
+    """lambda = sqrt(1 - exp(-2I)) for I in nats, clipped at I = 0.
+
+    The project convention. Identical to ``lam(I_bits)`` on the same underlying
+    quantity, since I_nats = I_bits * ln 2 makes exp(-2 I_nats) = 2^(-2 I_bits).
+    """
+    return np.sqrt(1.0 - np.exp(-2.0 * np.maximum(np.asarray(I_nats, float), 0.0)))
 
 
 def lam(I_bits):
-    """lambda = sqrt(1 - 2^-2I), clipped at I = 0.
+    """lambda = sqrt(1 - 2^-2I) for I in bits, clipped at I = 0.
 
     All three estimators can return small negative values from sampling error;
     the clip is what `calc_RPC_KSG.ipynb` did too.

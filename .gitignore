@@ -15,3 +15,17 @@ __pycache__/
 /data/granger_lin_chain_terms_cache.npz
 /data/djf_cube.npz
 /data/djf_lambda_cache.npz
+
+# SMYLE: 48 GB of raw hindcast files plus the cube built from them
+/data/smyle/
+/data/smyle_cube.npz
+# observations, rebuilt by scripts/fetch_hadslp2r.py
+/data/obs/
+# cubes and caches rebuilt by scripts/
+/data/annual25_cube.npz
+/data/hindcast_mi.npz
+/data/granger_lin_cache_nats.npz
+/data/granger_lin_obs_cache_nats.npz
+/data/granger_lin_chain_terms_cache_nats.npz
+# jupyter autosaves
+.ipynb_checkpoints/
