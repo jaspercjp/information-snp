@@ -163,7 +163,7 @@ def test_wrappers(rng):
     F = sig + 1.2 * rng.standard_normal((N, T, LA, LO))
     o = (sig[0] + 1.0 * rng.standard_normal((T, LA, LO)))
 
-    # -- mi_members_pairwise: rebuild the reference the way mi_pairwise.MI_F_pairwise does
+    # -- mi_member_vs_member: rebuild the reference the way mi_pairwise.MI_F_pairwise does
     R, _, _, _, C = V._prep_cube(F, True, 1e-10, 0)                 # (N, C, T)
     ii, jj = np.triu_indices(N, 1)
     want = np.empty((N, N, C))
@@ -171,64 +171,64 @@ def test_wrappers(rng):
         for c in range(C):
             want[a, b, c] = want[b, a, c] = ref_mi(R[a, c], R[b, c], 4)
     want[np.diag_indices(N)] = np.inf
-    got = V.mi_members_pairwise(F, k=4)
-    check("mi_members_pairwise  (N, N, lat, lon)", got, want.reshape(N, N, LA, LO))
+    got = V.mi_member_vs_member(F, k=4)
+    check("mi_member_vs_member  (N, N, lat, lon)", got, want.reshape(N, N, LA, LO))
 
     # the same numbers must come out of the existing joblib implementation
     try:
         import mi_pairwise
         ref = mi_pairwise.MI_F_pairwise(F, k=4, use_copula=True, noise_level=1e-10,
                                         seed=0, n_jobs=1)
-        check("mi_members_pairwise == mi_pairwise.MI_F_pairwise (same seed)", got, ref)
+        check("mi_member_vs_member == mi_pairwise.MI_F_pairwise (same seed)", got, ref)
     except ImportError:
         print("  [skip] mi_pairwise not importable")
 
-    # -- mi_members_obs
+    # -- mi_member_vs_obs
     Ro = V._prep_field(o, True, 1e-10, 1)                            # (C, T)
     want = np.array([[ref_mi(R[n, c], Ro[c], 4) for c in range(C)] for n in range(N)])
-    check("mi_members_obs       (N, lat, lon)",
-          V.mi_members_obs(F, o, k=4), want.reshape(N, LA, LO))
-    check("mi_members_obs accepts the notebook's tiled obs",
-          V.mi_members_obs(F, np.broadcast_to(o, (N,) + o.shape), k=4),
+    check("mi_member_vs_obs       (N, lat, lon)",
+          V.mi_member_vs_obs(F, o, k=4), want.reshape(N, LA, LO))
+    check("mi_member_vs_obs accepts the notebook's tiled obs",
+          V.mi_member_vs_obs(F, np.broadcast_to(o, (N,) + o.shape), k=4),
           want.reshape(N, LA, LO))
 
-    # -- mi_ensmean_obs, the vectorised calc_MI_sG
+    # -- mi_ensmean_vs_obs, the vectorised calc_MI_sG
     s = F.mean(axis=0)
     Rs = V._prep_field(s, True, 1e-10, 0)
     Ro = V._prep_field(o, True, 1e-10, 1)
     want = np.array([ref_mi(Rs[c], Ro[c], 4) for c in range(C)])
-    check("mi_ensmean_obs       (lat, lon)",
-          V.mi_ensmean_obs(s, o, k=4), want.reshape(LA, LO))
+    check("mi_ensmean_vs_obs       (lat, lon)",
+          V.mi_ensmean_vs_obs(s, o, k=4), want.reshape(LA, LO))
 
-    # -- mi_loo_members, the vectorised calc_MI_sF
+    # -- mi_loomean_vs_member, the vectorised calc_MI_sF
     loo = (F.sum(0, keepdims=True) - F) / (N - 1)
     L, _, _, _, _ = V._prep_cube(loo, True, 1e-10, 1)
     want = np.mean([[ref_mi(L[n, c], R[n, c], 4) for c in range(C)] for n in range(N)],
                    axis=0)
-    check("mi_loo_members       (lat, lon)",
-          V.mi_loo_members(F, k=4), want.reshape(LA, LO))
+    check("mi_loomean_vs_member       (lat, lon)",
+          V.mi_loomean_vs_member(F, k=4), want.reshape(LA, LO))
 
-    # -- mi_loo_obs, the vectorised calc_MI_sG_LOOavg
+    # -- mi_loomean_vs_obs, the vectorised calc_MI_sG_LOOavg
     L, _, _, _, _ = V._prep_cube(loo, True, 1e-10, 0)
     Ro = V._prep_field(o, True, 1e-10, 1)
     want = np.mean([[ref_mi(L[n, c], Ro[c], 4) for c in range(C)] for n in range(N)],
                    axis=0)
-    check("mi_loo_obs           (lat, lon)",
-          V.mi_loo_obs(F, o, k=4), want.reshape(LA, LO))
+    check("mi_loomean_vs_obs           (lat, lon)",
+          V.mi_loomean_vs_obs(F, o, k=4), want.reshape(LA, LO))
 
 
 def test_shapes(rng):
     print("\nshape-agnosticism: index series, field, and a 120-month decadal cube")
     N, T = 5, 40
     F1 = rng.standard_normal((N, T))                       # a bare index, no space axes
-    out = V.mi_members_pairwise(F1, k=4)
+    out = V.mi_member_vs_member(F1, k=4)
     ok = out.shape == (N, N) and np.isinf(out[0, 0]) and np.allclose(out, out.T)
     print(f"  [{'ok ' if ok else 'FAIL'}] (N, T) index series -> (N, N)")
     if not ok:
         FAILURES.append("index-series shape")
 
     F3 = rng.standard_normal((4, 24, 2, 3, 2))             # (N, T, lev, lat, lon)
-    out = V.mi_members_pairwise(F3, k=4)
+    out = V.mi_member_vs_member(F3, k=4)
     ok = out.shape == (4, 4, 2, 3, 2)
     print(f"  [{'ok ' if ok else 'FAIL'}] (N, T, lev, lat, lon) -> (N, N, lev, lat, lon)")
     if not ok:
@@ -236,7 +236,7 @@ def test_shapes(rng):
 
     # the decadal cube kind: T = 120 months rather than 48 start dates
     Fd = rng.standard_normal((4, 120, 3, 3))
-    out = V.mi_members_pairwise(Fd, k=4)
+    out = V.mi_member_vs_member(Fd, k=4)
     ok = out.shape == (4, 4, 3, 3) and np.isfinite(out[0, 1]).all()
     print(f"  [{'ok ' if ok else 'FAIL'}] T=120 monthly decadal cube -> (N, N, lat, lon)")
     if not ok:
@@ -245,7 +245,7 @@ def test_shapes(rng):
     # a land-masked cell must not poison its neighbours
     Fm = rng.standard_normal((4, 30, 2, 2))
     Fm[:, :, 0, 0] = np.nan
-    out = V.mi_members_pairwise(Fm, k=4)
+    out = V.mi_member_vs_member(Fm, k=4)
     ok = np.isnan(out[0, 1, 0, 0]) and np.isfinite(out[0, 1, 1, 1])
     print(f"  [{'ok ' if ok else 'FAIL'}] NaN cell masked, rest of the field finite")
     if not ok:
@@ -281,7 +281,7 @@ def bench(rng):
         F = rng.standard_normal((N, T, LA, LO))
         n_prob = N * (N - 1) // 2 * LA * LO
         t0 = time.perf_counter()
-        V.mi_members_pairwise(F, k=4)
+        V.mi_member_vs_member(F, k=4)
         t_vec = time.perf_counter() - t0
 
         line = (f"  N={N:<3d} T={T:<4d} grid={LA}x{LO:<3d} "

@@ -3,8 +3,8 @@
     import sys; sys.path.insert(0, "../scripts")
     import mi_vectorized as V, smyle_metrics as M
 
-    I_o = V.mi_members_obs(c.F, c.G)      # (N, lat, lon)      <- pearson_coeff_pairwise
-    I_m = V.mi_members_pairwise(c.F)      # (N, N, lat, lon)   <- pearson_coeff_F_pairwise
+    I_o = V.mi_member_vs_obs(c.F, c.G)   # (N, lat, lon)     <- pearson_coeff_pairwise
+    I_m = V.mi_member_vs_member(c.F)     # (N, N, lat, lon)  <- pearson_coeff_F_pairwise
     lam_o, lam_m = M.lam_of(I_o), M.lam_of(I_m)
 
 Same contract as the Pearson versions in `notebooks/dcpp-decadal-analysis-2.ipynb`: in
@@ -18,9 +18,10 @@ What is vectorised, and what is not
 `mi_pairwise.MI_F_pairwise` calls `infomeasure.mutual_information` once per (pair, cell)
 -- 13.5M Python-level calls on the DCPP grand ensemble, each building two scipy KDTrees
 over 48 points. This module never calls the estimator. It reimplements KSG-1 as array
-arithmetic over a leading batch axis, so all 13.5M problems are solved by a few hundred
-numpy calls on `(B, T, T)` blocks. The remaining loop is over memory chunks, not over
-pairs: its trip count is `total_bytes / max_bytes`, a few hundred, not 13.5M.
+arithmetic over a leading batch axis, so each numpy call settles a whole cache-sized
+block of `(B, T, T)` problems at once. The remaining loop is over those blocks, not over
+pairs: ~10^5 trips for the grand ensemble at the default `max_bytes`, each doing a handful
+of whole-array operations, against 13.5M estimator calls that each built two KDTrees.
 
 The trick that makes it work is that T is small. A KDTree is the right structure when n
 is large; at T = 48-120 the brute-force `(T, T)` distance matrix is both smaller and
@@ -124,11 +125,11 @@ from scipy.stats import rankdata
 
 __all__ = [
     "mi_batch",
-    "mi_members_obs",
-    "mi_members_pairwise",
-    "mi_ensmean_obs",
-    "mi_loo_members",
-    "mi_loo_obs",
+    "mi_member_vs_obs",
+    "mi_member_vs_member",
+    "mi_ensmean_vs_obs",
+    "mi_loomean_vs_member",
+    "mi_loomean_vs_obs",
     "copula_rank",
     "dither",
     "have_jax",
@@ -420,8 +421,11 @@ def _prep_field(o, copula, noise_level, seed):
     return np.ascontiguousarray(X.T)
 
 
-def mi_members_obs(F, o, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
-    """I(f_n ; o) per member and cell -> `(N, *space)`. The MI `pearson_coeff_pairwise`.
+def mi_member_vs_obs(F, o, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
+    """I(f_n ; o) per member and cell -> `(N, *space)`. NATS.
+
+    The mutual-information analogue of `pearson_coeff_pairwise` -- same shapes, same
+    (member, cell) layout, but a KSG estimate rather than a correlation.
 
     F: `(N, T, *space)`. o: `(T, *space)`. The notebook tiles obs to `(N, T, *space)`
     before calling its Pearson version; that is unnecessary here but accepted.
@@ -436,7 +440,7 @@ def mi_members_obs(F, o, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
     return out.reshape((N,) + space)
 
 
-def mi_members_pairwise(F, k=4, copula=True, noise_level=1e-10, seed=0, verbose=False,
+def mi_member_vs_member(F, k=4, copula=True, noise_level=1e-10, seed=0, verbose=False,
                         **kw):
     """I(f_i ; f_j) for every member pair and cell -> `(N, N, *space)`. NATS.
 
@@ -464,8 +468,9 @@ def mi_members_pairwise(F, k=4, copula=True, noise_level=1e-10, seed=0, verbose=
         return _mirror(upper, ii, jj, N, C, space)
 
     # One flat problem index p*C + c, walked in cache-sized chunks. Nothing iterates over
-    # pairs in Python: each chunk is thousands of problems and the whole loop is a few
-    # thousand trips, against 13.5M estimator calls for the joblib version.
+    # pairs in Python: a chunk is ~130 problems at T=48 and the kernel settles all of them
+    # in a handful of whole-array calls, so the loop trades 13.5M estimator invocations for
+    # ~10^5 trips of vectorised work.
     #
     # The gather is done INSIDE the worker and there is exactly one thread pool for the
     # whole run. Going through `mi_batch` per chunk instead would build a fresh joblib
@@ -513,7 +518,7 @@ def _mirror(upper, ii, jj, N, C, space):
     return out.reshape((N, N) + space)
 
 
-def mi_ensmean_obs(s, o, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
+def mi_ensmean_vs_obs(s, o, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
     """I(s ; o) per cell -> `(*space,)`. Vectorised `smyle_metrics.calc_MI_sG`.
 
     s, o: `(T, *space)`.
@@ -524,7 +529,7 @@ def mi_ensmean_obs(s, o, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
     return mi_batch(S, O, k=k, prepared=True, **kw).reshape(space)
 
 
-def mi_loo_members(F, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
+def mi_loomean_vs_member(F, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
     """< I(s_-n ; f_n) >_n per cell -> `(*space,)`. Vectorised `smyle_metrics.calc_MI_sF`.
 
     `s_-n` is the exact mean of the other N-1 members, so no member's own information
@@ -539,7 +544,7 @@ def mi_loo_members(F, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
     return out.reshape(N, C).mean(axis=0).reshape(space)
 
 
-def mi_loo_obs(F, o, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
+def mi_loomean_vs_obs(F, o, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
     """< I(s_-n ; o) >_n per cell -> `(*space,)`. Vectorised `calc_MI_sG_LOOavg`.
 
     The leave-one-out ensemble mean verified against observations, averaged over which

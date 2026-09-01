@@ -51,7 +51,7 @@ def main():
     F = rng.standard_normal((N, T, LA, LO))
     n_prob = N * (N - 1) // 2 * LA * LO
     print(f"  {n_prob:,} (pair, cell) problems")
-    dt, out = timeit(V.mi_members_pairwise, F, k=4, n_jobs=ncpu)
+    dt, out = timeit(V.mi_member_vs_member, F, k=4, n_jobs=ncpu)
     print(f"  n_jobs={ncpu}: {dt:.1f} s wall  ({dt * ncpu / 60:.1f} core-min), "
           f"out {out.shape}, {np.isfinite(out).sum():,} finite entries")
 
@@ -61,7 +61,7 @@ def main():
     F = rng.standard_normal((N, T, LA, LO))
     n_prob = N * (N - 1) // 2 * LA * LO
     print(f"  {n_prob:,} (pair, cell) problems")
-    dt, out = timeit(V.mi_members_pairwise, F, k=4, n_jobs=ncpu)
+    dt, out = timeit(V.mi_member_vs_member, F, k=4, n_jobs=ncpu)
     print(f"  n_jobs={ncpu}: {dt:.1f} s wall  ({dt * ncpu / 60:.1f} core-min), "
           f"out {out.shape}")
 

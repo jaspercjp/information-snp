@@ -36,7 +36,7 @@ def report(tag, F, n_mem, n_lat, n_lon):
     print(f"\n=== {tag}: F{F.shape}  (N={N}, T={T})", flush=True)
 
     t0 = time.perf_counter()
-    got = V.mi_members_pairwise(F, k=4)
+    got = V.mi_member_vs_member(F, k=4)
     t_vec = time.perf_counter() - t0
 
     t0 = time.perf_counter()
