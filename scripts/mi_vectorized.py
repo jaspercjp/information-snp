@@ -148,6 +148,19 @@ __all__ = [
 # holds at T=120. Raise it only if you have measured on your node.
 DEFAULT_MAX_BYTES = 8 << 20
 
+# JAX wants the opposite of a cache target: few, large kernel launches. Reusing the 8 MB
+# above would give 20 problems per launch at T=120 -- half a million launches for one
+# grand ensemble, measuring dispatch overhead rather than the kernel. Resolved per backend
+# by `_resolve_max_bytes`, so `backend="jax"` gets this unless you say otherwise.
+JAX_MAX_BYTES = 1 << 31
+
+
+def _resolve_max_bytes(max_bytes, backend):
+    """None -> the right default for this backend. An explicit value always wins."""
+    if max_bytes is not None:
+        return max_bytes
+    return DEFAULT_MAX_BYTES if backend == "numpy" else JAX_MAX_BYTES
+
 
 # --------------------------------------------------------------------------------------
 # preprocessing: the copula transform and the dither, vectorised over everything but time
@@ -294,7 +307,7 @@ def _run_jax(X, Y, k, chunk, dtype):
 # --------------------------------------------------------------------------------------
 
 def mi_batch(X, Y, k=4, copula=True, noise_level=1e-10, seed=0, backend="numpy",
-             max_bytes=DEFAULT_MAX_BYTES, dtype="float64", n_jobs=1, prepared=False):
+             max_bytes=None, dtype="float64", n_jobs=1, prepared=False):
     """I(x ; y) in NATS for a whole stack of problems at once.
 
     Parameters
@@ -311,7 +324,13 @@ def mi_batch(X, Y, k=4, copula=True, noise_level=1e-10, seed=0, backend="numpy",
         Tie-breaking dither, applied after the copula transform. Read the module docstring
         before setting `noise_level=0`; it is not a free speedup.
     backend : {"numpy", "jax"}
-        "jax" needs jax installed and pays off on a GPU; on CPU it is roughly a wash.
+        Leave this at "numpy". MEASURED on a serc node, s1961 grand ensemble at T=120:
+        numpy 18.1 s against jax float64 1017.2 s on the same 735k-problem subset --
+        JAX-on-CPU is ~56x SLOWER, projecting 4.3 h against numpy's 4.6 min for the full
+        cube. XLA gains nothing here: the kernel is top_k plus boolean reductions over
+        600 MB intermediates, the numpy path replaces digamma with an integer lookup
+        table, and its chunking is tuned to stay in cache. Untested on GPU, which is the
+        only place "jax" might pay.
     max_bytes : int
         Working-set target per chunk. Peak RSS is about `n_jobs * max_bytes` plus the
         inputs -- each thread holds its own `(B, T, T)` block.
@@ -363,7 +382,7 @@ def _dispatch(X, Y, k, backend, max_bytes, dtype, n_jobs):
     """Chunked evaluation of the kernel over a contiguous `(B, T)` pair."""
     T = X.shape[-1]
     itemsize = 4 if (backend == "jax" and dtype == "float32") else 8
-    chunk = _chunk_size(T, max_bytes, itemsize)
+    chunk = _chunk_size(T, _resolve_max_bytes(max_bytes, backend), itemsize)
 
     if backend == "jax":
         return _run_jax(X, Y, k, chunk, dtype)
@@ -459,13 +478,23 @@ def mi_member_vs_member(F, k=4, copula=True, noise_level=1e-10, seed=0, verbose=
     total = P * C
 
     n_jobs = kw.pop("n_jobs", 1)
-    max_bytes = kw.pop("max_bytes", DEFAULT_MAX_BYTES)
-    if kw.get("backend", "numpy") != "numpy":
-        # JAX does its own batching; hand it the whole problem set in one call.
-        p, c = np.divmod(np.arange(total), C)
-        upper = mi_batch(R[ii[p], c], R[jj[p], c], k=k, prepared=True,
-                         max_bytes=max_bytes, **kw)
-        return _mirror(upper, ii, jj, N, C, space)
+    backend = kw.get("backend", "numpy")
+    max_bytes = _resolve_max_bytes(kw.pop("max_bytes", None), backend)
+    if backend != "numpy":
+        # Same chunked walk as below, but serial and with JAX-sized blocks -- the jitted
+        # kernel is already parallel inside. Gathering all P*C problems up front instead
+        # would materialise two (P*C, T) host arrays: 21 GB for one grand ensemble.
+        itemsize = 4 if kw.get("dtype") == "float32" else 8
+        chunk = _chunk_size(T, max_bytes, itemsize)
+        parts = []
+        for lo in range(0, total, chunk):
+            hi = min(lo + chunk, total)
+            p, c = np.divmod(np.arange(lo, hi), C)
+            parts.append(mi_batch(R[ii[p], c], R[jj[p], c], k=k, prepared=True,
+                                  max_bytes=max_bytes, **kw))
+            if verbose:
+                print(f"  {hi}/{total} ({100 * hi / total:.1f}%)", flush=True)
+        return _mirror(np.concatenate(parts), ii, jj, N, C, space)
 
     # One flat problem index p*C + c, walked in cache-sized chunks. Nothing iterates over
     # pairs in Python: a chunk is ~130 problems at T=48 and the kernel settles all of them
