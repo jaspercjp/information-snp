@@ -28,6 +28,58 @@ is large; at T = 48-120 the brute-force `(T, T)` distance matrix is both smaller
 branch-free, and it batches. Cost is O(B T^2) arithmetic with no Python in the loop
 instead of O(B T log T) with a Python call and two tree builds per problem.
 
+Which is why there are two kernels, and why `backend="auto"` is the default
+----------------------------------------------------------------------------
+"T is small" is an assumption, and some analyses break it. Folding the member axis into
+the sample axis -- the "jugaad" layout, `F.reshape(N * T, lat, lon)`, one pooled MI per
+cell instead of one per member -- takes the decadal cube from T = 120 to T = 2760, and
+then everything above inverts. `_chunk_size` floors the batch at ONE problem (a single
+`(T, T)` block is already 58 MB), so the batching that the quadratic kernel exists for is
+gone, all six passes stream from DRAM, and the cost per cell goes from 74 us to 165 ms --
+2200x for 23x the samples, where T^2 alone predicts 529x. Being bandwidth-bound, it does
+not thread out of the problem either: 7.0 core-min for one 37x72 field, still 1.8 min on
+16 threads.
+
+So above `TREE_MIN_T` samples `backend="auto"` switches to `_mi_kernel_tree`, which is the
+same estimator with the same tie conventions -- bit-identical, `tol=0.0` in the test suite,
+not merely close -- computed in O(T log T) time and O(T) memory: a max-norm KDTree query
+for eps, a binary search into the sorted marginal for the counts. Measured per problem on
+a serc node, one core (`test_mi_vectorized.py --bench`):
+
+    T              48      120      250      500     1000     2760
+    (T, T)     0.025 ms  0.086    0.318    2.366   13.877   165.571
+    tree       0.149 ms  0.238    0.417    0.799    1.590     4.545
+    ratio          0.2x    0.4x     0.8x     3.0x     8.7x     36.4x
+
+The tree kernel is 3-6x SLOWER below T ~ 250 -- it has a Python-level loop over the batch
+and cannot amortise anything -- so this is a switch, not an upgrade. Do not force it at
+small T. The crossover sits between 250 and 500; both curves are flat there, so the exact
+threshold is not load-bearing.
+
+Whole jugaad field, 2664 cells at T = 2760:
+
+    (T, T) kernel, 16 threads     98.3 s
+    tree kernel,   16 threads      4.4 s      22x
+    tree kernel,    1 thread      12.9 s
+
+-- note that the tree path gets only ~2.8x out of 16 threads, because `np.sort` and
+`np.searchsorted` hold the GIL where the quadratic kernel's ufuncs release it. It is 2.6x
+faster on ONE core than the old kernel was on sixteen, so this has not been worth fixing.
+Going back to `infomeasure` is not the alternative at this T either: one call takes 83 s.
+
+Nothing needs to change at the call site, and nothing SHOULD. `backend="auto"` reads T and
+picks; passing `backend=` yourself is for checking that the two agree, not for tuning.
+Forcing "tree" on a T = 120 cube is the most expensive mistake available here -- measured
+on `mi_loomean_vs_member(F[92 members], k=4)`, 245k problems at T = 120:
+
+    backend="tree",  n_jobs=-1     66.8 s     <- 3x the per-problem cost AND it cannot
+    backend="auto",  n_jobs=-1      7.4 s        thread; np.sort and np.searchsorted hold
+    backend="auto",  n_jobs=1      21.6 s        the GIL where the ufuncs do not
+
+which is why `_resolve_backend` warns if you do it. `n_jobs` is the knob that pays at
+small T and it still defaults to 1: three of those 7.4 seconds are the two `rankdata`
+passes in `_prep_cube`, which are single-threaded, so past ~5x threading buys nothing.
+
 Measured, Sherlock serc node, per problem on one core (same on real SLP and on synthetic
 gaussians -- the data values do not change the cost):
 
@@ -155,11 +207,44 @@ DEFAULT_MAX_BYTES = 8 << 20
 JAX_MAX_BYTES = 1 << 31
 
 
+# Where `backend="auto"` stops building (T, T) distance matrices and starts building
+# KDTrees. Below the crossover the quadratic kernel batches whole cache-resident blocks and
+# has no per-problem Python at all; above it `_chunk_size` floors the batch at one problem
+# and every pass streams from DRAM. Measured, per problem, one core:
+#
+#     T           48    120    250     500     1000     2760
+#     (T, T)   0.025  0.086  0.318   2.366   13.877  165.571  ms
+#     tree     0.149  0.238  0.417   0.799    1.590    4.545  ms
+#
+# so the crossover is between 250 and 500, both curves are flat there, and the exact value
+# is not load-bearing. See the module docstring.
+TREE_MIN_T = 500
+
+
 def _resolve_max_bytes(max_bytes, backend):
     """None -> the right default for this backend. An explicit value always wins."""
     if max_bytes is not None:
         return max_bytes
-    return DEFAULT_MAX_BYTES if backend == "numpy" else JAX_MAX_BYTES
+    return JAX_MAX_BYTES if backend == "jax" else DEFAULT_MAX_BYTES
+
+
+def _resolve_backend(backend, T):
+    """"auto" -> "numpy" or "tree" on T. Anything explicit passes through unchanged.
+
+    Forcing "tree" below the crossover is a pessimisation of 3-6x, not a small one, and it
+    is an easy mistake to make after reading about the tree kernel in the context of a
+    large-T analysis -- so it warns rather than quietly costing you the afternoon.
+    """
+    if backend == "auto":
+        return "tree" if T >= TREE_MIN_T else "numpy"
+    if backend == "tree" and T < TREE_MIN_T:
+        import warnings
+        warnings.warn(
+            f"backend='tree' at T={T} is ~3-6x SLOWER than the (T, T) kernel and barely "
+            f"threads (its per-problem loop holds the GIL). The tree kernel only pays at "
+            f"T >= TREE_MIN_T = {TREE_MIN_T}. Use backend='auto' (the default), which "
+            f"picks the right one from T.", RuntimeWarning, stacklevel=3)
+    return backend
 
 
 # --------------------------------------------------------------------------------------
@@ -241,6 +326,107 @@ def _chunk_size(T, max_bytes, itemsize=8):
 
 
 # --------------------------------------------------------------------------------------
+# the tree kernel: the same estimator without the (T, T) matrices, for large T
+# --------------------------------------------------------------------------------------
+
+def _ball_count(v, eps):
+    """`#{j : |v_j - v_i| < eps_i}` for every i, self included. `(T,), (T,) -> (T,)`.
+
+    The 1-D marginal count `_mi_kernel_numpy` gets from `count_nonzero(dx < e, axis=-1)`,
+    in O(T log T) instead of O(T^2). Float subtraction is monotone, so on each side of
+    `v_i` the ball is a contiguous run of the sorted marginal and its ends can be found by
+    binary search.
+
+    The two while loops are the load-bearing part. `searchsorted(s, v + eps)` lands within
+    one ulp of the boundary but not always ON it, and being off by one rounding step is the
+    COMMON case here, not a corner one: the neighbour that defines eps sits at `|dv| == eps`
+    exactly in one of the two coordinates. So each end is walked onto the exact predicate
+    -- 0-2 steps on dithered data, more only if many samples are bit-identical, which needs
+    `noise_level=0` and a tie-heavy marginal.
+    """
+    T = v.size
+    s = np.sort(v)
+    m = np.searchsorted(s, v, side="left")               # first index with s >= v_i
+
+    # upper end: smallest hi >= m with s[hi] - v_i >= eps_i
+    hi = np.clip(np.searchsorted(s, v + eps, side="left"), m, T)
+    while True:
+        step = (hi < T) & ((s[np.minimum(hi, T - 1)] - v) < eps)
+        if not step.any():
+            break
+        hi = hi + step
+    while True:
+        step = (hi > m) & ((s[np.maximum(hi - 1, 0)] - v) >= eps)
+        if not step.any():
+            break
+        hi = hi - step
+
+    # lower end: smallest lo <= m with v_i - s[lo] < eps_i
+    lo = np.clip(np.searchsorted(s, v - eps, side="right"), 0, m)
+    while True:
+        step = (lo > 0) & ((v - s[np.maximum(lo - 1, 0)]) < eps)
+        if not step.any():
+            break
+        lo = lo - step
+    while True:
+        step = (lo < m) & ((v - s[np.minimum(lo, T - 1)]) >= eps)
+        if not step.any():
+            break
+        lo = lo + step
+
+    return hi - lo
+
+
+def _mi_kernel_tree(X, Y, k, dig):
+    """KSG-1 MI in nats for a batch of problems, O(T log T) each. X, Y: (B, T) -> (B,).
+
+    Drop-in for `_mi_kernel_numpy` -- same signature, same estimator, same tie conventions,
+    agreeing to ~1e-15 nats -- but eps comes from a max-norm KDTree query and the marginal
+    counts from `_ball_count`, so peak memory is O(T) per problem rather than O(T^2). That
+    is the whole point: past a few hundred samples the (T, T) blocks no longer fit cache
+    and the quadratic kernel goes memory-bound.
+
+    There IS a Python loop over the batch axis here, unlike the quadratic kernel. At the T
+    where this kernel is selected each iteration is milliseconds of C, so the loop costs
+    nothing; do not use it at small T, where it would cost everything.
+    """
+    from scipy.spatial import cKDTree
+    B, T = X.shape
+    out = np.empty(B)
+    pts = np.empty((T, 2))
+    for b in range(B):
+        x, y = X[b], Y[b]
+        pts[:, 0] = x
+        pts[:, 1] = y
+        # k+1 neighbours because the query point is its own nearest; the (k+1)-th smallest
+        # max-norm distance INCLUDING the self-distance 0 is infomeasure's eps.
+        eps = cKDTree(pts).query(pts, k=k + 1, p=np.inf, workers=1)[0][:, k]
+        pos = eps > 0                     # self is inside the ball iff eps > 0
+        nx = np.where(pos, _ball_count(x, eps) - 1, 0)
+        ny = np.where(pos, _ball_count(y, eps) - 1, 0)
+        out[b] = digamma(k) + digamma(T) - (dig[nx + 1] + dig[ny + 1]).mean()
+    return out
+
+
+def _tree_chunk(B, T, n_jobs):
+    """Task granularity for the tree kernel.
+
+    Memory is O(T) per problem, so unlike `_chunk_size` this is mostly a load-balancing
+    knob and not a cache target: aim for ~8 chunks per thread so a straggler cannot hold up
+    a whole core, but never fewer than 8 problems per chunk or the per-chunk Python starts
+    to show. The 32 MB ceiling is for `mi_member_vs_member`, whose worker GATHERS its
+    `(chunk, T)` block out of the cube -- 8-chunks-per-thread on 13.5M pairs would ask for
+    gigabytes per thread there.
+    """
+    if n_jobs == 1 or B <= 8:
+        return max(1, B)
+    from joblib import cpu_count
+    jobs = cpu_count() if n_jobs < 0 else n_jobs
+    cap = max(8, int((32 << 20) // (T * 8)))
+    return int(min(cap, max(8, -(-B // (8 * max(1, jobs))))))
+
+
+# --------------------------------------------------------------------------------------
 # the JAX kernel -- same arithmetic, jitted, chunks padded to one static shape
 # --------------------------------------------------------------------------------------
 
@@ -306,7 +492,7 @@ def _run_jax(X, Y, k, chunk, dtype):
 # public entry point
 # --------------------------------------------------------------------------------------
 
-def mi_batch(X, Y, k=4, copula=True, noise_level=1e-10, seed=0, backend="numpy",
+def mi_batch(X, Y, k=4, copula=True, noise_level=1e-10, seed=0, backend="auto",
              max_bytes=None, dtype="float64", n_jobs=1, prepared=False):
     """I(x ; y) in NATS for a whole stack of problems at once.
 
@@ -323,8 +509,18 @@ def mi_batch(X, Y, k=4, copula=True, noise_level=1e-10, seed=0, backend="numpy",
     noise_level, seed : float, int
         Tie-breaking dither, applied after the copula transform. Read the module docstring
         before setting `noise_level=0`; it is not a free speedup.
-    backend : {"numpy", "jax"}
-        Leave this at "numpy". MEASURED on a serc node, s1961 grand ensemble at T=120:
+    backend : {"auto", "numpy", "tree", "jax"}
+        "auto" picks "numpy" below `TREE_MIN_T` samples and "tree" at or above it, which is
+        what you want; the two agree to ~1e-15 nats and differ only in cost.
+
+        "numpy" is the batched (T, T) kernel -- unbeatable while T is small, quadratic in
+        both time and working set. "tree" is a max-norm KDTree per problem plus binary
+        search for the marginal counts, O(T log T) and O(T). At T=2760 (the "jugaad"
+        layout, members folded into the sample axis) that is 4.5 ms against 165 ms per
+        cell; at T=120 it is 0.24 ms against 0.086 ms, i.e. 3x the wrong way. Forcing
+        either one against "auto" is only useful for checking that they agree.
+
+        "jax": leave it alone. MEASURED on a serc node, s1961 grand ensemble at T=120:
         numpy 18.1 s against jax float64 1017.2 s on the same 735k-problem subset --
         JAX-on-CPU is ~56x SLOWER, projecting 4.3 h against numpy's 4.6 min for the full
         cube. XLA gains nothing here: the kernel is top_k plus boolean reductions over
@@ -380,23 +576,31 @@ def mi_batch(X, Y, k=4, copula=True, noise_level=1e-10, seed=0, backend="numpy",
 
 def _dispatch(X, Y, k, backend, max_bytes, dtype, n_jobs):
     """Chunked evaluation of the kernel over a contiguous `(B, T)` pair."""
-    T = X.shape[-1]
-    itemsize = 4 if (backend == "jax" and dtype == "float32") else 8
-    chunk = _chunk_size(T, _resolve_max_bytes(max_bytes, backend), itemsize)
+    B, T = X.shape
+    backend = _resolve_backend(backend, T)
 
     if backend == "jax":
+        itemsize = 4 if dtype == "float32" else 8
+        chunk = _chunk_size(T, _resolve_max_bytes(max_bytes, backend), itemsize)
         return _run_jax(X, Y, k, chunk, dtype)
-    if backend != "numpy":
-        raise ValueError(f"backend must be 'numpy' or 'jax', got {backend!r}")
+    if backend == "numpy":
+        kernel = _mi_kernel_numpy
+        chunk = _chunk_size(T, _resolve_max_bytes(max_bytes, backend))
+    elif backend == "tree":
+        kernel = _mi_kernel_tree
+        chunk = _tree_chunk(B, T, n_jobs)
+    else:
+        raise ValueError(
+            f"backend must be 'auto', 'numpy', 'tree' or 'jax', got {backend!r}")
 
     dig = _digamma_table(T + 2)
-    bounds = list(range(0, X.shape[0], chunk))
+    bounds = list(range(0, B, chunk))
     if n_jobs == 1 or len(bounds) == 1:
-        return np.concatenate([_mi_kernel_numpy(X[lo:lo + chunk], Y[lo:lo + chunk], k, dig)
+        return np.concatenate([kernel(X[lo:lo + chunk], Y[lo:lo + chunk], k, dig)
                                for lo in bounds])
     from joblib import Parallel, delayed
     parts = Parallel(n_jobs=n_jobs, backend="threading")(
-        delayed(_mi_kernel_numpy)(X[lo:lo + chunk], Y[lo:lo + chunk], k, dig)
+        delayed(kernel)(X[lo:lo + chunk], Y[lo:lo + chunk], k, dig)
         for lo in bounds)
     return np.concatenate(parts)
 
@@ -405,13 +609,58 @@ def _dispatch(X, Y, k, backend, max_bytes, dtype, n_jobs):
 # cube wrappers -- the MI analogues of the notebook's Pearson functions
 # --------------------------------------------------------------------------------------
 
-def _prep_cube(F, copula, noise_level, seed):
+def _prep_block(X, out, noise, c0, c1, copula, T):
+    """Rank + dither + transpose one block of cells, `X[:, :, c0:c1] -> out[:, c0:c1, :]`.
+
+    The sample axis is moved LAST FIRST, before the rank: `rankdata` sorts along its axis,
+    and sorting contiguous lanes of a `(N, w, T)` block beats sorting `T`-strided lanes of
+    `(N, T, w)` and then transposing the result. Same numbers either way -- ranks along the
+    sample axis are independent per (member, cell) -- so this is layout, not convention.
+    """
+    blk = np.ascontiguousarray(X[:, :, c0:c1].transpose(0, 2, 1))     # (N, w, T)
+    if copula:
+        blk = rankdata(blk, method="average", axis=-1)
+        blk /= T + 1.0
+    if noise is not None:
+        blk += noise[:, :, c0:c1].transpose(0, 2, 1)
+    out[:, c0:c1, :] = blk
+
+
+def _prep_blocks(C, N, T):
+    """Cell-block width: keep one `(N, w, T)` block near 1 MB so it stays in cache.
+
+    A block is the unit of both the threading and the cache blocking. The measured curve is
+    flat from w = 8 to w = 32 and turns over past ~1 MB (a `w = 128` block on a
+    `(92, 120, 2664)` cube is 11 MB and costs 30% more), so this is a target, not a tuning
+    knob. Blocks are slices of the LAST axis, so `w = 8` doubles already reads whole cache
+    lines -- narrower than that would fetch 64 bytes to use 8.
+    """
+    w = max(8, min(C, (1 << 20) // max(1, 8 * N * T)))
+    return w, list(range(0, C, w))
+
+
+def _prep_cube(F, copula, noise_level, seed, n_jobs=1):
     """`(N, T, *space)` -> pseudo-observation `(N, C, T)`, plus `space, N, T, C`.
 
-    The transform runs in the cube's OWN `(N, T, C)` layout and only then moves the sample
-    axis last. That ordering is not cosmetic: it makes the dither draw the same numbers in
-    the same places as `mi_pairwise.MI_F_pairwise`, so for a given seed this module
-    reproduces that function bit for bit rather than merely in distribution.
+    The dither is drawn ONCE, in the cube's own `(N, T, C)` layout, and only then scattered
+    into the transposed output. That ordering is not cosmetic: it makes the dither land the
+    same numbers in the same places as `mi_pairwise.MI_F_pairwise`, so for a given seed this
+    module reproduces that function bit for bit rather than merely in distribution. It is
+    also why the draw is the one part of this function that cannot be threaded -- a single
+    `Generator` stream is inherently sequential, and the ziggurat consumes a variable number
+    of uniforms per normal, so there is no offset to jump a second stream to.
+
+    Everything else is fused into one blocked pass -- gather, rank, divide, dither, write --
+    instead of three full-cube passes each materialising a `(N, T, C)` temporary. On a
+    `(92, 120, 37, 72)` cube, one core, Sherlock serc node:
+
+        three passes (the obvious version)   2.69 s
+        one fused pass                       1.61 s
+        one fused pass, 16 threads           0.85 s     <- 0.53 s of this is the draw
+
+    Bit-identical to the obvious version in all three cases; the ranks of one cell do not
+    depend on any other cell, so the block boundaries and the thread count cannot move a
+    number. `mi_loomean_vs_member` calls this twice, so on that cube this is 5.4 s -> 1.7 s.
     """
     F = np.asarray(F, dtype=float)
     if F.ndim < 2:
@@ -420,15 +669,29 @@ def _prep_cube(F, copula, noise_level, seed):
     space = F.shape[2:]
     C = int(np.prod(space)) if space else 1
     X = F.reshape(N, T, C)
-    if copula:
-        X = rankdata(X, method="average", axis=1) / (T + 1.0)
-    if noise_level:
-        X = X + np.random.default_rng(seed).normal(0.0, noise_level, X.shape)
-    return np.ascontiguousarray(X.transpose(0, 2, 1)), space, N, T, C
+    # `standard_normal(...) * s` is `normal(0, s, ...)` value for value -- both scale one
+    # ziggurat draw per element, in the same order -- and the fill-then-scale path is the
+    # faster of the two.
+    noise = (np.random.default_rng(seed).standard_normal(X.shape) * noise_level
+             if noise_level else None)
+    out = np.empty((N, C, T))
+    w, bounds = _prep_blocks(C, N, T)
+    if n_jobs == 1 or len(bounds) == 1:
+        for c0 in bounds:
+            _prep_block(X, out, noise, c0, min(c0 + w, C), copula, T)
+    else:
+        from joblib import Parallel, delayed
+        Parallel(n_jobs=n_jobs, backend="threading")(
+            delayed(_prep_block)(X, out, noise, c0, min(c0 + w, C), copula, T)
+            for c0 in bounds)
+    return out, space, N, T, C
 
 
 def _prep_field(o, copula, noise_level, seed):
-    """`(T, *space)` -> pseudo-observation `(C, T)`. The single-field twin of `_prep_cube`."""
+    """`(T, *space)` -> pseudo-observation `(C, T)`. The single-field twin of `_prep_cube`.
+
+    One field, so C series rather than N*C: not worth blocking or threading.
+    """
     o = np.asarray(o, dtype=float)
     T = o.shape[0]
     C = int(np.prod(o.shape[1:])) if o.ndim > 1 else 1
@@ -436,7 +699,7 @@ def _prep_field(o, copula, noise_level, seed):
     if copula:
         X = rankdata(X, method="average", axis=0) / (T + 1.0)
     if noise_level:
-        X = X + np.random.default_rng(seed).normal(0.0, noise_level, X.shape)
+        X = X + np.random.default_rng(seed).standard_normal(X.shape) * noise_level
     return np.ascontiguousarray(X.T)
 
 
@@ -449,7 +712,7 @@ def mi_member_vs_obs(F, o, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
     F: `(N, T, *space)`. o: `(T, *space)`. The notebook tiles obs to `(N, T, *space)`
     before calling its Pearson version; that is unnecessary here but accepted.
     """
-    R, space, N, T, C = _prep_cube(F, copula, noise_level, seed)
+    R, space, N, T, C = _prep_cube(F, copula, noise_level, seed, kw.get("n_jobs", 1))
     o = np.asarray(o, dtype=float)
     if o.ndim == np.ndim(F):                       # already tiled to (N, T, *space)
         o = o[0]
@@ -472,15 +735,16 @@ def mi_member_vs_member(F, k=4, copula=True, noise_level=1e-10, seed=0, verbose=
     `dcpp_decadal_handles` (T = months within one hindcast) differ only in what T means,
     and an uninitialised ensemble needs no observations for this statistic at all.
     """
-    R, space, N, T, C = _prep_cube(F, copula, noise_level, seed)
+    n_jobs = kw.pop("n_jobs", 1)
+    R, space, N, T, C = _prep_cube(F, copula, noise_level, seed, n_jobs)
     ii, jj = np.triu_indices(N, k=1)
     P = ii.size
     total = P * C
 
-    n_jobs = kw.pop("n_jobs", 1)
-    backend = kw.get("backend", "numpy")
+    backend = _resolve_backend(kw.pop("backend", "auto"), T)
     max_bytes = _resolve_max_bytes(kw.pop("max_bytes", None), backend)
-    if backend != "numpy":
+    if backend == "jax":
+        kw["backend"] = backend
         # Same chunked walk as below, but serial and with JAX-sized blocks -- the jitted
         # kernel is already parallel inside. Gathering all P*C problems up front instead
         # would materialise two (P*C, T) host arrays: 21 GB for one grand ensemble.
@@ -504,7 +768,13 @@ def mi_member_vs_member(F, k=4, copula=True, noise_level=1e-10, seed=0, verbose=
     # The gather is done INSIDE the worker and there is exactly one thread pool for the
     # whole run. Going through `mi_batch` per chunk instead would build a fresh joblib
     # Parallel (and its 16 threads) thousands of times, which cost more than the kernel.
-    chunk = _chunk_size(T, max_bytes)
+    if backend == "tree":
+        kernel, chunk = _mi_kernel_tree, _tree_chunk(total, T, n_jobs)
+    elif backend == "numpy":
+        kernel, chunk = _mi_kernel_numpy, _chunk_size(T, max_bytes)
+    else:
+        raise ValueError(
+            f"backend must be 'auto', 'numpy', 'tree' or 'jax', got {backend!r}")
     dig = _digamma_table(T + 2)
     bounds = list(range(0, total, chunk))
 
@@ -515,12 +785,12 @@ def mi_member_vs_member(F, k=4, copula=True, noise_level=1e-10, seed=0, verbose=
         Y = np.ascontiguousarray(R[jj[p], c])
         good = np.isfinite(X).all(-1) & np.isfinite(Y).all(-1)
         if good.all():
-            return _mi_kernel_numpy(X, Y, k, dig)
+            return kernel(X, Y, k, dig)
         part = np.full(hi - lo, np.nan)
         idx = np.flatnonzero(good)
         if idx.size:
-            part[idx] = _mi_kernel_numpy(np.ascontiguousarray(X[idx]),
-                                         np.ascontiguousarray(Y[idx]), k, dig)
+            part[idx] = kernel(np.ascontiguousarray(X[idx]),
+                               np.ascontiguousarray(Y[idx]), k, dig)
         return part
 
     if n_jobs == 1:
@@ -567,10 +837,12 @@ def mi_loomean_vs_member(F, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
     F = np.asarray(F, dtype=float)
     N = F.shape[0]
     loo = (F.sum(axis=0, keepdims=True) - F) / (N - 1)          # raw, as in calc_MI_sF
-    R, space, _, T, C = _prep_cube(F, copula, noise_level, seed)
-    L, _, _, _, _ = _prep_cube(loo, copula, noise_level, seed + 1)
+    n_jobs = kw.get("n_jobs", 1)
+    R, space, _, T, C = _prep_cube(F, copula, noise_level, seed, n_jobs)
+    L, _, _, _, _ = _prep_cube(loo, copula, noise_level, seed + 1, n_jobs)
     out = mi_batch(L.reshape(-1, T), R.reshape(-1, T), k=k, prepared=True, **kw)
-    return out.reshape(N, C).mean(axis=0).reshape(space)
+    out = out.reshape(N, C)
+    return out.mean(axis=0).reshape(space), out.reshape((N,) + space)
 
 
 def mi_loomean_vs_obs(F, o, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
@@ -582,8 +854,8 @@ def mi_loomean_vs_obs(F, o, k=4, copula=True, noise_level=1e-10, seed=0, **kw):
     F = np.asarray(F, dtype=float)
     N = F.shape[0]
     loo = (F.sum(axis=0, keepdims=True) - F) / (N - 1)
-    L, space, _, T, C = _prep_cube(loo, copula, noise_level, seed)
+    L, space, _, T, C = _prep_cube(loo, copula, noise_level, seed, kw.get("n_jobs", 1))
     O = _prep_field(o, copula, noise_level, seed + 1)            # (C, T)
     out = mi_batch(L.reshape(-1, T), np.broadcast_to(O, (N, C, T)).reshape(-1, T),
                    k=k, prepared=True, **kw)
-    return out.reshape(N, C).mean(axis=0).reshape(space)
+    return out.reshape(N, C).mean(axis=0).reshape(space), out.reshape((N, space[0], space[1]))

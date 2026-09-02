@@ -19,6 +19,7 @@ import argparse
 import os
 import sys
 import time
+import warnings
 
 import numpy as np
 
@@ -252,6 +253,188 @@ def test_shapes(rng):
         FAILURES.append("masked cell")
 
 
+def test_tree(rng):
+    """The `backend="tree"` kernel, which is what runs at large T.
+
+    Two claims. Against infomeasure it is the same estimator, like every other path here.
+    Against `backend="numpy"` it is BIT-IDENTICAL, `tol=0.0` -- not merely close. That is
+    the interesting one: the two kernels find the neighbourhood boundary by different means
+    (a full (T, T) comparison against a binary search into the sorted marginal), and a
+    binary search on `v + eps` is off by a rounding step often enough that the fix-up loops
+    in `_ball_count` are the difference between agreeing to 1e-16 and agreeing to 1e-3.
+    """
+    print("\ntree backend vs infomeasure")
+    if infomeasure is not None:
+        for T in (48, 120):
+            for k in (1, 4, 8):
+                x = rng.standard_normal(T)
+                y = 0.5 * x + rng.standard_normal(T)
+                xr, yr = V.copula_rank(x), V.copula_rank(y)
+                check(f"T={T:<5d} k={k}  continuous",
+                      V.mi_batch(x, y, k=k, copula=False, noise_level=0, backend="tree"),
+                      ref_mi(x, y, k))
+                check(f"T={T:<5d} k={k}  copula ranks (tied distances)",
+                      V.mi_batch(xr, yr, k=k, copula=False, noise_level=0, backend="tree"),
+                      ref_mi(xr, yr, k))
+        T = 600                       # past TREE_MIN_T, so this is what "auto" would pick
+        x = rng.standard_normal(T)
+        y = 0.5 * x + rng.standard_normal(T)
+        check(f"T={T:<5d} k=4  past TREE_MIN_T",
+              V.mi_batch(x, y, k=4, copula=False, noise_level=0, backend="tree"),
+              ref_mi(x, y, 4))
+    else:
+        print("  [skip] infomeasure absent")
+
+    print("\ntree backend vs the (T, T) kernel -- must be bit-identical")
+    def both(X, Y, k=4, **kw):
+        a = V.mi_batch(X, Y, k=k, copula=False, noise_level=0, backend="numpy", **kw)
+        with warnings.catch_warnings():        # forcing tree below the crossover is
+            warnings.simplefilter("ignore")    # deliberate here, and it warns
+            b = V.mi_batch(X, Y, k=k, copula=False, noise_level=0, backend="tree", **kw)
+        return b, a
+
+    for T in (13, 48, 120, 700, 1500):
+        X = rng.standard_normal((4, T))
+        Y = 0.6 * X + rng.standard_normal((4, T))
+        check(f"T={T:<5d} continuous", *both(X, Y), tol=0.0)
+
+    for T in (13, 48, 120, 700):
+        for k in (1, 4, 8):
+            X = V.copula_rank(rng.standard_normal((4, T)))
+            Y = V.copula_rank(rng.standard_normal((4, T)))
+            check(f"T={T:<5d} k={k} copula lattice, no dither", *both(X, Y, k=k), tol=0.0)
+
+    # heavy exact duplicates: forces eps == 0 (the conditional self-subtraction) and long
+    # runs of identical marginal values (the fix-up loops walking through a tie block)
+    for T, lvl in ((200, 5), (400, 12)):
+        X = rng.integers(0, lvl, (6, T)).astype(float)
+        Y = rng.integers(0, lvl, (6, T)).astype(float)
+        check(f"T={T:<5d} {lvl}-level integers, eps==0 everywhere", *both(X, Y), tol=0.0)
+
+    # boundary rounding stress: eps is ~1e-16 of the values, so `v + eps` cannot be
+    # represented and searchsorted lands on the wrong side of the ball at almost every i
+    for T in (120, 900):
+        X = 1e8 + 1e-8 * rng.standard_normal((4, T))
+        Y = 1e8 + 1e-8 * rng.standard_normal((4, T))
+        check(f"T={T:<5d} eps at the float64 boundary", *both(X, Y), tol=0.0)
+
+    # a joint point that is duplicated while the marginals are not, and the reverse
+    T = 60
+    base = rng.standard_normal(T)
+    X = np.repeat(base[: T // 2], 2)[None, :].copy()
+    Y = rng.standard_normal((1, T))
+    check("marginal duplicated, joint not", *both(X, Y), tol=0.0)
+
+    print("\ntree backend: selection, chunking, threading, NaN, shapes")
+    ok = (V._resolve_backend("auto", V.TREE_MIN_T - 1) == "numpy"
+          and V._resolve_backend("auto", V.TREE_MIN_T) == "tree"
+          and V._resolve_backend("numpy", 10**6) == "numpy"
+          and V._resolve_backend("tree", 2) == "tree")
+    print(f"  [{'ok ' if ok else 'FAIL'}] auto picks numpy below TREE_MIN_T"
+          f"={V.TREE_MIN_T} and tree at or above")
+    if not ok:
+        FAILURES.append("auto backend selection")
+
+    T, B = 800, 40
+    X = rng.standard_normal((B, T))
+    Y = 0.6 * X + rng.standard_normal((B, T))
+    want = V.mi_batch(X, Y, k=4, copula=False, noise_level=0, backend="numpy")
+    check("auto == numpy at T=800 (auto is taking the tree path)",
+          V.mi_batch(X, Y, k=4, copula=False, noise_level=0), want, tol=0.0)
+    check("tree, n_jobs=4 over chunks",
+          V.mi_batch(X, Y, k=4, copula=False, noise_level=0, backend="tree", n_jobs=4),
+          want, tol=0.0)
+    check("tree, n_jobs=-1 over chunks",
+          V.mi_batch(X, Y, k=4, copula=False, noise_level=0, backend="tree", n_jobs=-1),
+          want, tol=0.0)
+    check("tree, broadcast (B, T) against (T,)",
+          V.mi_batch(X, Y[0], k=4, copula=False, noise_level=0, backend="tree"),
+          V.mi_batch(X, Y[0], k=4, copula=False, noise_level=0, backend="numpy"), tol=0.0)
+    check("tree, (2, 4, T) leading shape preserved",
+          V.mi_batch(X[:8].reshape(2, 4, T), Y[:8].reshape(2, 4, T), k=4, copula=False,
+                     noise_level=0, backend="tree"), want[:8].reshape(2, 4), tol=0.0)
+
+    Xn = X.copy()
+    Xn[5, 3] = np.nan
+    got = V.mi_batch(Xn, Y, k=4, copula=False, noise_level=0, backend="tree")
+    ok = np.isnan(got[5]) and np.array_equal(np.delete(got, 5), np.delete(want, 5))
+    print(f"  [{'ok ' if ok else 'FAIL'}] tree, NaN series isolated, others bit-identical")
+    if not ok:
+        FAILURES.append("tree NaN isolation")
+
+    # forcing the tree kernel below the crossover is a 3-6x pessimisation, and passing it
+    # to a T=120 cube by mistake is the most expensive thing you can do with this module
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        V.mi_batch(X[:2, :120], Y[:2, :120], k=4, copula=False, noise_level=0,
+                   backend="tree")
+        V.mi_loomean_vs_member(rng.standard_normal((3, 120, 2, 2)), k=4, backend="tree")
+        forced = sum(issubclass(x.category, RuntimeWarning) for x in w)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        V.mi_batch(X[:2], Y[:2], k=4, copula=False, noise_level=0, backend="tree")
+        V.mi_batch(X[:2], Y[:2], k=4, copula=False, noise_level=0)
+        V.mi_batch(X[:2, :120], Y[:2, :120], k=4, copula=False, noise_level=0)
+        quiet = len(w)
+    ok = forced == 2 and quiet == 0
+    print(f"  [{'ok ' if ok else 'FAIL'}] forcing tree below TREE_MIN_T warns "
+          f"({forced}/2), auto and above-threshold do not ({quiet} warnings)")
+    if not ok:
+        FAILURES.append("tree-below-threshold warning")
+
+    rejected = []
+    for bad in ("Tree", "kdtree", "np", ""):
+        try:
+            V.mi_batch(X[:2], Y[:2], backend=bad)
+        except ValueError:
+            rejected.append(bad)
+    ok = len(rejected) == 4
+    print(f"  [{'ok ' if ok else 'FAIL'}] unknown backend names rejected "
+          f"({len(rejected)}/4)")
+    if not ok:
+        FAILURES.append("unknown backend accepted")
+
+
+def test_tree_wrappers(rng):
+    """Every cube wrapper must give the same numbers on either kernel."""
+    print("\ncube wrappers: tree vs numpy on a T=600 cube")
+    N, T, LA, LO = 5, 600, 2, 3
+    sig = rng.standard_normal((1, T, LA, LO))
+    F = sig + 1.2 * rng.standard_normal((N, T, LA, LO))
+    o = sig[0] + rng.standard_normal((T, LA, LO))
+
+    for name, fn, a in (("mi_member_vs_obs", V.mi_member_vs_obs, (F, o)),
+                        ("mi_ensmean_vs_obs", V.mi_ensmean_vs_obs, (F.mean(0), o)),
+                        ("mi_loomean_vs_member", V.mi_loomean_vs_member, (F,)),
+                        ("mi_loomean_vs_obs", V.mi_loomean_vs_obs, (F, o)),
+                        ("mi_member_vs_member", V.mi_member_vs_member, (F,))):
+        want = fn(*a, k=4, backend="numpy")
+        check(f"{name:<22s} tree == numpy", fn(*a, k=4, backend="tree"), want, tol=0.0)
+        check(f"{name:<22s} auto == numpy", fn(*a, k=4), want, tol=0.0)
+        check(f"{name:<22s} tree, n_jobs=4", fn(*a, k=4, backend="tree", n_jobs=4),
+              want, tol=0.0)
+
+    # the jugaad layout: members folded into the sample axis, T = N*T_month, one MI per cell
+    print("\nthe jugaad layout (members folded into the sample axis)")
+    loo = (F.sum(0, keepdims=True) - F) / (N - 1)
+    lj = loo.reshape(N * T, LA, LO)
+    fj = F.reshape(N * T, LA, LO)
+    want = V.mi_ensmean_vs_obs(lj, fj, k=4, backend="numpy")
+    check(f"mi_ensmean_vs_obs at T={N * T}, tree == numpy",
+          V.mi_ensmean_vs_obs(lj, fj, k=4, backend="tree"), want, tol=0.0)
+    check(f"mi_ensmean_vs_obs at T={N * T}, auto n_jobs=-1 == numpy",
+          V.mi_ensmean_vs_obs(lj, fj, k=4, n_jobs=-1), want, tol=0.0)
+
+    # NaN cell must still be isolated on the tree path
+    Fm = F[:, :, :, :].copy()
+    Fm[:, :, 0, 0] = np.nan
+    out = V.mi_loomean_vs_obs(Fm, o, k=4, backend="tree")
+    ok = np.isnan(out[0, 0]) and np.isfinite(out[1, 1])
+    print(f"  [{'ok ' if ok else 'FAIL'}] tree, masked cell NaN, rest of the field finite")
+    if not ok:
+        FAILURES.append("tree masked cell")
+
+
 def test_jax(rng):
     print("\nJAX backend against numpy")
     if not V.have_jax():
@@ -294,6 +477,34 @@ def bench(rng):
         print(line, flush=True)
 
 
+def bench_tree(rng):
+    print("\ntiming: the two kernels across T, one core, per problem")
+    print(f"  {'T':>6s} {'(T,T) kernel':>14s} {'tree kernel':>14s} {'speedup':>9s}"
+          f"   (TREE_MIN_T = {V.TREE_MIN_T})")
+    for T in (48, 120, 250, 500, 1000, 2760):
+        B = max(2, min(64, int(4e7 / (T * T))))
+        X = rng.standard_normal((B, T))
+        Y = 0.6 * X + rng.standard_normal((B, T))
+        out = {}
+        for be in ("numpy", "tree"):
+            V.mi_batch(X[:1], Y[:1], k=4, copula=False, noise_level=0, backend=be)
+            t0 = time.perf_counter()
+            V.mi_batch(X, Y, k=4, copula=False, noise_level=0, backend=be)
+            out[be] = (time.perf_counter() - t0) / B
+        print(f"  {T:6d} {out['numpy'] * 1e3:11.3f} ms {out['tree'] * 1e3:11.3f} ms "
+              f"{out['numpy'] / out['tree']:8.1f}x", flush=True)
+
+    print("\ntiming: the jugaad field, 37x72 cells at T=2760, as the notebook calls it")
+    T, LA, LO = 2760, 37, 72
+    s = rng.standard_normal((T, LA, LO))
+    o = 0.5 * s + 0.5 * rng.standard_normal((T, LA, LO))
+    for be, nj in (("tree", 1), ("tree", -1), ("numpy", -1)):
+        t0 = time.perf_counter()
+        V.mi_ensmean_vs_obs(s, o, k=4, backend=be, n_jobs=nj)
+        print(f"  backend={be:<6s} n_jobs={nj:<3d} {time.perf_counter() - t0:7.2f} s",
+              flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--bench", action="store_true")
@@ -313,10 +524,13 @@ def main():
     else:
         print("\n[skip] infomeasure absent -- reference comparisons cannot run here")
     test_shapes(rng)
+    test_tree(rng)
+    test_tree_wrappers(rng)
     if args.jax:
         test_jax(rng)
     if args.bench:
         bench(rng)
+        bench_tree(rng)
 
     print("\n" + ("ALL CHECKS PASSED" if not FAILURES
                   else f"{len(FAILURES)} FAILURES: {FAILURES}"))
