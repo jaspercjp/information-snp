@@ -15,3 +15,31 @@ __pycache__/
 /data/granger_lin_chain_terms_cache.npz
 /data/djf_cube.npz
 /data/djf_lambda_cache.npz
+
+# SMYLE: 48 GB of raw hindcast files, rebuilt by scripts/fetch_smyle.py
+/data/smyle/
+# the (var, lead) cubes reduced from them, by scripts/build_smyle_cube.py
+/data/smyle_cubes/
+# rho and lambda fields, by scripts/rpc_smyle.py
+/data/smyle_rpc_cache.npz
+# HadSLP2r observations, by scripts/fetch_hadslp2r.py
+/data/obs/
+
+# DePreSys4 (CMIP6 DCPP HadGEM3-GC31-MM), rebuilt by scripts/fetch_depresys4.py
+/data/depresys4/
+/data/depresys4_files.json
+/data/depresys4_cubes/
+/data/_cubes_n48_backup/
+
+# DCPP decadal, rebuilt by scripts/fetch_dcpp.py and scripts/build_dcpp_cube.py
+/data/dcpp_monthly_cache/
+/data/dcpp_cubes/
+/data/dcpp_files.json
+# common-grid cubes, by scripts/build_common_grid_cubes.py
+/data/common_grid/
+# pairwise MI fields, by scripts/compute_and_store_pairwise_MI.py
+/data/pairwise_MI/
+/data/MI_F_pairwise_dcpp_SLP_13-60.npy
+
+.ipynb_checkpoints/
+/.claude/
