@@ -41,5 +41,13 @@ __pycache__/
 /data/pairwise_MI/
 /data/MI_F_pairwise_dcpp_SLP_13-60.npy
 
+# cubes and caches rebuilt by scripts/, from the infomeasure-updates side
+/data/annual25_cube.npz
+/data/smyle_cube.npz
+/data/hindcast_mi.npz
+/data/granger_lin_cache_nats.npz
+/data/granger_lin_chain_terms_cache_nats.npz
+/data/granger_lin_obs_cache_nats.npz
+
 .ipynb_checkpoints/
 /.claude/
