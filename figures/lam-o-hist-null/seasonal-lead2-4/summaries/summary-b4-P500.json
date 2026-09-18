@@ -97,5 +97,20 @@
     "lam_at_debiased_plus_1sd": 0.413716791847776,
     "area_debiased_gt0": 0.9662967192941936,
     "area_debiased_gt2sd": 0.8349690657747311
+  },
+  "ratio_debias_time": {
+    "headline_ratio_of_area_means": 0.9345108602456107,
+    "boot16": 0.9175001614899493,
+    "boot84": 0.9537236920968862,
+    "boot_median_uncentred": 0.9465113680805206,
+    "area_mean_numerator": 0.31407478215969603,
+    "area_mean_denominator": 0.3360846786490529,
+    "raw_ratio_gm": 1.004417423487493,
+    "per_cell_median_both_resolved": 1.1018804145895187,
+    "per_cell_mean_denom_resolved": 0.8748745968864374,
+    "area_denom_resolved": 0.8349690657747311,
+    "area_both_resolved": 0.3834734217742141,
+    "area_numerator_clipped": 0.1886701582201842,
+    "area_gt1_both_resolved": 0.6707504529946612
   }
 }

@@ -98,6 +98,21 @@
     "area_debiased_gt0": 0.8579534427686548,
     "area_debiased_gt2sd": 0.5279106130309406
   },
+  "ratio_debias_time": {
+    "headline_ratio_of_area_means": 0.8984364554817357,
+    "boot16": 0.8690522641072235,
+    "boot84": 0.9309131931737804,
+    "boot_median_uncentred": 0.98777617463107,
+    "area_mean_numerator": 0.13538459555258295,
+    "area_mean_denominator": 0.15068911632708695,
+    "raw_ratio_gm": 0.9899640911460814,
+    "per_cell_median_both_resolved": 1.865450022731816,
+    "per_cell_mean_denom_resolved": 0.6779835877856318,
+    "area_denom_resolved": 0.5279106130309406,
+    "area_both_resolved": 0.038700493567598984,
+    "area_numerator_clipped": 0.39751408670310645,
+    "area_gt1_both_resolved": 1.0
+  },
   "lam_o_ens_yearblock": {
     "data": 0.62482285068566,
     "floor": 0.6264741404651035,
@@ -179,6 +194,21 @@
     "area_debiased_gt0": 0.6908112359739632,
     "area_debiased_gt2sd": 0.2507689236541311
   },
+  "ratio_debias_yearblock": {
+    "headline_ratio_of_area_means": 1.160275498996957,
+    "boot16": 1.0586331425804816,
+    "boot84": 1.2572211659298493,
+    "boot_median_uncentred": 1.355224281744165,
+    "area_mean_numerator": 0.1017157343958692,
+    "area_mean_denominator": 0.08766515752836385,
+    "raw_ratio_gm": 0.9899640911460814,
+    "per_cell_median_both_resolved": 2.2761023683409825,
+    "per_cell_mean_denom_resolved": 0.4786422855491894,
+    "area_denom_resolved": 0.2507689236541311,
+    "area_both_resolved": 0.00519710511614745,
+    "area_numerator_clipped": 0.5916413206185073,
+    "area_gt1_both_resolved": 1.0
+  },
   "lam_o_ens_moy": {
     "data": 0.62482285068566,
     "floor": 0.6211296299356521,
@@ -259,6 +289,21 @@
     "lam_at_debiased_plus_1sd": 0.18343849344381555,
     "area_debiased_gt0": 0.7633224384991496,
     "area_debiased_gt2sd": 0.3866438719925104
+  },
+  "ratio_debias_moy": {
+    "headline_ratio_of_area_means": 0.9929940958859219,
+    "boot16": 0.9553748887919772,
+    "boot84": 1.0379989115337933,
+    "boot_median_uncentred": 1.1031910253266755,
+    "area_mean_numerator": 0.12013276660570885,
+    "area_mean_denominator": 0.12098034329049027,
+    "raw_ratio_gm": 0.9899640911460814,
+    "per_cell_median_both_resolved": 1.6985016185691006,
+    "per_cell_mean_denom_resolved": 0.6006358854400025,
+    "area_denom_resolved": 0.3866438719925104,
+    "area_both_resolved": 0.014638489414714032,
+    "area_numerator_clipped": 0.44218308514259963,
+    "area_gt1_both_resolved": 1.0
   },
   "lam_o_ens_sd_yearblock_over_time": 0.9816433787345886,
   "lam_o_loo_sd_yearblock_over_time": 0.9932109713554382,
