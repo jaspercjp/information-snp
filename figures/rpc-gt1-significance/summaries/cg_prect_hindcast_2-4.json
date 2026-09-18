@@ -1,0 +1,40 @@
+{
+  "tag": "cg_prect_hindcast_2-4",
+  "B": 1000,
+  "n_members": 42,
+  "n_months": 33,
+  "cube_shape": [
+    62,
+    33,
+    37,
+    72
+  ],
+  "time_resampling": false,
+  "q": 0.1,
+  "lambda": {
+    "area_usable": 1.0,
+    "area_gt1_of_usable": 0.5153903903903904,
+    "area_sig_of_tested": 0.2578295702840495,
+    "area_fdr_of_tested": 0.21849963583394028,
+    "area_sig_of_usable": 0.13288288288288289,
+    "area_fdr_of_usable": 0.11261261261261261,
+    "n_tested": 1373,
+    "n_sig": 354,
+    "n_fdr": 300,
+    "median_p_tested": 0.218,
+    "median_lo05_tested": 0.33986905217170715
+  },
+  "rho": {
+    "area_usable": 0.9710960960960962,
+    "area_gt1_of_usable": 0.5705450328565906,
+    "area_sig_of_tested": 0.6124661246612466,
+    "area_fdr_of_tested": 0.6321138211382114,
+    "area_sig_of_usable": 0.34943950521839967,
+    "area_fdr_of_usable": 0.36064940085040587,
+    "n_tested": 1476,
+    "n_sig": 904,
+    "n_fdr": 933,
+    "median_p_tested": 0.012,
+    "median_lo05_tested": 1.0969083309173584
+  }
+}

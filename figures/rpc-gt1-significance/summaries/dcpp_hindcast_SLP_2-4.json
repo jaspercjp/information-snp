@@ -1,0 +1,40 @@
+{
+  "tag": "dcpp_hindcast_SLP_2-4",
+  "B": 1000,
+  "n_members": 42,
+  "n_months": 51,
+  "cube_shape": [
+    62,
+    51,
+    37,
+    72
+  ],
+  "time_resampling": false,
+  "q": 0.1,
+  "lambda": {
+    "area_usable": 1.0,
+    "area_gt1_of_usable": 0.5529279279279279,
+    "area_sig_of_tested": 0.3000678886625934,
+    "area_fdr_of_tested": 0.24575695858791582,
+    "area_sig_of_usable": 0.16591591591591592,
+    "area_fdr_of_usable": 0.13588588588588588,
+    "n_tested": 1473,
+    "n_sig": 442,
+    "n_fdr": 362,
+    "median_p_tested": 0.229,
+    "median_lo05_tested": 0.5071378946304321
+  },
+  "rho": {
+    "area_usable": 0.9823573573573574,
+    "area_gt1_of_usable": 0.5880779518532671,
+    "area_sig_of_tested": 0.6185834957764782,
+    "area_fdr_of_tested": 0.6465237166991553,
+    "area_sig_of_usable": 0.3637753152464654,
+    "area_fdr_of_usable": 0.38020634314100116,
+    "n_tested": 1539,
+    "n_sig": 952,
+    "n_fdr": 995,
+    "median_p_tested": 0.017,
+    "median_lo05_tested": 1.0501338243484497
+  }
+}
