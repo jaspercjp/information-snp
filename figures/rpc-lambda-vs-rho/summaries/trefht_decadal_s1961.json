@@ -1,0 +1,38 @@
+{
+  "tag": "trefht_decadal_s1961",
+  "draws": 1000,
+  "area_common": 0.7958776595744681,
+  "area_lambda_usable": 1.0,
+  "area_rho_usable": 0.7958776595744681,
+  "domain_mean_lambda": {
+    "rpc": 0.9643640809634775,
+    "ci_lo": 0.8677990285688422,
+    "ci_hi": 1.0852713979061923,
+    "p_vs_1": 0.634
+  },
+  "domain_mean_rho": {
+    "rpc": 0.06711247931290339,
+    "ci_lo": -3.4532664903042933,
+    "ci_hi": 3.260830793599098,
+    "p_vs_1": 0.15
+  },
+  "rho_ratio_valid_frac": 0.9200519323348999,
+  "paired_median_absz_rho_minus_lam": -0.07698522508144379,
+  "area_1_closer_under_lambda": 0.454469507101086,
+  "lambda": {
+    "area_ci_contains_1": 0.9710387078808131,
+    "area_absz_lt2": 0.9446532999164579,
+    "area_p_gt05": 0.9714564188248399,
+    "median_absz": 0.6429809331893921,
+    "median_ci_width": 1.8315390552685131,
+    "median_rpc": 0.9680701494216919
+  },
+  "rho": {
+    "area_ci_contains_1": 0.8030492898913951,
+    "area_absz_lt2": 0.9466722361459203,
+    "area_p_gt05": 0.8219855193539404,
+    "median_absz": 0.6050460338592529,
+    "median_ci_width": 7.770199146866798,
+    "median_rpc": -0.2521558403968811
+  }
+}

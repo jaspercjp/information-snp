@@ -1,0 +1,38 @@
+{
+  "tag": "dcpp_decadal_s1961_SLP",
+  "draws": 1000,
+  "area_common": 0.3472222222222222,
+  "area_lambda_usable": 1.0,
+  "area_rho_usable": 0.3472222222222222,
+  "domain_mean_lambda": {
+    "rpc": 0.9286933121725766,
+    "ci_lo": 0.8147040825723237,
+    "ci_hi": 1.0648393425554905,
+    "p_vs_1": 0.298
+  },
+  "domain_mean_rho": {
+    "rpc": -0.12091443226921271,
+    "ci_lo": -13.592557411465048,
+    "ci_hi": 6.554639198653444,
+    "p_vs_1": 0.426
+  },
+  "rho_ratio_valid_frac": 0.6989591121673584,
+  "paired_median_absz_rho_minus_lam": -0.32099995017051697,
+  "area_1_closer_under_lambda": 0.24,
+  "lambda": {
+    "area_ci_contains_1": 0.9978378378378379,
+    "area_absz_lt2": 0.9697297297297297,
+    "area_p_gt05": 0.9978378378378379,
+    "median_absz": 0.6551779508590698,
+    "median_ci_width": 2.5372252285480497,
+    "median_rpc": 0.6740303635597229
+  },
+  "rho": {
+    "area_ci_contains_1": 0.7437837837837837,
+    "area_absz_lt2": 0.9686486486486486,
+    "area_p_gt05": 0.8227027027027027,
+    "median_absz": 0.1352791041135788,
+    "median_ci_width": 18.233232876658438,
+    "median_rpc": -0.27889400720596313
+  }
+}
