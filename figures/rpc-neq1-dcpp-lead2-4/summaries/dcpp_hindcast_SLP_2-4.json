@@ -1,0 +1,45 @@
+{
+  "tag": "dcpp_hindcast_SLP_2-4",
+  "handle": "dcpp_handles",
+  "handle_args": [],
+  "B": 1000,
+  "n_members": 42,
+  "n_months": 51,
+  "cube_shape": [
+    62,
+    51,
+    37,
+    72
+  ],
+  "time_resampling": false,
+  "test": "two-sided, H0: RPC = 1",
+  "q": 0.1,
+  "lambda": {
+    "area_usable": 1.0,
+    "area_sig": 0.17642642642642642,
+    "area_fdr": 0.12725225225225226,
+    "area_ci_holds_1": 0.8235735735735735,
+    "area_fdr_above": 0.1066066066066066,
+    "area_fdr_below": 0.020645645645645645,
+    "median_p": 0.44,
+    "median_absz": 1.2741529941558838,
+    "median_rpc": 1.0742344856262207,
+    "n_usable": 2664,
+    "n_sig": 470,
+    "n_fdr": 339
+  },
+  "rho": {
+    "area_usable": 0.9823573573573574,
+    "area_sig": 0.5636224684753535,
+    "area_fdr": 0.5750859763087505,
+    "area_ci_holds_1": 0.43637753152464653,
+    "area_fdr_above": 0.32556362246847537,
+    "area_fdr_below": 0.24952235384027513,
+    "median_p": 0.028,
+    "median_absz": 1.9163446426391602,
+    "median_rpc": 1.066094994544983,
+    "n_usable": 2617,
+    "n_sig": 1475,
+    "n_fdr": 1505
+  }
+}
