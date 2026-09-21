@@ -1,0 +1,22 @@
+{
+ "tag": "PRECT_s1978",
+ "var": "PRECT",
+ "dataset": "decadal",
+ "N": 112,
+ "T": 120,
+ "bins": 4,
+ "pairs": 6216,
+ "num_perm": 500,
+ "den_perm": 200,
+ "start": 1978,
+ "numerator": {
+  "mm_residual": 0.0014411510339062442,
+  "null_sd": 0.0024967049504985594,
+  "residual_over_nullsd": 0.6513043853833979
+ },
+ "denominator": {
+  "mm_residual": 0.0014464582592338827,
+  "null_sd": 0.00023313947700907066,
+  "residual_over_nullsd": 6.21961498763927
+ }
+}

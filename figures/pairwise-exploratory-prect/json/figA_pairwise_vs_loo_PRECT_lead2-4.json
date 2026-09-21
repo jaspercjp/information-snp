@@ -1,0 +1,30 @@
+{
+ "tag": "PRECT_lead2-4",
+ "var": "PRECT",
+ "dataset": "seasonal",
+ "N": 62,
+ "T": 33,
+ "bins": 2,
+ "pairs": 1891,
+ "num_perm": 500,
+ "den_perm": 200,
+ "lead": "2-4",
+ "numerator": {
+  "debiased_pairwise": 0.009908205788596918,
+  "debiased_loo": 0.031067668695661292,
+  "nullsd_pairwise": 0.0037765873923275065,
+  "nullsd_loo": 0.021098437196534554,
+  "nullsd_ratio_loo_over_pairwise": 5.5866407962379,
+  "z_pairwise": 1.6843732639486406,
+  "z_loo": 1.4648141387527884
+ },
+ "denominator": {
+  "debiased_pairwise": 0.009032321571074352,
+  "debiased_loo": 0.027671494807270682,
+  "nullsd_pairwise": 0.000515005123395114,
+  "nullsd_loo": 0.0028538237682778013,
+  "nullsd_ratio_loo_over_pairwise": 5.5413502480602235,
+  "z_pairwise": 17.599604091398163,
+  "z_loo": 9.688928660355318
+ }
+}

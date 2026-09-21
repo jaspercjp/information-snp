@@ -1,0 +1,16 @@
+{
+ "label": "DCPP-A s1978 PRECT monthly (decadal)",
+ "N": 112,
+ "T": 120,
+ "bins": 4,
+ "M": 75,
+ "draws": 1000,
+ "lam_o_mean": 0.11255726323226249,
+ "lam_m_mean": 0.14122709954268342,
+ "rpc_ratio_of_area_means": 0.7969947948852694,
+ "rpc_mean_of_per_cell": 0.7757962115679945,
+ "area_valid": 0.7444862097956398,
+ "area_holds_1": 0.3745939712870126,
+ "area_p05": 0.6257985441473827,
+ "area_fdr": 0.634404774522347
+}

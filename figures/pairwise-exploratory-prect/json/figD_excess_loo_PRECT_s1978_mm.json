@@ -1,0 +1,13 @@
+{
+ "lam_o": 0.13391556679912778,
+ "rho_o_rank": 0.09496636806633021,
+ "rho_o_pearson": 0.09319013272338528,
+ "raw_lam_minus_rho_rank": 0.038949198732797556,
+ "estimator_bias": 0.007777124435818952,
+ "excess_nongaussian": 0.031172074296978606,
+ "estimator": "mm",
+ "bins": 4,
+ "layout": "loo",
+ "raw_lam_minus_rho_pearson": 0.04072543407574247,
+ "frac_area_excess_gt0": 0.4977968650342419
+}

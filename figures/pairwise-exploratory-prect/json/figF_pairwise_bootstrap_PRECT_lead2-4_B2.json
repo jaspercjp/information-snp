@@ -1,0 +1,16 @@
+{
+ "label": "DCPP-A PRECT, lead 2-4 (seasonal)",
+ "N": 62,
+ "T": 33,
+ "bins": 2,
+ "M": 41,
+ "draws": 1000,
+ "lam_o_mean": 0.0937150480754461,
+ "lam_m_mean": 0.09200863343048728,
+ "rpc_ratio_of_area_means": 1.0185462448613372,
+ "rpc_mean_of_per_cell": 0.9428609579921167,
+ "area_valid": 0.628508002759501,
+ "area_holds_1": 0.526897919980716,
+ "area_p05": 0.4742650397221778,
+ "area_fdr": 0.459940126417912
+}

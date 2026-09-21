@@ -1,0 +1,22 @@
+{
+ "tag": "PRECT_lead2-4",
+ "var": "PRECT",
+ "dataset": "seasonal",
+ "N": 62,
+ "T": 33,
+ "bins": 2,
+ "pairs": 1891,
+ "num_perm": 500,
+ "den_perm": 200,
+ "lead": "2-4",
+ "numerator": {
+  "mm_residual": 0.0007313605300733262,
+  "null_sd": 0.0037765873923275065,
+  "residual_over_nullsd": 0.21225941147204494
+ },
+ "denominator": {
+  "mm_residual": 0.0007304697881789323,
+  "null_sd": 0.000515005123395114,
+  "residual_over_nullsd": 1.4215007139898896
+ }
+}

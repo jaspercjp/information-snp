@@ -1,0 +1,30 @@
+{
+ "tag": "PRECT_s1978",
+ "var": "PRECT",
+ "dataset": "decadal",
+ "N": 112,
+ "T": 120,
+ "bins": 4,
+ "pairs": 6216,
+ "num_perm": 500,
+ "den_perm": 200,
+ "start": 1978,
+ "numerator": {
+  "debiased_pairwise": 0.014085836094184827,
+  "debiased_loo": 0.014209242246449781,
+  "nullsd_pairwise": 0.0024967049504985594,
+  "nullsd_loo": 0.016167813034204996,
+  "nullsd_ratio_loo_over_pairwise": 6.475660262129289,
+  "z_pairwise": 3.683625232080397,
+  "z_loo": 0.8672982960797055
+ },
+ "denominator": {
+  "debiased_pairwise": 0.020892994798159446,
+  "debiased_loo": 0.0197270716092631,
+  "nullsd_pairwise": 0.00023313947700907066,
+  "nullsd_loo": 0.0017360185052014406,
+  "nullsd_ratio_loo_over_pairwise": 7.4462657610486875,
+  "z_pairwise": 89.68448591313113,
+  "z_loo": 11.412341046325688
+ }
+}
