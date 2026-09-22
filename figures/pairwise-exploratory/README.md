@@ -272,6 +272,114 @@ five times the excess kurtosis, the association disappears entirely.
   can run a spatial test on. `rho_sgn` is in the json for reference.
 - Degrees of freedom are tiles, not cells: 312 tiles against 2549 usable cells.
 
+## 8. figH2 — the same test with the ensemble mean as the model, LOO only
+
+`figH2_rpc_vs_kurtosis_ensmean_SLP_s1961`. figH took the model's kurtosis from all
+N·T pooled member values. But in the leave-one-out scheme the series that actually
+enters ρ_o is `s_-n`, the leave-one-out ensemble mean — an outlier can only leverage
+ρ_o if it is an outlier *of that series*. So figH2 measures the ensemble mean's
+kurtosis instead, drops the pairwise form, and is the better-posed version of the
+test. (Kurtosis is taken from the full ensemble mean; `s_-n` differs by one member in
+N, checked: area means +1.7929 vs +1.8008, pattern r 0.9968.)
+
+### Averaging the members makes SLP *more* heavy-tailed, not less
+
+| | area-mean excess kurtosis |
+|---|---|
+| pooled members (figH) | +0.737 |
+| **ensemble mean (figH2)** | **+1.801** |
+| observations | +0.797 |
+
+Pattern correlation between the two model versions is only **+0.33**, so they are
+substantially different fields and figH was measuring the wrong one for this scheme.
+
+This runs against the naive central-limit expectation, and the reason is
+informative: averaging suppresses the unforced part by ~1/√N while leaving the common
+forced signal untouched, so the ensemble mean's shape is the *predictable*
+component's shape. For SLP that component is markedly more kurtotic than the weather
+it is buried in. (PRECT goes the other way — see its README §7.)
+
+The price is precision: the model kurtosis now has T samples rather than N·T, so its
+per-cell standard error rises from 0.05 to **0.45**, the same as obs. Both maps are
+now noisy, the joint mask is more of a coin flip than in figH, and a null result here
+is partly a power problem.
+
+### The hypothesis still fails, and now for a sharper reason
+
+| | slope dRPC/dK | 95% CI | latitude-controlled |
+|---|---|---|---|
+| RPC_ρ | +0.145 | [+0.033, +0.274] | +0.006 |
+| RPC_λ | +0.148 | [+0.029, +0.271] | +0.105 |
+| difference ρ − λ | −0.001 | [−0.140, +0.139], p = 0.99 | |
+
+The two metrics are **indistinguishable**, and after controlling for latitude it is λ
+that retains the relationship while ρ loses it. Enrichment: ρ 1.11, λ 1.18 — again λ
+is the larger. Inside the joint heavy-tail region RPC_ρ = 1.038 against 0.834
+outside, which looks impressive until you see RPC_λ do the same thing (0.956 vs
+0.708).
+
+**The mechanism is 16× bigger here than in figH, though.** Clipping every correlated
+series — `s_-n`, `f_n` and `o` alike — at ±2.5σ moves the area-mean RPC_ρ by
+**+0.0207** against figH's +0.0013, i.e. 2.1% of RPC rather than 0.13%, and ΔRPC_ρ
+rises with joint kurtosis (slope +0.026, p = 0.054; +0.028 inside the heavy-tail
+region against +0.003 outside). That makes sense: the ensemble mean has far less
+independent noise than a single member, so one extreme month carries more leverage
+over its correlation. Outlier leverage on ρ is therefore a real, measurable, ~2%
+effect in the LOO scheme — it is simply not what produces the RPC–kurtosis
+association, because λ shows the association just as strongly and cannot see
+outliers at all.
+
+### Conditioning on where obs is heavy-tailed *relative to* the model
+
+The second conditioner, added on request:
+**D = excess kurtosis(obs) − excess kurtosis(ensemble mean)**, a difference rather
+than a ratio because excess kurtosis is signed and routinely negative here. Positive
+D means the observations carry extremes the model's ensemble mean does not.
+
+This is the sharper condition, and it predicts the *opposite* sign to `K`: under `K`
+both series are heavy-tailed so a shared extreme month can co-occur and inflate ρ_o,
+whereas under `D` the extremes are one-sided and should pull the series apart.
+
+It produces the largest effect anywhere in figH/figH2:
+
+| | RPC_ρ | RPC_λ |
+|---|---|---|
+| slope on D | **+0.084** [+0.032, +0.110] | +0.052 [+0.006, +0.097] |
+| RPC inside D > 1 se | **1.349** | 1.152 |
+| RPC outside | 0.904 | 0.835 |
+| RPC inside D > 2 se | **1.635** | 1.318 |
+| enrichment P(D>1se \| RPC>1) / P(D>1se \| RPC≤1) | **2.10** | 1.50 |
+
+RPC crosses *above 1* in that region — 1.35, rising to 1.64 at the stricter
+threshold — and the enrichment is 2.1×, twice anything the `K` conditioning gave.
+
+**But the decomposition shows it is a denominator effect, and has nothing to do with
+outliers.** Splitting RPC = ρ_o/ρ_m and normalising each term by its own area mean:
+
+| term | relative slope on D |
+|---|---|
+| ρ_o (numerator) | **+0.004** — flat |
+| ρ_m (denominator) | **−0.091** |
+| λ_o | −0.014 |
+| λ_m | −0.103 |
+
+RPC_ρ's relative slope on D, +0.0955, is +0.004 from the numerator minus (−0.091)
+from the denominator. The numerator — the only term that touches the observations —
+does not move at all. λ_m behaves almost identically to ρ_m.
+
+The interpretation is straightforward once seen. D is mostly *negative* here (obs is
+heavier than the ensemble mean on only 34% of area), so "large D" mainly means *the
+ensemble mean is unusually close to Gaussian*, not that the observations are extreme.
+Where the ensemble mean has occasional large forced excursions, members agree with it
+strongly and ρ_m is high, which depresses RPC. Where it is well-behaved, ρ_m is lower
+and RPC rises. That is a statement about the model's own signal-to-noise structure,
+not about observed outliers leveraging a Pearson correlation — and λ, which cannot
+see outliers, reproduces it.
+
+So the strong D signal is real and worth knowing, but it is not evidence for the
+hypothesis; it is a reason to be careful reading any RPC map, since a cell's RPC can
+be raised by its denominator going quiet.
+
 ---
 
 ## Files
@@ -286,6 +394,7 @@ five times the excess kurtosis, the association disappears entirely.
 | `figF_pairwise_bootstrap_SLP_s1961_B4` | member-subsample bootstrap of the pairwise λ RPC |
 | `figG_marginal_moments_SLP_{s1961,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis |
 | `figH_rpc_vs_kurtosis_SLP_s1961` | does high RPC sit where both sides are heavy-tailed? includes the winsorizing mechanism test |
+| `figH2_rpc_vs_kurtosis_ensmean_SLP_s1961` | figH with the ENSEMBLE MEAN as the model side, LOO only; adds the D = obs-minus-model kurtosis conditioner and the numerator/denominator decomposition |
 | `pairnull_SLP_*` / `pairdenom_SLP_*` (json only) | the underlying run summaries the figures read |
 
 figD, figE and figF are decadal-only; figA, figB, figC and figG exist at both layouts.
@@ -346,6 +455,7 @@ python .claude/scripts/tmp_excess_lam_map.py       --var SLP --start 1961 --esti
 python .claude/scripts/tmp_rho_o_three_ways.py     --var SLP --start 1961
 python .claude/scripts/tmp_marginal_moments.py     --var SLP --start 1961
 python .claude/scripts/tmp_rpc_vs_kurtosis.py       --var SLP --start 1961
+python .claude/scripts/tmp_rpc_vs_kurtosis_ensmean.py --var SLP --start 1961
 ```
 
 with `--dataset seasonal --lead 2-4 --bins 3` for the seasonal case. Every script needs

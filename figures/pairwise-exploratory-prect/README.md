@@ -341,7 +341,54 @@ isolated extremes that would give a single month leverage.
 Not produced for the seasonal layout: at T = 33 the observed per-cell excess kurtosis
 carries se = 0.85, which is too noisy for a per-cell mask.
 
-## 7. What this does and does not settle
+## 7. figH2 — ensemble mean as the model, LOO only, and the sign flips
+
+`figH2_rpc_vs_kurtosis_ensmean_PRECT_s1978`. Same change as the SLP version: the
+model's kurtosis comes from the ensemble mean rather than the pooled members, because
+that is the series entering ρ_o in the leave-one-out scheme. The full reasoning, and
+the D conditioner, are documented in the SLP README §8.
+
+**Averaging goes the opposite way from SLP.** Here it *reduces* the excess kurtosis —
+pooled members +3.83, ensemble mean **+2.56**, observations +2.22 — where on SLP it
+raised it from +0.74 to +1.80. PRECT's heavy tails are mostly individual convective
+events, which average down across 112 members; SLP's are in the forced signal, which
+does not. Pattern r between pooled and ensemble-mean kurtosis is +0.25.
+
+**RPC now *falls* with joint kurtosis, significantly:**
+
+| | slope dRPC/dK | 95% CI |
+|---|---|---|
+| RPC_ρ | **−0.039** | [−0.054, −0.016] |
+| RPC_λ | −0.048 | [−0.071, −0.031] |
+| difference ρ − λ | +0.013 | [−0.013, +0.044], p = 0.38 |
+
+Enrichment is **0.97** for ρ and 0.99 for λ — slightly *below* 1, so RPC > 1 regions
+are marginally less likely to be jointly heavy-tailed. RPC_ρ inside the heavy-tail
+region is 0.855 against 0.904 outside. The hypothesis predicts the opposite sign, and
+ρ and λ move together as they do everywhere else in this analysis.
+
+**The outlier mechanism is the same size as on SLP but the opposite sign.** Clipping
+at ±2.5σ moves RPC_ρ from 0.866 to 0.887 — ΔRPC_ρ = **−0.022**, so outliers were
+*deflating* RPC_ρ by 2.2%, where on SLP they inflated it by 2.1%. And the deflation
+strengthens with joint kurtosis: slope −0.0100 [−0.0167, −0.0045], p < 0.001, with
+−0.026 inside the heavy-tail region against −0.008 outside.
+
+That contrast is the most interesting thing in figH2. Outlier leverage on ρ is real
+and ~2% of RPC in the LOO scheme for both variables, but whether it inflates or
+deflates depends on whether the model's and the observations' extremes *co-occur*. On
+PRECT they largely do not — the observations are heavier-tailed than the ensemble mean
+over 51% of area — so extreme months pull the two series apart and cost ρ_o. On SLP
+they match better and the leverage works the other way. A single-signed "outliers
+inflate RPC" story cannot survive that.
+
+**Conditioned on D = exkurt(obs) − exkurt(ensemble mean)**, the effect is much weaker
+than on SLP: slope +0.016 [+0.007, +0.025] for ρ and +0.017 for λ, RPC inside D > 1 se
+0.891 against 0.851 outside, enrichment 1.09. And the decomposition tells the same
+story as SLP — relative slope on D is −0.007 for the numerator ρ_o against **−0.026**
+for the denominator ρ_m, so what little there is comes from the denominator going
+quiet, not from anything happening to the observations.
+
+## 8. What this does and does not settle
 
 It settles the estimator-sign objection **for PRECT**: the non-Gaussian excess is
 positive under both KSG and Miller–Madow, in both layouts, is 40–65% of ρ_o rather than
@@ -382,6 +429,7 @@ It does not settle these:
 | `figF_pairwise_bootstrap_PRECT_s1978_B4`, `..._lead2-4_B2` | member-subsample bootstrap of the pairwise λ RPC |
 | `figG_marginal_moments_PRECT_{s1978,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis, model vs obs |
 | `figH_rpc_vs_kurtosis_PRECT_s1978` | does high RPC sit where both sides are heavy-tailed? includes the winsorizing mechanism test |
+| `figH2_rpc_vs_kurtosis_ensmean_PRECT_s1978` | figH with the ENSEMBLE MEAN as the model side, LOO only; adds the D conditioner and the numerator/denominator decomposition |
 | `pairnull_PRECT_*` / `pairdenom_PRECT_*` (json only) | the underlying run summaries the figures read |
 
 figD and figE are decadal-only, as in the SLP set — both scripts take the sample axis
@@ -420,6 +468,7 @@ python .claude/scripts/tmp_excess_lam_map.py       --var PRECT --start 1978 --es
 python .claude/scripts/tmp_rho_o_three_ways.py     --var PRECT --start 1978
 python .claude/scripts/tmp_marginal_moments.py     --var PRECT --start 1978
 python .claude/scripts/tmp_rpc_vs_kurtosis.py       --var PRECT --start 1978
+python .claude/scripts/tmp_rpc_vs_kurtosis_ensmean.py --var PRECT --start 1978
 ```
 
 with `--dataset seasonal --lead 2-4 --bins 2` for the seasonal case.
