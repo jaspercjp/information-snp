@@ -380,6 +380,74 @@ So the strong D signal is real and worth knowing, but it is not evidence for the
 hypothesis; it is a reason to be careful reading any RPC map, since a cell's RPC can
 be raised by its denominator going quiet.
 
+## 9. figI — just look at it: ensemble mean vs observations where RPC > 1
+
+`figI_ensmean_vs_obs_regions_SLP_s1961`. Twenty standard climate-index boxes are
+screened on their area-mean RPC_ρ, and the ones that clear 1 get a scatter of the
+model ensemble mean against the observations, pooled over the box's cells and months.
+The selected boxes are outlined on the RPC_ρ map in panel 1. Purpose: see whether
+there is any obvious non-linearity in the relationship.
+
+**There is not.** Every cloud is a plain tilted ellipse. The sharpest check available
+without fitting anything is the Pearson-versus-Spearman gap — Spearman is invariant
+to any monotone distortion and Pearson is not, so a gap indicates curvature. The
+largest gap over the five selected boxes is **−0.056** (Azores High) and every other
+is **≤ 0.018**. At this resolution and sample size the ensemble-mean-to-observation
+relationship is linear to within the noise.
+
+| box | ρ_o | RPC_ρ (sign-blind) | RPC_ρ (signed) | r | r_s |
+|---|---|---|---|---|---|
+| Amundsen Sea Low | +0.211 | 1.85 | +2.81 | +0.21 | +0.21 |
+| Subpolar N Atlantic | +0.116 | 1.66 | +3.70 | +0.10 | +0.11 |
+| Barents / Kara | +0.135 | 1.65 | +62.4 * | +0.15 | +0.13 |
+| Azores High | +0.092 | 1.40 | +3.10 | +0.10 | +0.04 |
+| W trop Pacific (Nino4) | +0.119 | 0.81 | +1.08 | +0.12 | +0.11 |
+
+\* signed denominator collapsed; see below.
+
+### The eastern tropical Pacific does not have RPC > 1 here
+
+Worth saying plainly, since it was the example region. Niño3 gives ρ_o = +0.113 but
+|ρ_m| = 0.235, so **RPC_ρ = 0.48**; Niño3.4 is 0.67. On PRECT it is worse — 0.18 and
+0.11 (PRECT README §9). The reason is the denominator, not the skill: the eastern
+tropical Pacific is strongly forced, so the members agree closely with each other,
+ρ_m is large, and the ratio is small however well or badly the model tracks the
+observations. RPC > 1 in this dataset is a **high-latitude** phenomenon — Amundsen
+Sea Low, subpolar North Atlantic, Barents/Kara, Azores High — where ρ_m is small
+because the members barely agree.
+
+### Two things to be careful about when reading these panels
+
+**Sign-blindness is doing work.** RPC_ρ here is |corr(ens mean; o)| over
+mean_n |corr(s_-n; f_n)|, because the conventional signed denominator cancels box by
+box: Barents/Kara has a signed ρ_m of ~0.002 and a signed RPC of **+62**, and the
+Icelandic Low comes out at −3.9. The sign-blind version is stable and is what the
+panels quote; both are on every title and in the json. But sign-blindness means a
+box can score well on an *anti*correlation — see the PRECT Amundsen Sea Low panel,
+RPC_ρ = 2.57 with ρ_o = **−0.22**. Whether a member anticorrelated with the
+observations should count as skill is a modelling judgement, and the RPC does not
+make it for you.
+
+**RPC > 1 does not imply the region is interesting.** Several boxes clear the
+threshold with a numerator that is essentially zero — PRECT's Azores High has
+ρ_o = −0.022 and RPC_ρ = 1.20; its Aleutian Low has ρ_o = −0.024 and RPC_ρ = 1.00.
+A ratio of two small numbers exceeding 1 is not evidence of a paradox, and the
+scatter panel makes that obvious in a way the map does not.
+
+### Deliberate choices
+
+- **Standardised per cell before pooling.** A box holds 27–160 cells whose variances
+  differ by an order of magnitude; pooling them raw gives a bow-tie that mimics
+  curvature but is only heteroscedasticity. Raw-unit standard deviations are in the
+  json.
+- **Boxes screened after the fact, not chosen by eye.** The candidate list is the
+  standard index regions, fixed before looking at any RPC; the full pass/fail table
+  for all twenty is printed and stored. Five of twenty clear the threshold on SLP.
+- **No p-values.** Cells within a box are spatially correlated (11.25°×12.5° box
+  smoothing) and share one forced signal in time, so the effective sample size is far
+  below the 3 000–20 000 points plotted. A tight cloud is not proportionally strong
+  evidence.
+
 ---
 
 ## Files
@@ -394,6 +462,7 @@ be raised by its denominator going quiet.
 | `figF_pairwise_bootstrap_SLP_s1961_B4` | member-subsample bootstrap of the pairwise λ RPC |
 | `figG_marginal_moments_SLP_{s1961,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis |
 | `figH_rpc_vs_kurtosis_SLP_s1961` | does high RPC sit where both sides are heavy-tailed? includes the winsorizing mechanism test |
+| `figI_ensmean_vs_obs_regions_SLP_s1961` | ensemble mean vs obs scatter in named regions with RPC > 1; the plain look-at-it diagnostic |
 | `figH2_rpc_vs_kurtosis_ensmean_SLP_s1961` | figH with the ENSEMBLE MEAN as the model side, LOO only; adds the D = obs-minus-model kurtosis conditioner and the numerator/denominator decomposition |
 | `pairnull_SLP_*` / `pairdenom_SLP_*` (json only) | the underlying run summaries the figures read |
 
@@ -456,6 +525,7 @@ python .claude/scripts/tmp_rho_o_three_ways.py     --var SLP --start 1961
 python .claude/scripts/tmp_marginal_moments.py     --var SLP --start 1961
 python .claude/scripts/tmp_rpc_vs_kurtosis.py       --var SLP --start 1961
 python .claude/scripts/tmp_rpc_vs_kurtosis_ensmean.py --var SLP --start 1961
+python .claude/scripts/tmp_region_scatter.py         --var SLP --start 1961
 ```
 
 with `--dataset seasonal --lead 2-4 --bins 3` for the seasonal case. Every script needs

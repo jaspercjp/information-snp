@@ -1,0 +1,565 @@
+{
+ "var": "PRECT",
+ "dataset": "decadal",
+ "tag": "PRECT_s1978",
+ "N": 112,
+ "T": 120,
+ "C": 10368,
+ "rpc_min": 1.0,
+ "standardised_per_cell": true,
+ "selection": "area-mean RPC_rho > rpc_min on either the sign-blind or the (non-collapsed) signed variant",
+ "candidates": [
+  {
+   "name": "E trop Pacific (Nino3)",
+   "lat": [
+    -5,
+    5
+   ],
+   "lon": [
+    210,
+    270
+   ],
+   "n_cells": 96,
+   "rho_o": 0.05424132789361773,
+   "rho_m": 0.2821280299839064,
+   "rho_m_abs": 0.3078555661958746,
+   "rpc_rho_abs": 0.17949876997785041,
+   "rpc_rho_signed": 0.19225784795899878,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.9869388170894325,
+   "keep": false
+  },
+  {
+   "name": "Nino3.4",
+   "lat": [
+    -5,
+    5
+   ],
+   "lon": [
+    190,
+    240
+   ],
+   "n_cells": 80,
+   "rho_o": 0.030337534358715543,
+   "rho_m": 0.29885555911465633,
+   "rho_m_abs": 0.32557854805206,
+   "rpc_rho_abs": 0.10457267779394704,
+   "rpc_rho_signed": 0.10151236419556281,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 1.2057293154690307,
+   "keep": false
+  },
+  {
+   "name": "W trop Pacific (Nino4)",
+   "lat": [
+    -5,
+    5
+   ],
+   "lon": [
+    160,
+    210
+   ],
+   "n_cells": 80,
+   "rho_o": 0.040714230785986356,
+   "rho_m": 0.2724028153474703,
+   "rho_m_abs": 0.2996135140321615,
+   "rpc_rho_abs": 0.1602107458411623,
+   "rpc_rho_signed": 0.14946332597206197,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.9278984017367309,
+   "keep": false
+  },
+  {
+   "name": "Maritime Continent",
+   "lat": [
+    -10,
+    10
+   ],
+   "lon": [
+    100,
+    150
+   ],
+   "n_cells": 160,
+   "rho_o": 0.0672386212857378,
+   "rho_m": 0.11766370351587521,
+   "rho_m_abs": 0.14991967215382274,
+   "rpc_rho_abs": 0.6956748533658054,
+   "rpc_rho_signed": 0.5714474326117566,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.8335727409685331,
+   "keep": false
+  },
+  {
+   "name": "Trop N Atlantic",
+   "lat": [
+    5,
+    25
+   ],
+   "lon": [
+    300,
+    345
+   ],
+   "n_cells": 144,
+   "rho_o": 0.08236725174626784,
+   "rho_m": 0.10040693287077905,
+   "rho_m_abs": 0.14774641470347652,
+   "rpc_rho_abs": 0.6813365838731155,
+   "rpc_rho_signed": 0.8203343075151217,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.5486636713751407,
+   "keep": false
+  },
+  {
+   "name": "Trop S Atlantic",
+   "lat": [
+    -20,
+    0
+   ],
+   "lon": [
+    330,
+    370
+   ],
+   "n_cells": 128,
+   "rho_o": 0.052949040267927246,
+   "rho_m": 0.10689880734744596,
+   "rho_m_abs": 0.1719635038313475,
+   "rpc_rho_abs": 0.5920852713165194,
+   "rpc_rho_signed": 0.4953192798103964,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.5359937635794274,
+   "keep": false
+  },
+  {
+   "name": "IOD east pole",
+   "lat": [
+    -10,
+    0
+   ],
+   "lon": [
+    90,
+    110
+   ],
+   "n_cells": 32,
+   "rho_o": 0.04589866211407623,
+   "rho_m": 0.1082228905113718,
+   "rho_m_abs": 0.14917068165057243,
+   "rpc_rho_abs": 0.36207171449018993,
+   "rpc_rho_signed": 0.4241123287060357,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 1.1382833259204201,
+   "keep": false
+  },
+  {
+   "name": "IOD west pole",
+   "lat": [
+    -10,
+    10
+   ],
+   "lon": [
+    50,
+    70
+   ],
+   "n_cells": 64,
+   "rho_o": 0.012265438108026584,
+   "rho_m": 0.10066970880292195,
+   "rho_m_abs": 0.13729654254659876,
+   "rpc_rho_abs": 0.3101096524488328,
+   "rpc_rho_signed": 0.12183841846645511,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.4982403773648213,
+   "keep": false
+  },
+  {
+   "name": "Trop Indian Ocean",
+   "lat": [
+    -20,
+    20
+   ],
+   "lon": [
+    50,
+    100
+   ],
+   "n_cells": 320,
+   "rho_o": 0.017948898175608092,
+   "rho_m": 0.07371478000799232,
+   "rho_m_abs": 0.1213911194101675,
+   "rpc_rho_abs": 0.6717681733834285,
+   "rpc_rho_signed": 0.24349117196933956,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.775477813855919,
+   "keep": false
+  },
+  {
+   "name": "Subpolar N Atlantic",
+   "lat": [
+    50,
+    65
+   ],
+   "lon": [
+    310,
+    350
+   ],
+   "n_cells": 96,
+   "rho_o": -0.047954863948223334,
+   "rho_m": 0.11354329531612228,
+   "rho_m_abs": 0.15134855974190842,
+   "rpc_rho_abs": 0.4958252090393418,
+   "rpc_rho_signed": -0.42234870684974835,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.8928218008990155,
+   "keep": false
+  },
+  {
+   "name": "Azores High",
+   "lat": [
+    25,
+    40
+   ],
+   "lon": [
+    320,
+    355
+   ],
+   "n_cells": 84,
+   "rho_o": -0.021858766168898144,
+   "rho_m": 0.04905252708832432,
+   "rho_m_abs": 0.10528571736272851,
+   "rpc_rho_abs": 1.1995394288542995,
+   "rpc_rho_signed": -0.44561957286194653,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.6629914439414342,
+   "keep": true
+  },
+  {
+   "name": "Icelandic Low",
+   "lat": [
+    60,
+    75
+   ],
+   "lon": [
+    320,
+    360
+   ],
+   "n_cells": 96,
+   "rho_o": 0.03790861430749295,
+   "rho_m": 0.04885800423377103,
+   "rho_m_abs": 0.09959239525652874,
+   "rpc_rho_abs": 0.7623638484781635,
+   "rpc_rho_signed": 0.775893630982377,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 1.255869662241416,
+   "keep": false
+  },
+  {
+   "name": "Aleutian Low / N Pacific",
+   "lat": [
+    40,
+    60
+   ],
+   "lon": [
+    170,
+    220
+   ],
+   "n_cells": 160,
+   "rho_o": -0.023745868784376397,
+   "rho_m": 0.023450144429023396,
+   "rho_m_abs": 0.08302968588786987,
+   "rpc_rho_abs": 1.0009934615230098,
+   "rpc_rho_signed": -1.0126107690401682,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 1.1110151487462152,
+   "keep": true
+  },
+  {
+   "name": "Amundsen Sea Low",
+   "lat": [
+    -75,
+    -65
+   ],
+   "lon": [
+    210,
+    260
+   ],
+   "n_cells": 80,
+   "rho_o": -0.22151804653982946,
+   "rho_m": 0.04111800972793424,
+   "rho_m_abs": 0.0860486532326603,
+   "rpc_rho_abs": 2.5743348468323375,
+   "rpc_rho_signed": -5.387372783983202,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 4.290041134754771,
+   "keep": true
+  },
+  {
+   "name": "S Ocean (Indian)",
+   "lat": [
+    -65,
+    -55
+   ],
+   "lon": [
+    40,
+    100
+   ],
+   "n_cells": 96,
+   "rho_o": -0.05139948198357159,
+   "rho_m": 0.022449904470187767,
+   "rho_m_abs": 0.08672446086997203,
+   "rpc_rho_abs": 0.7428483343113252,
+   "rpc_rho_signed": -2.2895189621776457,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 1.0971846699320789,
+   "keep": false
+  },
+  {
+   "name": "Barents / Kara",
+   "lat": [
+    70,
+    80
+   ],
+   "lon": [
+    20,
+    60
+   ],
+   "n_cells": 64,
+   "rho_o": 0.17055264992586022,
+   "rho_m": 0.0366865081596661,
+   "rho_m_abs": 0.10648913927427328,
+   "rpc_rho_abs": 1.6951566328851118,
+   "rpc_rho_signed": 4.648920229300245,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 1.7755472216796573,
+   "keep": true
+  },
+  {
+   "name": "Mediterranean",
+   "lat": [
+    30,
+    45
+   ],
+   "lon": [
+    350,
+    400
+   ],
+   "n_cells": 120,
+   "rho_o": -0.13880579515621125,
+   "rho_m": 0.04681048406428165,
+   "rho_m_abs": 0.10011103509834875,
+   "rpc_rho_abs": 1.3865184294603377,
+   "rpc_rho_signed": -2.9652715183547067,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.9449448570899023,
+   "keep": true
+  },
+  {
+   "name": "Sahel",
+   "lat": [
+    10,
+    20
+   ],
+   "lon": [
+    340,
+    390
+   ],
+   "n_cells": 80,
+   "rho_o": 0.14241839887609656,
+   "rho_m": 0.0410331631360485,
+   "rho_m_abs": 0.12465804450984905,
+   "rpc_rho_abs": 1.1745625305176384,
+   "rpc_rho_signed": 3.470812094205308,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.8963815666094433,
+   "keep": true
+  },
+  {
+   "name": "Amazon",
+   "lat": [
+    -15,
+    5
+   ],
+   "lon": [
+    285,
+    315
+   ],
+   "n_cells": 96,
+   "rho_o": 0.050333439385391344,
+   "rho_m": 0.16793503615987196,
+   "rho_m_abs": 0.1970178651364507,
+   "rpc_rho_abs": 0.5957956779816261,
+   "rpc_rho_signed": 0.2997197043353989,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.4675166063216765,
+   "keep": false
+  },
+  {
+   "name": "SPCZ",
+   "lat": [
+    -25,
+    -10
+   ],
+   "lon": [
+    170,
+    210
+   ],
+   "n_cells": 96,
+   "rho_o": 0.08327091151681039,
+   "rho_m": 0.09003861186268192,
+   "rho_m_abs": 0.12943417246807912,
+   "rpc_rho_abs": 0.7619259143281557,
+   "rpc_rho_signed": 0.9248355765835999,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.7660542612281068,
+   "keep": false
+  }
+ ],
+ "regions": {
+  "Amundsen Sea Low": {
+   "name": "Amundsen Sea Low",
+   "lat": [
+    -75,
+    -65
+   ],
+   "lon": [
+    210,
+    260
+   ],
+   "n_cells": 80,
+   "rho_o": -0.22151804653982946,
+   "rho_m": 0.04111800972793424,
+   "rho_m_abs": 0.0860486532326603,
+   "rpc_rho_abs": 2.5743348468323375,
+   "rpc_rho_signed": -5.387372783983202,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 4.290041134754771,
+   "r_pearson": -0.225916013340306,
+   "r_spearman": -0.24151376149103473,
+   "r_s_minus_r": -0.01559774815072873,
+   "n_points": 9600,
+   "ens_mean_sd_raw": 0.0533877947223399,
+   "obs_sd_raw": 0.2645717205422501
+  },
+  "Barents / Kara": {
+   "name": "Barents / Kara",
+   "lat": [
+    70,
+    80
+   ],
+   "lon": [
+    20,
+    60
+   ],
+   "n_cells": 64,
+   "rho_o": 0.17055264992586022,
+   "rho_m": 0.0366865081596661,
+   "rho_m_abs": 0.10648913927427328,
+   "rpc_rho_abs": 1.6951566328851118,
+   "rpc_rho_signed": 4.648920229300245,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 1.7755472216796573,
+   "r_pearson": 0.1706877915850491,
+   "r_spearman": 0.18147846979952442,
+   "r_s_minus_r": 0.010790678214475324,
+   "n_points": 7680,
+   "ens_mean_sd_raw": 0.04228506963456721,
+   "obs_sd_raw": 0.2904158442020447
+  },
+  "Mediterranean": {
+   "name": "Mediterranean",
+   "lat": [
+    30,
+    45
+   ],
+   "lon": [
+    350,
+    400
+   ],
+   "n_cells": 120,
+   "rho_o": -0.13880579515621125,
+   "rho_m": 0.04681048406428165,
+   "rho_m_abs": 0.10011103509834875,
+   "rpc_rho_abs": 1.3865184294603377,
+   "rpc_rho_signed": -2.9652715183547067,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.9449448570899023,
+   "r_pearson": -0.13930180577500814,
+   "r_spearman": -0.12228427088453706,
+   "r_s_minus_r": 0.017017534890471087,
+   "n_points": 14400,
+   "ens_mean_sd_raw": 0.05894025048103794,
+   "obs_sd_raw": 0.5600641306980169
+  },
+  "Azores High": {
+   "name": "Azores High",
+   "lat": [
+    25,
+    40
+   ],
+   "lon": [
+    320,
+    355
+   ],
+   "n_cells": 84,
+   "rho_o": -0.021858766168898144,
+   "rho_m": 0.04905252708832432,
+   "rho_m_abs": 0.10528571736272851,
+   "rpc_rho_abs": 1.1995394288542995,
+   "rpc_rho_signed": -0.44561957286194653,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.6629914439414342,
+   "r_pearson": -0.02769221860100342,
+   "r_spearman": -0.028405211783392274,
+   "r_s_minus_r": -0.0007129931823888526,
+   "n_points": 10080,
+   "ens_mean_sd_raw": 0.06637647902952323,
+   "obs_sd_raw": 0.4637103462453891
+  },
+  "Sahel": {
+   "name": "Sahel",
+   "lat": [
+    10,
+    20
+   ],
+   "lon": [
+    340,
+    390
+   ],
+   "n_cells": 80,
+   "rho_o": 0.14241839887609656,
+   "rho_m": 0.0410331631360485,
+   "rho_m_abs": 0.12465804450984905,
+   "rpc_rho_abs": 1.1745625305176384,
+   "rpc_rho_signed": 3.470812094205308,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 0.8963815666094433,
+   "r_pearson": 0.1426659526510828,
+   "r_spearman": 0.07322365091388511,
+   "r_s_minus_r": -0.0694423017371977,
+   "n_points": 9600,
+   "ens_mean_sd_raw": 0.050546183582451755,
+   "obs_sd_raw": 0.3762369623922958
+  },
+  "Aleutian Low / N Pacific": {
+   "name": "Aleutian Low / N Pacific",
+   "lat": [
+    40,
+    60
+   ],
+   "lon": [
+    170,
+    220
+   ],
+   "n_cells": 160,
+   "rho_o": -0.023745868784376397,
+   "rho_m": 0.023450144429023396,
+   "rho_m_abs": 0.08302968588786987,
+   "rpc_rho_abs": 1.0009934615230098,
+   "rpc_rho_signed": -1.0126107690401682,
+   "signed_denom_collapsed": false,
+   "rpc_lam": 1.1110151487462152,
+   "r_pearson": -0.024016688415290307,
+   "r_spearman": -0.012398066117751915,
+   "r_s_minus_r": 0.011618622297538392,
+   "n_points": 19200,
+   "ens_mean_sd_raw": 0.0786764788955668,
+   "obs_sd_raw": 0.5284519204614605
+  }
+ }
+}

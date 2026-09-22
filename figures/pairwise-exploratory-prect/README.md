@@ -388,7 +388,57 @@ story as SLP — relative slope on D is −0.007 for the numerator ρ_o against 
 for the denominator ρ_m, so what little there is comes from the denominator going
 quiet, not from anything happening to the observations.
 
-## 8. What this does and does not settle
+## 8. figI — ensemble mean vs observations where RPC > 1, and no sign of nonlinearity
+
+`figI_ensmean_vs_obs_regions_PRECT_s1978`. Twenty standard climate-index boxes
+screened on area-mean RPC_ρ; the six that clear 1 get a scatter of ensemble mean
+against observations. Boxes are outlined on the RPC map in panel 1. Method and
+caveats are in the SLP README §9.
+
+**No obvious nonlinearity, on the variable where one would most expect it.** Every
+cloud is a tilted ellipse. The Pearson-versus-Spearman gap — the cheapest curvature
+indicator, since Spearman is invariant to monotone distortion — reaches **−0.069**
+in the Sahel and is **≤ 0.017** in the other five. Given §5 showed PRECT's marginals
+carry excess kurtosis of +2.6 (ensemble mean) and +2.2 (obs), the *relationship*
+being this close to linear is itself the finding: heavy-tailed marginals do not imply
+a curved conditional mean.
+
+| box | ρ_o | RPC_ρ (sign-blind) | RPC_λ | r | r_s |
+|---|---|---|---|---|---|
+| Amundsen Sea Low | **−0.222** | 2.57 | 4.29 | −0.23 | −0.24 |
+| Barents / Kara | +0.171 | 1.70 | 1.78 | +0.17 | +0.18 |
+| Mediterranean | −0.139 | 1.39 | 0.94 | −0.14 | −0.12 |
+| Azores High | −0.022 | 1.20 | 0.66 | −0.03 | −0.03 |
+| Sahel | +0.142 | 1.17 | 0.90 | +0.14 | +0.07 |
+| Aleutian Low / N Pacific | −0.024 | 1.00 | 1.11 | −0.02 | −0.01 |
+
+### The eastern tropical Pacific is the clearest RPC < 1 region in the dataset
+
+Niño3: ρ_o = +0.054, |ρ_m| = 0.308, **RPC_ρ = 0.18**. Niño3.4: **0.11**. Both are
+dropped by the screen. The cause is the denominator — the region is strongly forced,
+the members agree closely with one another, ρ_m is large, and the ratio collapses
+regardless of skill. Note that ρ_o = +0.05 is itself very low: this analysis
+correlates along months *within one hindcast*, so tracking ENSO phase would require
+the s1978 initialisation to stay in phase for a decade, which it cannot.
+
+Interesting side note: RPC_λ for Niño3.4 is **1.21** and for Niño3 0.99, against
+RPC_ρ of 0.11 and 0.18. That is the largest λ-versus-ρ RPC disagreement anywhere in
+this directory, and it is a denominator effect again — λ_m does not inflate in the
+strongly forced region the way ρ_m does. Worth a look if the λ-vs-ρ contrast of §2
+is pursued further.
+
+### Read the sign
+
+Three of the six selected boxes have a **negative** ρ_o, the Amundsen Sea Low most
+strongly at −0.222 with RPC_ρ = 2.57. The sign-blind RPC scores an anticorrelation as
+skill. That is a modelling judgement the metric silently makes, and it is visible here
+only because the scatter shows the slope.
+
+Two of the six — Azores High and the Aleutian Low — clear the threshold with
+ρ_o ≈ −0.02, i.e. no skill at all. A ratio of two small numbers exceeding 1 is not a
+paradox, and the scatter makes that plain where the map does not.
+
+## 9. What this does and does not settle
 
 It settles the estimator-sign objection **for PRECT**: the non-Gaussian excess is
 positive under both KSG and Miller–Madow, in both layouts, is 40–65% of ρ_o rather than
@@ -429,6 +479,7 @@ It does not settle these:
 | `figF_pairwise_bootstrap_PRECT_s1978_B4`, `..._lead2-4_B2` | member-subsample bootstrap of the pairwise λ RPC |
 | `figG_marginal_moments_PRECT_{s1978,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis, model vs obs |
 | `figH_rpc_vs_kurtosis_PRECT_s1978` | does high RPC sit where both sides are heavy-tailed? includes the winsorizing mechanism test |
+| `figI_ensmean_vs_obs_regions_PRECT_s1978` | ensemble mean vs obs scatter in named regions with RPC > 1; the plain look-at-it diagnostic |
 | `figH2_rpc_vs_kurtosis_ensmean_PRECT_s1978` | figH with the ENSEMBLE MEAN as the model side, LOO only; adds the D conditioner and the numerator/denominator decomposition |
 | `pairnull_PRECT_*` / `pairdenom_PRECT_*` (json only) | the underlying run summaries the figures read |
 
@@ -469,6 +520,7 @@ python .claude/scripts/tmp_rho_o_three_ways.py     --var PRECT --start 1978
 python .claude/scripts/tmp_marginal_moments.py     --var PRECT --start 1978
 python .claude/scripts/tmp_rpc_vs_kurtosis.py       --var PRECT --start 1978
 python .claude/scripts/tmp_rpc_vs_kurtosis_ensmean.py --var PRECT --start 1978
+python .claude/scripts/tmp_region_scatter.py         --var PRECT --start 1978
 ```
 
 with `--dataset seasonal --lead 2-4 --bins 2` for the seasonal case.
