@@ -225,6 +225,14 @@ predecessors. `extent` is built from cell **edges**, not centres — on the 5° 
 grid whose centres run 0–355, a centre-based extent would offset the field half a
 cell from the coastlines.
 
+**One trap if you add a panel.** A freshly created cartopy `GeoAxes` has its x- and
+y-axis set *invisible*, and an invisible axis does not draw its label — so
+`ax.set_xlabel(...)` silently does nothing. Several panels here carry their area mean
+in the xlabel and their row name in the ylabel, and all of those vanished on the first
+pass. `tmp_mapaxes.show` now re-enables both axes with an empty tick list, which
+restores the labels and still draws no ticks. If a label you set does not appear, that
+is why.
+
 ## Reproducing
 
 Scripts live in `.claude/scripts/` (gitignored). Order matters: the numerator and

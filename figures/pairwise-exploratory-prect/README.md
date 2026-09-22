@@ -383,6 +383,13 @@ map convention there once instead of in seven scripts. It needs `cartopy` (0.25.
 `VirtualEnv/SNP_env`) and the Natural Earth 110 m shapefile, already cached under
 `~/.local/share/cartopy`, so nothing is downloaded at plot time.
 
+**One trap if you add a panel.** A freshly created cartopy `GeoAxes` has its x- and
+y-axis set *invisible*, and an invisible axis does not draw its label, so
+`ax.set_xlabel(...)` is a silent no-op. figC's row names and ratio labels, figD's
+area-mean label and figG's per-panel area mean and standard error all disappeared on
+the first pass because of it. `tmp_mapaxes.show` re-enables both axes with an empty
+tick list — labels back, no ticks drawn.
+
 **Map conventions.** Every map panel here goes through `tmp_mapaxes.py`: cartopy
 `PlateCarree`, `origin="lower"` so the **Arctic is at the top and the Antarctic at the
 bottom**, and Natural Earth 110 m coastlines stroked white-under-dark so they stay
