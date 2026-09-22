@@ -395,13 +395,19 @@ largest gap over the five selected boxes is **−0.056** (Azores High) and every
 is **≤ 0.018**. At this resolution and sample size the ensemble-mean-to-observation
 relationship is linear to within the noise.
 
-| box | ρ_o | RPC_ρ (sign-blind) | RPC_ρ (signed) | r | r_s |
-|---|---|---|---|---|---|
-| Amundsen Sea Low | +0.211 | 1.85 | +2.81 | +0.21 | +0.21 |
-| Subpolar N Atlantic | +0.116 | 1.66 | +3.70 | +0.10 | +0.11 |
-| Barents / Kara | +0.135 | 1.65 | +62.4 * | +0.15 | +0.13 |
-| Azores High | +0.092 | 1.40 | +3.10 | +0.10 | +0.04 |
-| W trop Pacific (Nino4) | +0.119 | 0.81 | +1.08 | +0.12 | +0.11 |
+| box | ρ_o | λ_o | RPC_ρ (sign-blind) | RPC_ρ (signed) | r | r_s |
+|---|---|---|---|---|---|---|
+| Amundsen Sea Low | +0.211 | 0.124 | 1.85 | +2.81 | +0.21 | +0.21 |
+| Subpolar N Atlantic | +0.116 | 0.142 | 1.66 | +3.70 | +0.10 | +0.11 |
+| Barents / Kara | +0.135 | 0.064 | 1.65 | +62.4 * | +0.15 | +0.13 |
+| Azores High | +0.092 | 0.163 | 1.40 | +3.10 | +0.10 | +0.04 |
+| W trop Pacific (Nino4) | +0.119 | 0.076 | 0.81 | +1.08 | +0.12 | +0.11 |
+
+λ_o is `mean_n I(s_-n; o)` expressed as λ — the leave-one-out form, Miller–Madow
+corrected *and* permutation-null-mean subtracted. It is non-negative by construction,
+so unlike ρ_o it carries no sign ambiguity; comparing it against |ρ_o| is the
+like-for-like reading. On SLP the two are within ~0.05 of each other everywhere here,
+so λ is not seeing much that ρ misses.
 
 \* signed denominator collapsed; see below.
 
@@ -434,6 +440,25 @@ threshold with a numerator that is essentially zero — PRECT's Azores High has
 A ratio of two small numbers exceeding 1 is not evidence of a paradox, and the
 scatter panel makes that obvious in a way the map does not.
 
+
+### The seasonal layout is a different world — and it is where the nonlinearity lives
+
+`figI_ensmean_vs_obs_regions_SLP_lead2-4`. At lead 2-4 the sample axis is 51 start
+dates rather than months within one hindcast, and the model actually has skill:
+ρ_o reaches +0.80 (Maritime Continent) against a decadal maximum of +0.21. **Eleven of
+the twenty boxes clear RPC > 1**, against five in the decadal case.
+
+The Pearson–Spearman gaps grow too, though they stay modest on SLP: Sahel **−0.082**
+(r +0.484, r_s +0.402), Trop S Atlantic −0.054, SPCZ −0.050. That is three to four
+times the decadal gaps, in the same direction — Pearson running above Spearman, which
+is what a few dominant co-occurring events produce. See the PRECT README §8 for the
+same effect an order of magnitude larger.
+
+Note also that the signed RPC becomes usable here: with real skill the signed
+denominator no longer cancels, and signed and sign-blind RPC agree closely in most
+boxes (Trop N Atlantic 1.209 vs 1.182, Trop S Atlantic 1.032 vs 1.032). The decadal
+pathology was a symptom of having almost no signal, not a property of the metric.
+
 ### Deliberate choices
 
 - **Standardised per cell before pooling.** A box holds 27–160 cells whose variances
@@ -462,7 +487,7 @@ scatter panel makes that obvious in a way the map does not.
 | `figF_pairwise_bootstrap_SLP_s1961_B4` | member-subsample bootstrap of the pairwise λ RPC |
 | `figG_marginal_moments_SLP_{s1961,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis |
 | `figH_rpc_vs_kurtosis_SLP_s1961` | does high RPC sit where both sides are heavy-tailed? includes the winsorizing mechanism test |
-| `figI_ensmean_vs_obs_regions_SLP_s1961` | ensemble mean vs obs scatter in named regions with RPC > 1; the plain look-at-it diagnostic |
+| `figI_ensmean_vs_obs_regions_SLP_{s1961,lead2-4}` | ensemble mean vs obs scatter in named regions with RPC > 1; the plain look-at-it diagnostic |
 | `figH2_rpc_vs_kurtosis_ensmean_SLP_s1961` | figH with the ENSEMBLE MEAN as the model side, LOO only; adds the D = obs-minus-model kurtosis conditioner and the numerator/denominator decomposition |
 | `pairnull_SLP_*` / `pairdenom_SLP_*` (json only) | the underlying run summaries the figures read |
 

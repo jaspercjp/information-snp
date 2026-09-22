@@ -403,14 +403,32 @@ carry excess kurtosis of +2.6 (ensemble mean) and +2.2 (obs), the *relationship*
 being this close to linear is itself the finding: heavy-tailed marginals do not imply
 a curved conditional mean.
 
-| box | ρ_o | RPC_ρ (sign-blind) | RPC_λ | r | r_s |
-|---|---|---|---|---|---|
-| Amundsen Sea Low | **−0.222** | 2.57 | 4.29 | −0.23 | −0.24 |
-| Barents / Kara | +0.171 | 1.70 | 1.78 | +0.17 | +0.18 |
-| Mediterranean | −0.139 | 1.39 | 0.94 | −0.14 | −0.12 |
-| Azores High | −0.022 | 1.20 | 0.66 | −0.03 | −0.03 |
-| Sahel | +0.142 | 1.17 | 0.90 | +0.14 | +0.07 |
-| Aleutian Low / N Pacific | −0.024 | 1.00 | 1.11 | −0.02 | −0.01 |
+| box | ρ_o | λ_o | RPC_ρ (sign-blind) | RPC_λ | r | r_s |
+|---|---|---|---|---|---|---|
+| Amundsen Sea Low | **−0.222** | 0.195 | 2.57 | 4.29 | −0.23 | −0.24 |
+| Barents / Kara | +0.171 | 0.155 | 1.70 | 1.78 | +0.17 | +0.18 |
+| Mediterranean | −0.139 | 0.147 | 1.39 | 0.94 | −0.14 | −0.12 |
+| Azores High | −0.022 | 0.165 | 1.20 | 0.66 | −0.03 | −0.03 |
+| **Sahel** | +0.142 | **0.403** | 1.17 | 0.90 | +0.14 | +0.07 |
+| Aleutian Low / N Pacific | −0.024 | 0.046 | 1.00 | 1.11 | −0.02 | −0.01 |
+
+λ_o is `mean_n I(s_-n; o)` as λ — leave-one-out, Miller–Madow corrected *and*
+null-mean subtracted, non-negative by construction, so |ρ_o| is its like-for-like
+partner.
+
+**The Sahel is the one place λ_o clearly exceeds |ρ_o|**: 0.403 against 0.142, nearly
+3×. It is also the box with the largest Pearson–Spearman gap (−0.069). Both point the
+same way — something in the Sahel relationship is not captured by a linear
+correlation — and it is the only selected region where that is true. The scatter
+itself does not look obviously curved, so whatever λ is picking up is subtler than the
+eye detects at this sample size; it is the most promising single lead in this figure.
+The same pattern appears far more strongly in the boxes the screen *rejected*: Niño3.4
+has λ_o = **0.442** against |ρ_o| = 0.034, and Niño3 λ_o = **0.367** against ρ_o =
++0.054. The eastern and central tropical Pacific is where λ sees most of what ρ does
+not — an order of magnitude more — which is the same place §2's λ-versus-ρ RPC
+disagreement lives (RPC_λ 1.21 against RPC_ρ 0.11 at Niño3.4). Those boxes are absent
+from the panels only because the screen is on RPC_ρ; on λ they are the most
+interesting regions in the figure.
 
 ### The eastern tropical Pacific is the clearest RPC < 1 region in the dataset
 
@@ -426,6 +444,50 @@ RPC_ρ of 0.11 and 0.18. That is the largest λ-versus-ρ RPC disagreement anywh
 this directory, and it is a denominator effect again — λ_m does not inflate in the
 strongly forced region the way ρ_m does. Worth a look if the λ-vs-ρ contrast of §2
 is pursued further.
+
+
+### Seasonal lead 2-4: the eastern tropical Pacific DOES clear RPC > 1, and it is visibly nonlinear
+
+`figI_ensmean_vs_obs_regions_PRECT_lead2-4`. This reverses the decadal reading above,
+and it is the most informative panel set in the directory.
+
+At lead 2-4 the sample axis is 33 start dates and the model has real skill in the
+tropics — ρ_o = **+0.932** at Niño3.4 and **+0.919** at Niño3, against +0.03 and +0.05
+in the decadal case. **Twelve of twenty boxes clear RPC > 1, and Niño3 (1.14) and
+Niño3.4 (1.08) are among them.** The eastern tropical Pacific was not absent from the
+decadal figure because it is uninteresting; it was absent because a single decadal
+hindcast cannot hold ENSO phase for ten years.
+
+**And here the relationship is obviously nonlinear.** The Niño3 and Niño3.4 scatters
+are a dense blob near the origin with a long thin tail running out along the 1:1 line
+to +4σ — the ENSO asymmetry, most seasons near-neutral with a few large El Niños. The
+statistics say the same thing:
+
+| box | ρ_o | λ_o | r | r_s | **r_s − r** | RPC_ρ |
+|---|---|---|---|---|---|---|
+| **E trop Pacific (Niño3)** | +0.919 | 0.367 | +0.919 | +0.658 | **−0.261** | 1.14 |
+| IOD west pole | +0.574 | 0.185 | +0.573 | +0.420 | **−0.153** | 1.33 |
+| **Niño3.4** | +0.932 | 0.474 | +0.932 | +0.789 | **−0.143** | 1.08 |
+| IOD east pole | +0.626 | 0.309 | +0.626 | +0.538 | −0.088 | 1.63 |
+| Trop Indian Ocean | +0.500 | 0.211 | +0.498 | +0.424 | −0.074 | 1.39 |
+
+A Pearson of 0.92 against a Spearman of 0.66 is not a subtle discrepancy. Pearson is
+being held up by a handful of extreme co-occurring events; the rank correlation, which
+cannot be, reads 0.26 lower.
+
+**This is the user's original figH hypothesis, showing up where figH could not look.**
+figH and figH2 are decadal-only, because per-cell kurtosis needs T ≥ 120 samples and
+the seasonal layouts give 33 and 51. So the one configuration in which extreme events
+demonstrably inflate a Pearson correlation is precisely the one the kurtosis analysis
+had to skip. The mechanism the winsorizing test found to be real but ~2% of RPC in the
+decadal data is worth ~0.26 of correlation here. Re-running the figH winsorizing test
+at lead 2-4 — dropping the per-cell kurtosis maps, which are too noisy at T=33, but
+keeping ΔRPC_ρ under clipping, which is not — is the obvious next step.
+
+Two caveats on these panels. T = 33 means each cell contributes only 33 points, so a
+box of 80 cells holds 2 640; the clouds are correspondingly sparser than the decadal
+ones. And the tail structure means the pooled r is itself dominated by few events, so
+its own sampling uncertainty is much larger than the point count suggests.
 
 ### Read the sign
 
@@ -479,7 +541,7 @@ It does not settle these:
 | `figF_pairwise_bootstrap_PRECT_s1978_B4`, `..._lead2-4_B2` | member-subsample bootstrap of the pairwise λ RPC |
 | `figG_marginal_moments_PRECT_{s1978,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis, model vs obs |
 | `figH_rpc_vs_kurtosis_PRECT_s1978` | does high RPC sit where both sides are heavy-tailed? includes the winsorizing mechanism test |
-| `figI_ensmean_vs_obs_regions_PRECT_s1978` | ensemble mean vs obs scatter in named regions with RPC > 1; the plain look-at-it diagnostic |
+| `figI_ensmean_vs_obs_regions_PRECT_{s1978,lead2-4}` | ensemble mean vs obs scatter in named regions with RPC > 1; the plain look-at-it diagnostic |
 | `figH2_rpc_vs_kurtosis_ensmean_PRECT_s1978` | figH with the ENSEMBLE MEAN as the model side, LOO only; adds the D conditioner and the numerator/denominator decomposition |
 | `pairnull_PRECT_*` / `pairdenom_PRECT_*` (json only) | the underlying run summaries the figures read |
 

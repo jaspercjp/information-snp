@@ -26,6 +26,8 @@
    "rpc_rho_abs": 0.17949876997785041,
    "rpc_rho_signed": 0.19225784795899878,
    "signed_denom_collapsed": false,
+   "lam_o": 0.36739053875450595,
+   "lam_m": 0.3722525980262609,
    "rpc_lam": 0.9869388170894325,
    "keep": false
   },
@@ -46,6 +48,8 @@
    "rpc_rho_abs": 0.10457267779394704,
    "rpc_rho_signed": 0.10151236419556281,
    "signed_denom_collapsed": false,
+   "lam_o": 0.4417549352836246,
+   "lam_m": 0.3663798579134498,
    "rpc_lam": 1.2057293154690307,
    "keep": false
   },
@@ -66,6 +70,8 @@
    "rpc_rho_abs": 0.1602107458411623,
    "rpc_rho_signed": 0.14946332597206197,
    "signed_denom_collapsed": false,
+   "lam_o": 0.3114161257193783,
+   "lam_m": 0.3356144650497364,
    "rpc_lam": 0.9278984017367309,
    "keep": false
   },
@@ -86,6 +92,8 @@
    "rpc_rho_abs": 0.6956748533658054,
    "rpc_rho_signed": 0.5714474326117566,
    "signed_denom_collapsed": false,
+   "lam_o": 0.11350405917825028,
+   "lam_m": 0.13616575206906267,
    "rpc_lam": 0.8335727409685331,
    "keep": false
   },
@@ -106,6 +114,8 @@
    "rpc_rho_abs": 0.6813365838731155,
    "rpc_rho_signed": 0.8203343075151217,
    "signed_denom_collapsed": false,
+   "lam_o": 0.12019511906154036,
+   "lam_m": 0.21906884915542132,
    "rpc_lam": 0.5486636713751407,
    "keep": false
   },
@@ -126,6 +136,8 @@
    "rpc_rho_abs": 0.5920852713165194,
    "rpc_rho_signed": 0.4953192798103964,
    "signed_denom_collapsed": false,
+   "lam_o": 0.17153509065733277,
+   "lam_m": 0.3200318778185065,
    "rpc_lam": 0.5359937635794274,
    "keep": false
   },
@@ -146,6 +158,8 @@
    "rpc_rho_abs": 0.36207171449018993,
    "rpc_rho_signed": 0.4241123287060357,
    "signed_denom_collapsed": false,
+   "lam_o": 0.17515800238099016,
+   "lam_m": 0.15387909002300174,
    "rpc_lam": 1.1382833259204201,
    "keep": false
   },
@@ -166,6 +180,8 @@
    "rpc_rho_abs": 0.3101096524488328,
    "rpc_rho_signed": 0.12183841846645511,
    "signed_denom_collapsed": false,
+   "lam_o": 0.0797269850508985,
+   "lam_m": 0.16001710955778448,
    "rpc_lam": 0.4982403773648213,
    "keep": false
   },
@@ -186,6 +202,8 @@
    "rpc_rho_abs": 0.6717681733834285,
    "rpc_rho_signed": 0.24349117196933956,
    "signed_denom_collapsed": false,
+   "lam_o": 0.14605302430599487,
+   "lam_m": 0.18833939758994964,
    "rpc_lam": 0.775477813855919,
    "keep": false
   },
@@ -206,6 +224,8 @@
    "rpc_rho_abs": 0.4958252090393418,
    "rpc_rho_signed": -0.42234870684974835,
    "signed_denom_collapsed": false,
+   "lam_o": 0.12970622379841132,
+   "lam_m": 0.1452767211416716,
    "rpc_lam": 0.8928218008990155,
    "keep": false
   },
@@ -226,6 +246,8 @@
    "rpc_rho_abs": 1.1995394288542995,
    "rpc_rho_signed": -0.44561957286194653,
    "signed_denom_collapsed": false,
+   "lam_o": 0.16487646202392708,
+   "lam_m": 0.24868565579632362,
    "rpc_lam": 0.6629914439414342,
    "keep": true
   },
@@ -246,6 +268,8 @@
    "rpc_rho_abs": 0.7623638484781635,
    "rpc_rho_signed": 0.775893630982377,
    "signed_denom_collapsed": false,
+   "lam_o": 0.09515347906894991,
+   "lam_m": 0.0757670018870625,
    "rpc_lam": 1.255869662241416,
    "keep": false
   },
@@ -266,6 +290,8 @@
    "rpc_rho_abs": 1.0009934615230098,
    "rpc_rho_signed": -1.0126107690401682,
    "signed_denom_collapsed": false,
+   "lam_o": 0.045959921519658685,
+   "lam_m": 0.041367502118692646,
    "rpc_lam": 1.1110151487462152,
    "keep": true
   },
@@ -286,6 +312,8 @@
    "rpc_rho_abs": 2.5743348468323375,
    "rpc_rho_signed": -5.387372783983202,
    "signed_denom_collapsed": false,
+   "lam_o": 0.1954493259971948,
+   "lam_m": 0.045558846607275515,
    "rpc_lam": 4.290041134754771,
    "keep": true
   },
@@ -306,6 +334,8 @@
    "rpc_rho_abs": 0.7428483343113252,
    "rpc_rho_signed": -2.2895189621776457,
    "signed_denom_collapsed": false,
+   "lam_o": 0.06094704137737877,
+   "lam_m": 0.055548571765181236,
    "rpc_lam": 1.0971846699320789,
    "keep": false
   },
@@ -326,6 +356,8 @@
    "rpc_rho_abs": 1.6951566328851118,
    "rpc_rho_signed": 4.648920229300245,
    "signed_denom_collapsed": false,
+   "lam_o": 0.15533418535912275,
+   "lam_m": 0.08748524593571638,
    "rpc_lam": 1.7755472216796573,
    "keep": true
   },
@@ -346,6 +378,8 @@
    "rpc_rho_abs": 1.3865184294603377,
    "rpc_rho_signed": -2.9652715183547067,
    "signed_denom_collapsed": false,
+   "lam_o": 0.14701542168017462,
+   "lam_m": 0.1555809532980902,
    "rpc_lam": 0.9449448570899023,
    "keep": true
   },
@@ -366,6 +400,8 @@
    "rpc_rho_abs": 1.1745625305176384,
    "rpc_rho_signed": 3.470812094205308,
    "signed_denom_collapsed": false,
+   "lam_o": 0.4028271464103574,
+   "lam_m": 0.44939249245614016,
    "rpc_lam": 0.8963815666094433,
    "keep": true
   },
@@ -386,6 +422,8 @@
    "rpc_rho_abs": 0.5957956779816261,
    "rpc_rho_signed": 0.2997197043353989,
    "signed_denom_collapsed": false,
+   "lam_o": 0.1240537434798527,
+   "lam_m": 0.2653461755206553,
    "rpc_lam": 0.4675166063216765,
    "keep": false
   },
@@ -406,6 +444,8 @@
    "rpc_rho_abs": 0.7619259143281557,
    "rpc_rho_signed": 0.9248355765835999,
    "signed_denom_collapsed": false,
+   "lam_o": 0.08974132034189602,
+   "lam_m": 0.11714747229266294,
    "rpc_lam": 0.7660542612281068,
    "keep": false
   }
@@ -428,6 +468,8 @@
    "rpc_rho_abs": 2.5743348468323375,
    "rpc_rho_signed": -5.387372783983202,
    "signed_denom_collapsed": false,
+   "lam_o": 0.1954493259971948,
+   "lam_m": 0.045558846607275515,
    "rpc_lam": 4.290041134754771,
    "r_pearson": -0.225916013340306,
    "r_spearman": -0.24151376149103473,
@@ -453,6 +495,8 @@
    "rpc_rho_abs": 1.6951566328851118,
    "rpc_rho_signed": 4.648920229300245,
    "signed_denom_collapsed": false,
+   "lam_o": 0.15533418535912275,
+   "lam_m": 0.08748524593571638,
    "rpc_lam": 1.7755472216796573,
    "r_pearson": 0.1706877915850491,
    "r_spearman": 0.18147846979952442,
@@ -478,6 +522,8 @@
    "rpc_rho_abs": 1.3865184294603377,
    "rpc_rho_signed": -2.9652715183547067,
    "signed_denom_collapsed": false,
+   "lam_o": 0.14701542168017462,
+   "lam_m": 0.1555809532980902,
    "rpc_lam": 0.9449448570899023,
    "r_pearson": -0.13930180577500814,
    "r_spearman": -0.12228427088453706,
@@ -503,6 +549,8 @@
    "rpc_rho_abs": 1.1995394288542995,
    "rpc_rho_signed": -0.44561957286194653,
    "signed_denom_collapsed": false,
+   "lam_o": 0.16487646202392708,
+   "lam_m": 0.24868565579632362,
    "rpc_lam": 0.6629914439414342,
    "r_pearson": -0.02769221860100342,
    "r_spearman": -0.028405211783392274,
@@ -528,6 +576,8 @@
    "rpc_rho_abs": 1.1745625305176384,
    "rpc_rho_signed": 3.470812094205308,
    "signed_denom_collapsed": false,
+   "lam_o": 0.4028271464103574,
+   "lam_m": 0.44939249245614016,
    "rpc_lam": 0.8963815666094433,
    "r_pearson": 0.1426659526510828,
    "r_spearman": 0.07322365091388511,
@@ -553,6 +603,8 @@
    "rpc_rho_abs": 1.0009934615230098,
    "rpc_rho_signed": -1.0126107690401682,
    "signed_denom_collapsed": false,
+   "lam_o": 0.045959921519658685,
+   "lam_m": 0.041367502118692646,
    "rpc_lam": 1.1110151487462152,
    "r_pearson": -0.024016688415290307,
    "r_spearman": -0.012398066117751915,
