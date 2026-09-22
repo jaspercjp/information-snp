@@ -500,7 +500,43 @@ Two of the six — Azores High and the Aleutian Low — clear the threshold with
 ρ_o ≈ −0.02, i.e. no skill at all. A ratio of two small numbers exceeding 1 is not a
 paradox, and the scatter makes that plain where the map does not.
 
-## 9. What this does and does not settle
+## 10. figJ — significance, and the first defensible RPC > 1 in this directory
+
+`figJ_region_significance_PRECT_lead2-4`. Method and the two traps are documented in
+the SLP README §10. 250 permutations and 250 bootstrap draws over the 33 start dates;
+at T = 33 the chance floor is E|ρ| = √(2/π)/√32 = **0.141**, and the permutation null
+reproduces it in every box (0.130–0.147).
+
+**Seven of twenty boxes fail both tests** — Aleutian Low, Barents/Kara, Icelandic Low,
+Mediterranean, S Ocean (Indian), Sahel, Subpolar N Atlantic. Two of those, Sahel and
+the Aleutian Low, were selected by figI as RPC > 1; the Sahel's ρ_o = +0.133 sits at
+p = 0.104 and its λ_o = 0.061 at p = 0.336, so the λ_o ≈ 3|ρ_o| gap flagged in §8 is
+not significant and should not be pursued as it stands.
+
+**But five boxes have an RPC_ρ bootstrap interval entirely above 1**, with numerator
+and denominator both significant at p < 0.001:
+
+| box | ρ_o | λ_o | RPC_ρ | 95% CI |
+|---|---|---|---|---|
+| Trop Indian Ocean | +0.500 | 0.212 | 1.39 | **[1.11, 1.55]** |
+| IOD east pole | +0.626 | 0.313 | 1.63 | **[1.09, 1.96]** |
+| Nino3.4 | +0.932 | 0.474 | 1.08 | **[1.06, 1.15]** |
+| Maritime Continent | +0.590 | 0.333 | 1.25 | **[1.04, 1.40]** |
+| E trop Pacific (Niño3) | +0.919 | 0.365 | 1.14 | **[1.00, 1.19]** |
+
+This is the first place in either directory where RPC > 1 survives a confidence
+interval. It is the tropical Indo-Pacific, at seasonal lead, on precipitation — and it
+is the same region §8 identified as visibly nonlinear (Niño3 Pearson 0.919 against
+Spearman 0.658). Note that RPC_λ does **not** clear 1 in any of them: its intervals
+all straddle or sit below 1, so the excess is a ρ phenomenon, consistent with the
+nonlinearity reading.
+
+The SLP seasonal layout has no box whose RPC_ρ interval clears 1, so this is specific
+to precipitation.
+
+---
+
+## 11. What this does and does not settle
 
 It settles the estimator-sign objection **for PRECT**: the non-Gaussian excess is
 positive under both KSG and Miller–Madow, in both layouts, is 40–65% of ρ_o rather than
@@ -541,6 +577,7 @@ It does not settle these:
 | `figF_pairwise_bootstrap_PRECT_s1978_B4`, `..._lead2-4_B2` | member-subsample bootstrap of the pairwise λ RPC |
 | `figG_marginal_moments_PRECT_{s1978,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis, model vs obs |
 | `figH_rpc_vs_kurtosis_PRECT_s1978` | does high RPC sit where both sides are heavy-tailed? includes the winsorizing mechanism test |
+| `figJ_region_significance_PRECT_lead2-4` | permutation + bootstrap: is rho_o / lambda_o in each box distinguishable from zero? |
 | `figI_ensmean_vs_obs_regions_PRECT_{s1978,lead2-4}` | ensemble mean vs obs scatter in named regions with RPC > 1; the plain look-at-it diagnostic |
 | `figH2_rpc_vs_kurtosis_ensmean_PRECT_s1978` | figH with the ENSEMBLE MEAN as the model side, LOO only; adds the D conditioner and the numerator/denominator decomposition |
 | `pairnull_PRECT_*` / `pairdenom_PRECT_*` (json only) | the underlying run summaries the figures read |

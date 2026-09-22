@@ -475,6 +475,63 @@ pathology was a symptom of having almost no signal, not a property of the metric
 
 ---
 
+## 10. figJ — is any of it distinguishable from zero?
+
+`figJ_region_significance_SLP_lead2-4`. figI shows boxes with RPC > 1 whose scatter is
+a near-circular blob: Barents/Kara has ρ_o = 0.178 and λ_o = 0.108, and clears RPC > 1
+only because ρ_m = 0.135 and λ_m are smaller still. Is any of that real?
+
+**For Barents/Kara, no.** 500 permutations and 500 bootstrap draws over the 51 start
+dates:
+
+| statistic | value | permutation null | p |
+|---|---|---|---|
+| ρ_o (signed) | +0.178 | mean +0.003 | **0.184** |
+| mean\|ρ_o\| | 0.178 | mean **0.115** | **0.170** |
+| λ_o | 0.108 | sd 0.062 | **0.314** |
+| RPC_ρ | 1.32 | — | 95% CI **[0.19, 2.40]** |
+
+### The null mean of mean|ρ_o| is 0.115, and that is the whole point
+
+A bootstrap alone cannot answer this question, because neither statistic has zero
+expectation under independence. At T = 51 an independent pair has
+sd(ρ) = 1/√50 = 0.141, so **E|ρ| = 0.141·√(2/π) = 0.113** — and the permutation null
+reproduces exactly that in all twenty boxes (0.109–0.118). Barents/Kara's 0.178 is
+therefore only **1.6× the pure-chance floor**, and λ_o sits 1.7 null standard
+deviations out. Neither clears 5%, and the RPC interval spans 0.19 to 2.40.
+
+**Five of the twenty boxes fail both tests**: Barents/Kara, Icelandic Low,
+Mediterranean, S Ocean (Indian), Subpolar N Atlantic. Two of those — Barents/Kara and
+the Mediterranean — are among the eleven that figI selected as RPC > 1. Their RPC
+exceeds 1 because it is a ratio of two quantities that are both noise, which is the
+caution in §9 now with a p-value attached. **No SLP box has an RPC_ρ interval entirely
+above 1.**
+
+The tropical boxes are unambiguous by contrast: Maritime Continent ρ_o +0.801 /
+λ_o 0.670, Niño3 +0.760 / 0.596, IOD east +0.738 / 0.623, all p < 0.002.
+
+### Two traps this figure had to avoid
+
+**A λ bootstrap CI excluding zero means nothing.** λ = √(1−exp(−2·max(I−null, 0))) is
+non-negative by construction, so its bootstrap can never reach 0 — Barents/Kara's λ_o
+CI is [0.10, 0.36], which looks conclusive and is not. The permutation p of 0.314 is
+the test, and the figure plots λ_o against its null's 95th percentile rather than
+against zero.
+
+**Start dates are resampled, not cells.** A box's cells share the same 51 start dates
+and are spatially correlated by the 11.25°×12.5° smoothing, so they are not
+independent replicates of the model–observation relationship; resampling them would
+shrink the interval without adding information. The permutation likewise applies ONE
+shuffle of the observed order to every cell, so the observed field's spatial
+covariance survives and only its alignment with the model is destroyed.
+
+λ is formed per cell and then area-averaged, matching figI and the stored pipeline. An
+earlier version averaged the MI first and mapped afterwards; λ is concave, so that
+read 0.063 against figI's 0.107. The table above uses the per-cell convention and
+reproduces figI at 0.108.
+
+---
+
 ## Files
 
 | stem | what |
@@ -487,6 +544,7 @@ pathology was a symptom of having almost no signal, not a property of the metric
 | `figF_pairwise_bootstrap_SLP_s1961_B4` | member-subsample bootstrap of the pairwise λ RPC |
 | `figG_marginal_moments_SLP_{s1961,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis |
 | `figH_rpc_vs_kurtosis_SLP_s1961` | does high RPC sit where both sides are heavy-tailed? includes the winsorizing mechanism test |
+| `figJ_region_significance_SLP_lead2-4` | permutation + bootstrap: is rho_o / lambda_o in each box distinguishable from zero? |
 | `figI_ensmean_vs_obs_regions_SLP_{s1961,lead2-4}` | ensemble mean vs obs scatter in named regions with RPC > 1; the plain look-at-it diagnostic |
 | `figH2_rpc_vs_kurtosis_ensmean_SLP_s1961` | figH with the ENSEMBLE MEAN as the model side, LOO only; adds the D = obs-minus-model kurtosis conditioner and the numerator/denominator decomposition |
 | `pairnull_SLP_*` / `pairdenom_SLP_*` (json only) | the underlying run summaries the figures read |
