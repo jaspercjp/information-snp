@@ -177,6 +177,101 @@ asserted at run time against scipy (max |diff| 4e-16), against the analytic valu
 the normal, exponential and uniform distributions, and — since the correction is
 invisible at large n — against the known −6/(n+1) bias of the uncorrected g2 at n=20.
 
+## 7. Does high RPC live where both model and obs are heavy-tailed? — **no**
+
+`figH_rpc_vs_kurtosis_SLP_s1961`. The hypothesis: outliers have an outsized effect on
+a Pearson ρ and almost none on a rank/information λ, so RPC_ρ should be elevated where
+the model *and* observed marginals both have fat tails, and RPC_λ should not be.
+
+**The answer is no, and λ is what settles it.**
+
+### λ cannot respond to outliers, and that is a structural fact
+
+λ is built from equiprobable bins of the copula ranks, so it is invariant under any
+monotone change of a cell's marginal — including clipping the tails, provided the clip
+sits outside the outermost bin edge. At B=4 that edge is the 25th/75th percentile and
+the clip is at 2.5σ, far beyond it. The script asserts this rather than assuming it:
+bin membership is **identical for 100.0000%** of (cell, sample) pairs over 200 cells.
+
+That makes λ a clean control, and it collapses the hypothesis to a question about ρ.
+
+### The spatial coincidence is weak, and λ shares it exactly
+
+Taking the user's framing literally, as a contingency statement:
+
+| | RPC_ρ | RPC_λ |
+|---|---|---|
+| area with RPC > 1 | 39.1% | 37.0% |
+| P(both excess kurtosis > 0 \| RPC > 1) | 81.1% | 81.9% |
+| P(both excess kurtosis > 0 \| RPC ≤ 1) | 72.9% | 72.9% |
+| **enrichment ratio** | **1.11** | **1.12** |
+
+So RPC > 1 regions *are* slightly more likely to be jointly heavy-tailed — but λ is
+enriched by exactly the same factor, and λ cannot see outliers. Whatever produces the
+enrichment is a property both metrics share, not Pearson leverage.
+
+Note also that the both-positive mask covers **76% of area** here, so as a binary
+classifier it is barely selective. A stricter mask (both > 0.45, one observed standard
+error) cuts that to 42%, and the inside/outside contrast grows for *both* metrics —
+ρ 1.003 vs 0.944, λ 0.908 vs 0.779. Again no differential.
+
+### On the primary statistic, λ is the *more* kurtosis-sensitive metric
+
+The slope dRPC/dK, in RPC units per unit of joint excess kurtosis
+(K = min(model, obs)), block-bootstrapped over 3×3-cell tiles:
+
+| | slope | 95% CI | tile-level | latitude-controlled |
+|---|---|---|---|---|
+| RPC_ρ | +0.042 | [+0.026, +0.061] | +0.050 | +0.024 |
+| RPC_λ | **+0.121** | [+0.063, +0.184] | +0.163 | +0.022 |
+| difference ρ − λ | **−0.076** | [−0.132, −0.025], p = 0.002 | | |
+
+The difference is *negative* and significant: λ's RPC rises with joint kurtosis about
+three times faster than ρ's. That is the opposite of the prediction. Once latitude is
+regressed out the two are indistinguishable (+0.024 vs +0.022), which says most of the
+raw difference was shared latitudinal structure rather than anything about tails.
+
+**Do not use the correlation for this comparison.** An earlier version of this analysis
+reported corr(RPC_ρ, K) = +0.234 against corr(RPC_λ, K) = +0.112 with p = 0.004, and
+read it as support. It is not: RPC_λ's per-cell spatial sd is 0.70 against RPC_ρ's
+0.10, because λ is debiased and null-subtracted and the ratio of two small debiased
+quantities is unstable. Noise in a field attenuates its correlation with anything, so
+the smoother field wins regardless of mechanism. The slope is not attenuated that way,
+which is why it is primary.
+
+### The proposed mechanism is real, and tiny
+
+Clipping every cell's series at ±2.5σ (1.9% of model values, 1.9% of obs) and
+recomputing ρ gives ΔRPC_ρ = RPC_ρ(raw) − RPC_ρ(clipped) — the part of RPC that
+outliers are actually responsible for:
+
+- area mean ΔRPC_ρ = **+0.0013**, against RPC_ρ = 0.969. Outliers account for about
+  **0.13%** of its value.
+- but ΔRPC_ρ *does* rise with joint kurtosis, slope **+0.0078** [+0.0050, +0.0104],
+  p < 0.001, and is +0.0028 inside the heavy-tail region against −0.0038 outside.
+
+So the direction the hypothesis predicts is there and is statistically solid. It
+accounts for **18%** of the RPC_ρ–kurtosis slope and a tenth of a percent of RPC_ρ
+itself. The mechanism exists; it is not what drives the association.
+
+See the PRECT README's section 7 for the decisive cross-check: on the variable with
+five times the excess kurtosis, the association disappears entirely.
+
+### Caveats
+
+- **Decadal only.** Per-cell kurtosis needs samples: T = 120 gives se(excess
+  kurtosis) = 0.45 on the observed side. At lead 2-4 (T = 51) it is 0.69, and for
+  PRECT seasonal (T = 33) 0.85 — too noisy for a per-cell mask, so figH is not
+  produced for the seasonal layouts.
+- **The observed mask is part coin-flip.** With se 0.45, a cell whose true excess
+  kurtosis is 0 is classified positive half the time. This attenuates toward the
+  null, so the weak positive findings above are, if anything, understated — which is
+  why the stricter mask is reported too.
+- **mean\|ρ\|, not the signed mean.** The signed per-cell ratio is defined on only 29%
+  of area here, and that 29% is selected by where \|ρ_m\| is large — not a sample you
+  can run a spatial test on. `rho_sgn` is in the json for reference.
+- Degrees of freedom are tiles, not cells: 312 tiles against 2549 usable cells.
+
 ---
 
 ## Files
@@ -190,6 +285,7 @@ invisible at large n — against the known −6/(n+1) bias of the uncorrected g2
 | `figE_rho_o_three_ways_SLP_s1961` | pairwise / LOO / ensemble-mean ρ_o |
 | `figF_pairwise_bootstrap_SLP_s1961_B4` | member-subsample bootstrap of the pairwise λ RPC |
 | `figG_marginal_moments_SLP_{s1961,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis |
+| `figH_rpc_vs_kurtosis_SLP_s1961` | does high RPC sit where both sides are heavy-tailed? includes the winsorizing mechanism test |
 | `pairnull_SLP_*` / `pairdenom_SLP_*` (json only) | the underlying run summaries the figures read |
 
 figD, figE and figF are decadal-only; figA, figB, figC and figG exist at both layouts.
@@ -249,6 +345,7 @@ python .claude/scripts/tmp_pairwise_bootstrap.py   --var SLP --start 1961 --draw
 python .claude/scripts/tmp_excess_lam_map.py       --var SLP --start 1961 --estimator ksg --layout member
 python .claude/scripts/tmp_rho_o_three_ways.py     --var SLP --start 1961
 python .claude/scripts/tmp_marginal_moments.py     --var SLP --start 1961
+python .claude/scripts/tmp_rpc_vs_kurtosis.py       --var SLP --start 1961
 ```
 
 with `--dataset seasonal --lead 2-4 --bins 3` for the seasonal case. Every script needs

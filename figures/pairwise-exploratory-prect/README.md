@@ -289,7 +289,59 @@ the model against T = 120 for the observations, so se(skew) is 0.021 against 0.2
 se(excess kurtosis) 0.042 against 0.447. The observed *maps* are noisy; their area
 means are not. The model's standard error is a floor — members share a forced signal.
 
-## 6. What this does and does not settle
+## 6. Does high RPC live where both sides are heavy-tailed? — **no, and PRECT is the decisive case**
+
+`figH_rpc_vs_kurtosis_PRECT_s1978`. The hypothesis: outliers inflate a Pearson ρ and
+not a rank/information λ, so RPC_ρ should be elevated where model *and* observed
+excess kurtosis are both positive, and RPC_λ should not be.
+
+**PRECT is where this had to show up.** Section 5 established that PRECT's marginals
+carry per-cell excess kurtosis of +3.83 (model) and +2.22 (obs) against SLP's +0.74
+and +0.80 — five times heavier tails and ninety percent of the area jointly positive.
+If Pearson leverage on outliers drove RPC anywhere, it would be here.
+
+It does not show up at all:
+
+| | RPC_ρ | RPC_λ |
+|---|---|---|
+| slope dRPC/dK | **−0.0023** [−0.0056, +0.0024] | −0.0035 [−0.0129, +0.0043] |
+| difference ρ − λ | **+0.0025** [−0.0049, +0.0099], p = 0.53 | |
+| corr with joint kurtosis | −0.051 | −0.014 |
+| RPC inside both-kurt > 0 | 0.9716 | 0.8114 |
+| RPC outside | 0.9735 | 0.7833 |
+| enrichment: P(both > 0 \| RPC>1) / P(both > 0 \| RPC≤1) | **1.010** | 0.980 |
+
+Every slope bracket contains zero, the correlations are slightly *negative*, and RPC_ρ
+inside the heavy-tail region (0.9716) is indistinguishable from outside (0.9735). The
+enrichment ratio is 1.01 — no relationship. SLP's weak 1.11 enrichment does not
+reappear on the variable with the fat tails, which is the strongest single argument
+against the mechanism being what produces it.
+
+The mechanism test agrees. Clipping every cell at ±2.5σ (2.3% of values on each side)
+changes the area-mean RPC_ρ by **−0.0005** — the wrong sign, and 0.05% of its value.
+ΔRPC_ρ does still rise weakly with joint kurtosis (slope +0.0020 [+0.0006, +0.0034],
+p = 0.014), so the effect is detectable and in the predicted direction, but it is
+~0.02 RPC units across PRECT's whole kurtosis range against an RPC of 0.97.
+
+And λ is invariant to that clipping **by construction**, not by measurement:
+equiprobable bin membership is identical for 100.0000% of (cell, sample) pairs, so λ
+cannot respond to outlier magnitude at all. That is what makes it a clean control, and
+what reduces the hypothesis to a question about ρ alone. The full reasoning, and the
+warning about why a ρ-versus-λ *correlation* comparison is not a valid test, are in the
+SLP README's section 7.
+
+**Read together with §5**, the two results are consistent and mildly interesting:
+PRECT's marginals are wildly non-Gaussian, the model overstates that non-Gaussianity,
+and none of it propagates into the RPC — because the pipeline copula-transforms
+before estimating λ, and because ρ turns out to be far less outlier-driven at monthly,
+spatially smoothed resolution than the raw kurtosis would suggest. The Eade box mean
+is doing part of that work: it averages ~20 cells, which suppresses exactly the
+isolated extremes that would give a single month leverage.
+
+Not produced for the seasonal layout: at T = 33 the observed per-cell excess kurtosis
+carries se = 0.85, which is too noisy for a per-cell mask.
+
+## 7. What this does and does not settle
 
 It settles the estimator-sign objection **for PRECT**: the non-Gaussian excess is
 positive under both KSG and Miller–Madow, in both layouts, is 40–65% of ρ_o rather than
@@ -329,6 +381,7 @@ It does not settle these:
 | `figE_rho_o_three_ways_PRECT_s1978` | pairwise / LOO / ensemble-mean ρ_o |
 | `figF_pairwise_bootstrap_PRECT_s1978_B4`, `..._lead2-4_B2` | member-subsample bootstrap of the pairwise λ RPC |
 | `figG_marginal_moments_PRECT_{s1978,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis, model vs obs |
+| `figH_rpc_vs_kurtosis_PRECT_s1978` | does high RPC sit where both sides are heavy-tailed? includes the winsorizing mechanism test |
 | `pairnull_PRECT_*` / `pairdenom_PRECT_*` (json only) | the underlying run summaries the figures read |
 
 figD and figE are decadal-only, as in the SLP set — both scripts take the sample axis
@@ -366,6 +419,7 @@ python .claude/scripts/tmp_pairwise_bootstrap.py   --var PRECT --start 1978 --dr
 python .claude/scripts/tmp_excess_lam_map.py       --var PRECT --start 1978 --estimator ksg --layout member --chunk 8
 python .claude/scripts/tmp_rho_o_three_ways.py     --var PRECT --start 1978
 python .claude/scripts/tmp_marginal_moments.py     --var PRECT --start 1978
+python .claude/scripts/tmp_rpc_vs_kurtosis.py       --var PRECT --start 1978
 ```
 
 with `--dataset seasonal --lead 2-4 --bins 2` for the seasonal case.
