@@ -92,6 +92,12 @@ are wildly non-Gaussian and none of that is what is being measured here.
 of area means (the robust summary; the per-cell ratio is shown only to display how
 badly it behaves).
 
+**Colour limits.** The four metric panels use `jet` from 0 to **0.7** (`--vmax`),
+lowered from the 1.0 these were first drawn with. Both variables were regenerated
+together, so these panels and the SLP ones remain directly comparable. The ratio
+panels are unchanged at `RdBu_r` 0–2. No number in the tables below is affected — the
+change is display only.
+
 **Lead 2-4 (seasonal).**
 
 | form | ρ variant | RPC_ρ | RPC_λ |
@@ -208,7 +214,68 @@ denominators are not measuring different things.
 
 ---
 
-## 5. What this does and does not settle
+## 5. Marginal distributions — the part §1 explicitly excludes
+
+`figG_marginal_moments_PRECT_{s1978,lead2-4}`. **New.** §1 ends with the caution that
+the pipeline copula-transforms, so the excess it measures is non-Gaussianity of the
+*dependence structure*, and that "PRECT's marginals are wildly non-Gaussian and none
+of that is what is being measured here". This figure measures the excluded part, so
+the claim can be checked instead of asserted — pooled histograms of model and observed
+values over all cells, plus skewness and excess kurtosis.
+
+Three rows: `raw`, `anomaly` (month-of-year climatology removed) and `PIPELINE`
+(+ the Eade 11.25°×12.5° box mean). **Only the bottom row is what figA–figF operate
+on.** Two summaries of each moment, because they answer different questions:
+computed within each cell and then cos(lat)-area-averaged, or pooled over every value
+at once.
+
+PRECT s1978, per-cell then area-averaged, at each stage:
+
+| stage | skew model | skew obs | exkurt model | exkurt obs |
+|---|---|---|---|---|
+| raw | +1.611 | +1.090 | +6.987 | +2.463 |
+| anomaly | +1.460 | +0.774 | +10.943 | +3.706 |
+| **PIPELINE** | **+0.711** | **+0.473** | **+3.832** | **+2.218** |
+
+and at lead 2-4 the pipeline row is +0.511 / +0.449 skew, +1.829 / +1.079 excess
+kurtosis — closer to Gaussian, as a three-month mean of 33 start dates should be.
+
+**The marginals really are wildly non-Gaussian, and §1's caution was warranted.**
+Against SLP s1961's pipeline row (skew −0.002 model / −0.074 obs, excess kurtosis
++0.737 / +0.797), PRECT is a different regime: skewness is two orders of magnitude
+larger and excess kurtosis 5× larger on the model side. Whatever else separates the
+two variables, their marginals are not remotely alike — and figD's copula transform
+is what stops that difference from contaminating the excess.
+
+**The model overstates its own non-Gaussianity.** Model skewness exceeds observed by
+50% (+0.711 vs +0.473) and model excess kurtosis by 73% (+3.832 vs +2.218), in the
+same direction at both leads and at every preprocessing stage. That is a marginal-side
+model bias which none of figA–figF can see, and it is the kind of thing a referee
+asking "is the model's precipitation distribution right?" will want addressed.
+
+**Smoothing does much of the Gaussianising.** The Eade box mean averages ~20 cells, so
+the central limit theorem applies: per-cell excess kurtosis falls from +10.9 to +3.8
+on the model side between the `anomaly` and `PIPELINE` rows. Any claim that "PRECT is
+non-Gaussian" must name the stage — unsmoothed it is far more so than the pipeline
+sees.
+
+**Do not quote the pooled-in-native-units numbers.** Pooling across cells of unequal
+variance is leptokurtic even under exact Gaussianity, which is why the pipeline row's
+native-units excess kurtosis reads +12.55 (model) / +16.08 (obs) against +3.19 / +1.91
+after per-cell standardisation. Column 2 of the figure is the fair comparison; column
+1 is shown so the artefact is visible rather than hidden.
+
+Model/observed pattern correlation of the per-cell maps is +0.545 (skewness) and
++0.348 (excess kurtosis) at s1978: the model gets the geography partly right. The
+maps show the expected structure — the ITCZ, SPCZ and monsoon bands are the most
+skewed and heaviest-tailed regions, the same geography figD's excess picks out.
+
+Sample sizes are very unequal and the figure annotates both: N·T = 13440 per cell for
+the model against T = 120 for the observations, so se(skew) is 0.021 against 0.224 and
+se(excess kurtosis) 0.042 against 0.447. The observed *maps* are noisy; their area
+means are not. The model's standard error is a floor — members share a forced signal.
+
+## 6. What this does and does not settle
 
 It settles the estimator-sign objection **for PRECT**: the non-Gaussian excess is
 positive under both KSG and Miller–Madow, in both layouts, is 40–65% of ρ_o rather than
@@ -247,6 +314,7 @@ It does not settle these:
 | `figD_excess_{member,loo}_PRECT_s1978_{ksg,mm}` | non-Gaussian excess maps, both estimators, both layouts |
 | `figE_rho_o_three_ways_PRECT_s1978` | pairwise / LOO / ensemble-mean ρ_o |
 | `figF_pairwise_bootstrap_PRECT_s1978_B4`, `..._lead2-4_B2` | member-subsample bootstrap of the pairwise λ RPC |
+| `figG_marginal_moments_PRECT_{s1978,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis, model vs obs |
 | `pairnull_PRECT_*` / `pairdenom_PRECT_*` (json only) | the underlying run summaries the figures read |
 
 figD and figE are decadal-only, as in the SLP set — both scripts take the sample axis
@@ -279,10 +347,11 @@ npz into `$SCRATCH/snp_pairwise_null/`, and figA, figB, figC and figF all read t
 python .claude/scripts/tmp_pairwise_null_s1961.py  --var PRECT --start 1978 --perm 500
 python .claude/scripts/tmp_pairwise_denom_s1961.py --var PRECT --start 1978 --perm 200 --chunk-pairs 40
 python .claude/scripts/tmp_pairwise_figs.py        --var PRECT --start 1978 --bins 4
-python .claude/scripts/tmp_pairwise_rpc.py         --var PRECT --start 1978
+python .claude/scripts/tmp_pairwise_rpc.py         --var PRECT --start 1978 --vmax 0.7
 python .claude/scripts/tmp_pairwise_bootstrap.py   --var PRECT --start 1978 --draws 1000
 python .claude/scripts/tmp_excess_lam_map.py       --var PRECT --start 1978 --estimator ksg --layout member --chunk 8
 python .claude/scripts/tmp_rho_o_three_ways.py     --var PRECT --start 1978
+python .claude/scripts/tmp_marginal_moments.py     --var PRECT --start 1978
 ```
 
 with `--dataset seasonal --lead 2-4 --bins 2` for the seasonal case.
@@ -291,5 +360,13 @@ with `--dataset seasonal --lead 2-4 --bins 2` for the seasonal case.
 denominator alone holds ~7.3 GB; it is single-threaded, so nothing is gained by
 overlapping it with other work and a concurrent figD run will push the job over the
 limit. The decadal denominator takes ~5 h at 6216 pairs × P=200 on this grid.
+`tmp_marginal_moments.py` is the cheap one — ~3.5 min and 6.1 GB peak on the PRECT
+grid, and it reads no `pairnull_*`/`pairdenom_*` npz, going straight to the handles.
+
+**figG's maps are the only ones in either directory drawn the right way up.** The
+observational grids run lat[0] = −90 upward and matplotlib defaults to
+`origin="upper"`, so figA–figF render with the South Pole at the top.
+`tmp_marginal_moments.py` passes `origin="lower"`. Display only — no computed number
+is affected — but the older panels are vertically mirrored relative to figG.
 
 Percentages of area throughout are cos(lat)-weighted.

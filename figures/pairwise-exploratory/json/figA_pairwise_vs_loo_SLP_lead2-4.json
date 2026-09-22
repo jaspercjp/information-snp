@@ -1,0 +1,30 @@
+{
+ "tag": "SLP_lead2-4",
+ "var": "SLP",
+ "dataset": "seasonal",
+ "N": 62,
+ "T": 51,
+ "bins": 3,
+ "pairs": 1891,
+ "num_perm": 500,
+ "den_perm": 200,
+ "lead": "2-4",
+ "numerator": {
+  "debiased_pairwise": 0.026715884898252183,
+  "debiased_loo": 0.07674989331524512,
+  "nullsd_pairwise": 0.005470068178418778,
+  "nullsd_loo": 0.02754508356302826,
+  "nullsd_ratio_loo_over_pairwise": 5.0356015070712825,
+  "z_pairwise": 3.3577974164715885,
+  "z_loo": 2.7351935093877793
+ },
+ "denominator": {
+  "debiased_pairwise": 0.026053952830944842,
+  "debiased_loo": 0.07324966410863201,
+  "nullsd_pairwise": 0.0006799439097417844,
+  "nullsd_loo": 0.0037556940637980753,
+  "nullsd_ratio_loo_over_pairwise": 5.523535118101636,
+  "z_pairwise": 38.43098756362275,
+  "z_loo": 19.58706726408006
+ }
+}

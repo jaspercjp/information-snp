@@ -1,0 +1,22 @@
+{
+ "tag": "SLP_lead2-4",
+ "var": "SLP",
+ "dataset": "seasonal",
+ "N": 62,
+ "T": 51,
+ "bins": 3,
+ "pairs": 1891,
+ "num_perm": 500,
+ "den_perm": 200,
+ "lead": "2-4",
+ "numerator": {
+  "mm_residual": 0.0023112901557041142,
+  "null_sd": 0.005470068178418778,
+  "residual_over_nullsd": 0.47276987205712745
+ },
+ "denominator": {
+  "mm_residual": 0.0023381005452396456,
+  "null_sd": 0.0006799439097417844,
+  "residual_over_nullsd": 3.4467752158328877
+ }
+}

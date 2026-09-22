@@ -1,0 +1,22 @@
+{
+ "tag": "SLP_s1961",
+ "var": "SLP",
+ "dataset": "decadal",
+ "N": 92,
+ "T": 120,
+ "bins": 4,
+ "pairs": 4186,
+ "num_perm": 500,
+ "den_perm": 200,
+ "start": 1961,
+ "numerator": {
+  "mm_residual": 0.0014372982208316679,
+  "null_sd": 0.002117603384866932,
+  "residual_over_nullsd": 0.6850786135752944
+ },
+ "denominator": {
+  "mm_residual": 0.0014469255075948567,
+  "null_sd": 0.00028339142100369054,
+  "residual_over_nullsd": 5.118405218751981
+ }
+}

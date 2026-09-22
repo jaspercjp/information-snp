@@ -1,0 +1,16 @@
+{
+ "label": "DCPP-A s1961 SLP monthly (decadal)",
+ "N": 92,
+ "T": 120,
+ "bins": 4,
+ "M": 61,
+ "draws": 1000,
+ "lam_o_mean": 0.06543462040045314,
+ "lam_m_mean": 0.07706902229305967,
+ "rpc_ratio_of_area_means": 0.84903919179919,
+ "rpc_mean_of_per_cell": 0.8224280972947788,
+ "area_valid": 0.8457905356803083,
+ "area_holds_1": 0.6364674466831156,
+ "area_p05": 0.3643390271158532,
+ "area_fdr": 0.30922399946681206
+}

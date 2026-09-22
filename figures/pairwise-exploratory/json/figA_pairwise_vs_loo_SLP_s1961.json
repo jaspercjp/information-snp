@@ -1,0 +1,30 @@
+{
+ "tag": "SLP_s1961",
+ "var": "SLP",
+ "dataset": "decadal",
+ "N": 92,
+ "T": 120,
+ "bins": 4,
+ "pairs": 4186,
+ "num_perm": 500,
+ "den_perm": 200,
+ "start": 1961,
+ "numerator": {
+  "debiased_pairwise": 0.0031653797293721597,
+  "debiased_loo": 0.004030209964425097,
+  "nullsd_pairwise": 0.002117603384866932,
+  "nullsd_loo": 0.01596010724369953,
+  "nullsd_ratio_loo_over_pairwise": 7.536872748577726,
+  "z_pairwise": 1.3765267079626666,
+  "z_loo": 0.2530552775612961
+ },
+ "denominator": {
+  "debiased_pairwise": 0.004018459516707333,
+  "debiased_loo": 0.010016132918644862,
+  "nullsd_pairwise": 0.00028339142100369054,
+  "nullsd_loo": 0.0019198719939875273,
+  "nullsd_ratio_loo_over_pairwise": 6.774629899479297,
+  "z_pairwise": 14.274443691439771,
+  "z_loo": 5.221594882903685
+ }
+}
