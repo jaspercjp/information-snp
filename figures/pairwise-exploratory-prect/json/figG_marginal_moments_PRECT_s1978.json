@@ -3,7 +3,8 @@
  "dataset": "decadal",
  "start": 1978,
  "lead": null,
- "origin": "lower",
+ "orientation": "north up (cartopy PlateCarree, origin=lower)",
+ "coast": "110m",
  "stages": {
   "raw": {
    "N": 112,

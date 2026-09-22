@@ -63,16 +63,30 @@ Against SLP s1961, same quantity, same code:
 
 | | SLP s1961 | PRECT s1978 |
 |---|---|---|
-| excess, KSG pairwise | +0.0031 | **+0.0559** |
-| excess, MM pairwise | **−0.0069** *(sign flip)* | **+0.0342** |
-| excess as % of ρ_o | 3.5% / −7.8% | **65% / 40%** |
-| share of raw gap that is estimator artefact (KSG) | 81% | **51%** |
+| excess, KSG pairwise | +0.0029 | **+0.0559** |
+| excess, MM pairwise | **−0.0070** *(sign flip)* | **+0.0342** |
+| excess as % of ρ_o | 3.3% / −7.9% | **65% / 40%** |
+| share of raw gap that is estimator artefact, **KSG pairwise** | 95% | **51%** |
 
 Two things changed, and both matter. The excess is an order of magnitude larger
 relative to ρ_o, and **the estimator disagreement is gone** — KSG and Miller–Madow
 differ in magnitude (KSG is the more biased estimator and still reads higher after
 subtraction) but no longer in sign. Half of KSG's raw gap survives the surrogate
-subtraction on PRECT, against a fifth on SLP.
+subtraction on PRECT; on SLP a twentieth of it does.
+
+Two corrections to this table, both made when the figures were regenerated with
+coastlines:
+
+- The last row previously read **81%** for SLP against 51% for PRECT. 81% is SLP's
+  **LOO** value; its pairwise value is 95%, and every other row in the table is
+  pairwise. The row now compares like with like. PRECT is insensitive to the choice
+  (pairwise 51%, LOO 50%); SLP is not (95% against 81%), which is itself worth
+  knowing.
+- The SLP excess figures moved in the fourth decimal (+0.0031 → +0.0029, −0.0069 →
+  −0.0070). The SLP numbers stored previously predate the chunked surrogate loop, and
+  the surrogate stream is re-seeded per block, so the bias term shifts by ~8e-5. The
+  PRECT column reproduced **bit for bit** — it was chunked both times. Signs and
+  conclusions are untouched.
 
 **It is also spatially coherent.** The excess is not diffuse: it concentrates in the
 tropical convective bands — ITCZ, SPCZ, the monsoon regions — which is where
@@ -363,10 +377,23 @@ limit. The decadal denominator takes ~5 h at 6216 pairs × P=200 on this grid.
 `tmp_marginal_moments.py` is the cheap one — ~3.5 min and 6.1 GB peak on the PRECT
 grid, and it reads no `pairnull_*`/`pairdenom_*` npz, going straight to the handles.
 
-**figG's maps are the only ones in either directory drawn the right way up.** The
-observational grids run lat[0] = −90 upward and matplotlib defaults to
-`origin="upper"`, so figA–figF render with the South Pole at the top.
-`tmp_marginal_moments.py` passes `origin="lower"`. Display only — no computed number
-is affected — but the older panels are vertically mirrored relative to figG.
+All of these scripts import **`tmp_mapaxes.py`** from the same directory, which owns
+the projection, the orientation, the cell-edge extent and the coastlines — change a
+map convention there once instead of in seven scripts. It needs `cartopy` (0.25.0 in
+`VirtualEnv/SNP_env`) and the Natural Earth 110 m shapefile, already cached under
+`~/.local/share/cartopy`, so nothing is downloaded at plot time.
+
+**Map conventions.** Every map panel here goes through `tmp_mapaxes.py`: cartopy
+`PlateCarree`, `origin="lower"` so the **Arctic is at the top and the Antarctic at the
+bottom**, and Natural Earth 110 m coastlines stroked white-under-dark so they stay
+legible across `jet`, `magma`, `inferno` and `RdBu_r` alike. `extent` comes from cell
+edges, not centres, so the field registers against the coastline rather than sitting
+half a cell off.
+
+Until this pass, figA–figF passed no `origin=` at all and — because the observational
+grids run lat[0] = −90 upward against matplotlib's `origin="upper"` default —
+rendered with the **South Pole at the top**. That was display only; no number in this
+README changed. But figures committed before this point are vertically mirrored
+relative to the current ones.
 
 Percentages of area throughout are cos(lat)-weighted.

@@ -3,7 +3,8 @@
  "dataset": "seasonal",
  "start": null,
  "lead": "2-4",
- "origin": "lower",
+ "orientation": "north up (cartopy PlateCarree, origin=lower)",
+ "coast": "110m",
  "stages": {
   "raw": {
    "N": 62,

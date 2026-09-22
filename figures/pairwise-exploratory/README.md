@@ -70,26 +70,37 @@ figC panels remain directly comparable. The ratio panels are unchanged at `RdBu_
 
 ## 3. The non-Gaussian excess — the result that did NOT survive on SLP
 
-`figD_excess_{member,lam_minus_rho}_SLP_s1961_{ksg,mm}`. λ_o − ρ_o with the
-estimator's own bias subtracted, measured against a Gaussian-copula surrogate with the
-same per-pair rank correlation. For a jointly Gaussian pair λ = |ρ| exactly, so this
-is zero under Gaussianity.
+`figD_excess_{member,loo}_SLP_s1961_{ksg,mm}`. λ_o − ρ_o with the estimator's own bias
+subtracted, measured against a Gaussian-copula surrogate with the same per-pair rank
+correlation. For a jointly Gaussian pair λ = |ρ| exactly, so this is zero under
+Gaussianity.
 
 | layout | estimator | λ_o | ρ_o (rank) | raw λ−ρ | estimator bias | **excess** | area +ve |
 |---|---|---|---|---|---|---|---|
-| pairwise (`member`) | KSG | 0.1467 | 0.0883 | +0.0584 | 0.0553 | **+0.0031** | 44.7% |
-| pairwise (`member`) | MM B=4 | 0.0922 | 0.0883 | +0.0039 | 0.0108 | **−0.0069** | 24.8% |
-| LOO (`lam_minus_rho`) | KSG | 0.1607 | 0.1031 | +0.0576 | 0.0467 | **+0.0109** | 46.7% |
-| LOO (`lam_minus_rho`) | MM B=4 | 0.0969 | 0.1031 | −0.0062 | 0.0034 | **−0.0096** | 38.5% |
+| pairwise (`member`) | KSG | 0.1467 | 0.0883 | +0.0584 | 0.0555 | **+0.0029** | 44.9% |
+| pairwise (`member`) | MM B=4 | 0.0922 | 0.0883 | +0.0039 | 0.0109 | **−0.0070** | 25.0% |
+| LOO (`loo`) | KSG | 0.1606 | 0.1031 | +0.0575 | 0.0468 | **+0.0107** | 46.5% |
+| LOO (`loo`) | MM B=4 | 0.0969 | 0.1031 | −0.0062 | 0.0033 | **−0.0095** | 38.8% |
 
 **The excess flips sign between KSG and Miller–Madow**, and is ~10% of ρ_o either way.
 On SLP it therefore cannot be claimed. That constraint is what the PRECT rebuild was
 for, and on PRECT it does not bind — all four configurations there are positive and
 40–65% of ρ_o.
 
-Note the naming: this set's `lam_minus_rho` stem is the **LOO** layout, which the
-PRECT set names `loo`. The files were left under their original names so that the
-prior handoffs' paths still resolve.
+Two bookkeeping notes on this table.
+
+**The excess moves in the fourth decimal between runs, and that is expected.**
+Everything on the data side — λ_o, both ρ_o, the raw difference — reproduces bit for
+bit. Only `estimator_bias` shifts, by ~8e-5, because the Gaussian-copula surrogate
+stream is re-seeded per member block and the block size is a memory choice rather than
+a statistical one. The excess is that bias subtracted, so it inherits the wobble: the
+KSG pairwise figure has read +0.0031 and +0.0029 on two runs. The sign, which is the
+whole point, does not move.
+
+**This set's figD files used to be named `figD_excess_lam_minus_rho_*`.** They are the
+LOO layout, so they are now `figD_excess_loo_*`, matching the PRECT set. Prior
+handoffs that cite `figD_excess_member_SLP_s1961_mm.json` are unaffected — that stem
+is unchanged — and the old names remain in git history.
 
 ## 4. ρ_o is one field measured three ways
 
@@ -175,7 +186,7 @@ invisible at large n — against the known −6/(n+1) bias of the uncorrected g2
 | `figA_pairwise_vs_loo_SLP_{s1961,lead2-4}` | pairwise vs LOO: debiased signal, null sd, z, numerator and denominator |
 | `figB_mm_residual_SLP_{s1961,lead2-4}` | why Miller–Madow alone fails |
 | `figC_pairwise_rpc_SLP_{s1961,lead2-4}` | 3 ρ variants × {pairwise, LOO} × {numerator, denominator, RPC} |
-| `figD_excess_{member,lam_minus_rho}_SLP_s1961_{ksg,mm}` | non-Gaussian excess of the DEPENDENCE, both estimators, both layouts |
+| `figD_excess_{member,loo}_SLP_s1961_{ksg,mm}` | non-Gaussian excess of the DEPENDENCE, both estimators, both layouts |
 | `figE_rho_o_three_ways_SLP_s1961` | pairwise / LOO / ensemble-mean ρ_o |
 | `figF_pairwise_bootstrap_SLP_s1961_B4` | member-subsample bootstrap of the pairwise λ RPC |
 | `figG_marginal_moments_SLP_{s1961,lead2-4}` | MARGINAL distributions: pooled histograms, skewness, excess kurtosis |
@@ -189,15 +200,30 @@ and the original untagged `figA_pairwise_vs_loo.png` / `figB_mm_residual.png` di
 The untagged originals are preserved at
 `$SCRATCH/snp_figs_backup_20260921/pairwise-exploratory/`.
 
-## A caveat that applies to every map in this directory
+## Map conventions
 
-The maps are drawn with `imshow` straight from a `(lat, lon)` array. The observational
-grids run **lat[0] = −90 upward**, and matplotlib's default is `origin="upper"`, so
-every map in figA–figF has the **South Pole at the top**. `figG` passes
-`origin="lower"` and is the right way up. This is a display-only issue — no computed
-number is affected, and the area weights are applied in data space — but the older
-panels are vertically mirrored relative to figG and should be fixed before any of them
-is published.
+Every map panel in this directory is drawn through `tmp_mapaxes.py`, which fixes two
+things that used to be wrong or missing.
+
+**Orientation.** The panels used to hand a `(lat, lon)` array straight to `imshow`
+with no `origin=`. The observational grids run **lat[0] = −90 upward** and
+matplotlib's default is `origin="upper"`, so every map in figA–figF came out with the
+**South Pole at the top**. They are now all `origin="lower"` on a cartopy
+`PlateCarree` axes: **Arctic at the top, Antarctic at the bottom.** This was display
+only — no number in this README changed because of it — but the figures committed
+before this point are vertically mirrored relative to the current ones.
+
+**Coastlines.** Natural Earth coastlines (110 m) are drawn over every map. Each is
+stroked twice, a translucent white line under a dark one, because these panels span
+`jet`, `magma`, `inferno` and `RdBu_r` and no single line colour is legible on all
+four. Without them, claims like "the tropical convective bands" or "the Southern
+Ocean" were assertions a reader could not check.
+
+Longitude runs 0–360 with the Pacific in the middle, which is where the old
+index-space panels put it, so these figures remain horizontally aligned with their
+predecessors. `extent` is built from cell **edges**, not centres — on the 5° HadSLP2r
+grid whose centres run 0–355, a centre-based extent would offset the field half a
+cell from the coastlines.
 
 ## Reproducing
 
@@ -223,6 +249,15 @@ with `--dataset seasonal --lead 2-4 --bins 3` for the seasonal case. Every scrip
 
 `tmp_marginal_moments.py` costs about 1 min for SLP and 3.5 min for PRECT, peaking at
 6.1 GB on the PRECT grid — run it alone, the job's cgroup ceiling is 17.2 GB.
+
+**Every one of those scripts now imports `tmp_mapaxes.py` from the same directory**,
+which owns the projection, the orientation, the cell-edge extent and the coastlines.
+Change a map convention there, once, rather than in seven places. It needs `cartopy`
+(0.25.0 in `VirtualEnv/SNP_env`) and the Natural Earth 110 m coastline shapefile,
+already cached under `~/.local/share/cartopy` — so no download happens at plot time.
+`tmp_mapaxes.grid(var)` reads the observational grid out of the project, which is why
+`tmp_pairwise_figs.py` now needs `SNP_REPO` too: it reads only per-cell npz and had no
+lats/lons of its own to place a coastline against.
 
 Percentages of area throughout are cos(lat)-weighted, including the colour limits of
 figG's maps: an unweighted percentile there is set by the near-polar rows, which carry
