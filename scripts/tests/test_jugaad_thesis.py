@@ -109,7 +109,33 @@ def test_optbins_is_knuth_plus_one():
           f"== 1 ({seen['one']} cases): OK")
 
 
+def test_hist_counts_all_matches_numpy():
+    from scipy.special import gammaln
+    rng = np.random.default_rng(4)
+    cases = {"gauss": rng.standard_normal(3000),
+             "tiled": np.tile(rng.standard_normal(52), 62),
+             "integers": rng.integers(0, 7, 500).astype(float),
+             "exp": np.exp(3 * rng.standard_normal(1000)),
+             "constant": np.full(40, 2.5),
+             "two": np.array([0.0, 1.0])}
+    maxM = 150
+    for name, x in cases.items():
+        C = JT.hist_counts_all(x, maxM)
+        for M in range(1, maxM + 1):
+            ref, _ = np.histogram(x, bins=M)
+            assert np.array_equal(C[M - 1, :M], ref), (name, M)
+            assert not C[M - 1, M:].any(), (name, M)
+        n = len(x)
+        loop = np.array([n * np.log(M) + gammaln(M / 2) - gammaln(n + M / 2)
+                         - M * gammaln(0.5) + gammaln(np.histogram(x, bins=M)[0] + 0.5).sum()
+                         for M in range(1, maxM + 1)])
+        assert np.allclose(JT.knuth_logpost(x, maxM), loop, rtol=0, atol=1e-6), name
+    print(f"  hist_counts_all == np.histogram for M=1..{maxM} on {len(cases)} series; "
+          "knuth_logpost == loop: OK")
+
+
 if __name__ == "__main__":
+    test_hist_counts_all_matches_numpy()
     test_info_rpc_bitwise()
     test_explicit_s_matches_full()
     test_loo_means()

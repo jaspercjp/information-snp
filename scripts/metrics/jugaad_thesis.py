@@ -63,12 +63,34 @@ def knuth_logpost(x, maxM):
     """
     x = np.asarray(x, dtype=float)
     n = len(x)
-    out = np.empty(maxM)
-    for M in range(1, maxM + 1):
-        c, _ = np.histogram(x, bins=M)
-        out[M - 1] = (n * np.log(M) + gammaln(M / 2) - gammaln(n + M / 2)
-                      - M * gammaln(0.5) + gammaln(c + 0.5).sum())
-    return out
+    M = np.arange(1, maxM + 1)
+    c = hist_counts_all(x, maxM)                                    # (maxM, maxM), 0-padded
+    occ = gammaln(c + 0.5).sum(axis=1) - (maxM - M) * gammaln(0.5)  # drop the padding
+    return (n * np.log(M) + gammaln(M / 2) - gammaln(n + M / 2)
+            - M * gammaln(0.5) + occ)
+
+
+def hist_counts_all(x, maxM):
+    """`np.histogram(x, bins=M)[0]` for every M = 1..maxM at once, row M-1 zero-padded.
+
+    Replicates numpy's uniform-bin assignment exactly (index from the scaled offset, then
+    the same one-step corrections against `linspace` edges), so Knuth sees the counts the
+    loop over np.histogram would.
+    """
+    x = np.asarray(x, dtype=float)
+    lo, hi = float(x.min()), float(x.max())
+    if lo == hi:
+        lo, hi = lo - 0.5, hi + 0.5                                 # numpy's degenerate range
+    M = np.arange(1, maxM + 1)[:, None]
+    X = np.broadcast_to(x, (maxM, len(x)))
+    idx = (((X - lo) / (hi - lo)) * M).astype(np.intp)             # numpy's operation order
+    idx[idx == M] -= 1
+    step = (hi - lo) / M                                            # linspace: k*step + lo,
+    edge = lambda k: np.where(k == M, hi, k * step + lo)           # noqa: E731  last = hi
+    idx[X < edge(idx)] -= 1
+    idx[(X >= edge(idx + 1)) & (idx != M - 1)] += 1
+    flat = (np.arange(maxM)[:, None] * maxM + idx).ravel()
+    return np.bincount(flat, minlength=maxM * maxM).reshape(maxM, maxM)
 
 
 def knuth_bins(x, maxM):
@@ -94,8 +116,12 @@ def mi_bits(x, y, bins):
 
 
 def lam_bits(I):
-    """Granger-Lin lambda from MI in bits, as `calc_RPC.ipynb` cell 13."""
-    return np.sqrt(1 - np.power(2.0, -2 * np.asarray(I)))
+    """Granger-Lin lambda from MI in bits, as `calc_RPC.ipynb` cell 13.
+
+    I is clipped at 0 first: float32 round-off can leave an independent pair at -1e-8,
+    which the thesis formula turns into NaN. Nothing changes where I >= 0.
+    """
+    return np.sqrt(1 - np.power(2.0, -2 * np.maximum(np.asarray(I), 0.0)))
 
 
 # --------------------------------------------------------------------------------------
@@ -110,20 +136,30 @@ def _rule_bins(x, rule, maxM, B):
     return int(B)
 
 
-def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None):
+def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True):
     """One grid cell. f `(N, T)`, o `(T,)`, s `(T,)` or `(N, T)` (the latter is s_-n, pooled).
 
+    tiled : the rule sizes the o and s axes from their tiled N*T series (thesis) or, if
+        False, from the T distinct values -- Knuth on a tiled series runs to `maxM`, because
+        its likelihood rewards isolating each repeated value (optbins_characterise.py).
+        Untiled Knuth is capped at T bins. A pooled s_-n has N*T distinct values and is
+        always sized as is.
     Returns `(I_o, I_m, bins)`: I_o, I_m `(n_alt,)` in bits; bins = (B_f, B_o, B_s) before `alt`.
     """
     f = np.array(f, dtype=float)
     f[np.isnan(f)] = 0.0
-    N = f.shape[0]
+    N, T = f.shape
     f_jug = f.flatten()
     o_jug = np.tile(o, N)
     s_jug = np.tile(s, N) if np.ndim(s) == 1 else np.asarray(s, dtype=float).flatten()
     Bf = _rule_bins(f_jug, rule, maxM, B)
-    Bo = _rule_bins(o_jug, rule, maxM, B)
-    Bs = _rule_bins(s_jug, rule, maxM, B)
+    if tiled:
+        Bo = _rule_bins(o_jug, rule, maxM, B)
+        Bs = _rule_bins(s_jug, rule, maxM, B)
+    else:
+        Bo = _rule_bins(np.asarray(o, float), rule, min(maxM, T), B)
+        Bs = (_rule_bins(np.asarray(s, float), rule, min(maxM, T), B) if np.ndim(s) == 1
+              else _rule_bins(s_jug, rule, maxM, B))
     I_o = np.empty(len(alts))
     I_m = np.empty(len(alts))
     for k, a in enumerate(alts):
@@ -159,10 +195,12 @@ def _row(j):
     return Io, Im, bins
 
 
-def jugaad_maps(F, o, s="full", rule="fd", alts=THESIS_ALTS, maxM=400, B=None, n_jobs=None):
+def jugaad_maps(F, o, s="full", rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True,
+                n_jobs=None):
     """Per-cell jugaad lambda over a map. F `(N, T, ny, nx)`, o `(T, ny, nx)`.
 
     s : "full" (thesis; NaN-skipping member mean), "loo" (s_-n), or an explicit `(T, ny, nx)`.
+    tiled : see `cell`; True is the thesis.
     Cells whose obs are all NaN are skipped (NaN out). Returns a dict of `(n_alt, ny, nx)`
     arrays I_o, I_m (bits), lam_o, lam_m, lam, plus `bins` `(3, ny, nx)` = (B_f, B_o, B_s)
     before `alt`, and for rule="knuth" the boolean `cap_hit` `(3, ny, nx)`.
@@ -176,7 +214,7 @@ def jugaad_maps(F, o, s="full", rule="fd", alts=THESIS_ALTS, maxM=400, B=None, n
     else:
         S = np.asarray(s, dtype=float)
     ny = F.shape[2]
-    _G.update(F=F, o=o, S=S, kw=dict(rule=rule, alts=tuple(alts), maxM=maxM, B=B))
+    _G.update(F=F, o=o, S=S, kw=dict(rule=rule, alts=tuple(alts), maxM=maxM, B=B, tiled=tiled))
     n_jobs = n_jobs or int(_os.environ.get("SLURM_CPUS_ON_NODE", 1))
     if n_jobs > 1:
         with get_context("fork").Pool(n_jobs) as pool:
@@ -188,8 +226,13 @@ def jugaad_maps(F, o, s="full", rule="fd", alts=THESIS_ALTS, maxM=400, B=None, n
     I_m = np.stack([r[1] for r in rows], axis=1)
     bins = np.stack([r[2] for r in rows], axis=1)
     lam_o, lam_m = lam_bits(I_o), lam_bits(I_m)
-    out = dict(I_o=I_o, I_m=I_m, lam_o=lam_o, lam_m=lam_m, lam=lam_o / lam_m, bins=bins,
+    with np.errstate(divide="ignore", invalid="ignore"):             # lam_m = 0 when a rule
+        lam = np.where(lam_m > 0, lam_o / lam_m, np.nan)              # picks 1 bin for s
+    out = dict(I_o=I_o, I_m=I_m, lam_o=lam_o, lam_m=lam_m, lam=lam, bins=bins,
                rule=rule, alts=np.array(alts), N=F.shape[0], T=F.shape[1])
     if rule == "knuth":
-        out["cap_hit"] = bins >= maxM
+        cap_os = maxM if tiled else min(maxM, F.shape[1])
+        cap_s = cap_os if S.ndim == 3 else maxM                  # pooled s_-n: N*T values
+        out["cap_hit"] = bins >= np.array([maxM, cap_os, cap_s])[:, None, None]
+    out["tiled"] = tiled
     return out
