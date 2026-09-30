@@ -1,7 +1,8 @@
 """Thesis jugaad lambda on DCPP-A: Freedman-Diaconis vs Knuth OptBins, one npz per case.
 
-    python scripts/analysis/jugaad_fd_optbins_run.py SLP 13-60 [--only fd_tiled] [--ny 3]
+    python scripts/analysis/jugaad_fd_optbins_run.py SLP 2-4 [--only fd_tiled] [--ny 3]
     python scripts/analysis/jugaad_fd_optbins_run.py SLP cmip5   # the thesis ensemble
+    python scripts/analysis/jugaad_fd_optbins_run.py SLP s1961   # DCPP-A decade, monthly
     -> $SCRATCH/snp_jugaad_fd_optbins/<VAR>_lead<LEAD>.npz
 
 `lead=cmip5` loads the rebuilt thesis CMIP5 decadal1961 ensemble through calc_RPC cell 3
@@ -16,8 +17,10 @@ Configurations (key -> rule, how o/s axes are sized, which s, alts):
     knuth_tiled80   Knuth on tiled, maxM=80       s    1           as jugaad.ipynb; degenerate
     fixed_B<b>      the same B on every axis      s    1           sensitivity sweep
     fixed_loo_B<b>                                s_-n 1
-    null_fd / null_knuth  fd_tiled / knuth_untiled at alt 1 with the obs years permuted
-                    (same permutation at every cell), --null draws
+    null_fd / null_knuth  (off by default, not used: permuting years on the tiled layout
+                    does not isolate "no skill") fd_tiled / knuth_untiled at alt 1 with the obs years permuted
+                    (same permutation at every cell), --null draws; bins reused from the
+                    unpermuted run, which they equal exactly
 
 plus pooled Pearson |rho(f; o)| and |rho(f; s)|: lambda = |rho| exactly for Gaussian
 dependence, so these are what lam_o and lam_m would be if the binning were unbiased and
@@ -38,7 +41,7 @@ import jugaad_thesis as JT                                           # noqa: E40
 
 OUT = os.path.join(os.environ["SCRATCH"], "snp_jugaad_fd_optbins")
 FIXED_B = (2, 3, 4, 5, 6, 8, 10, 12, 16, 24, 32, 48, 64)
-KNUTH_MAX = 400
+KNUTH_MAX = 200                 # pooled-member optima are 17-27; cap hits are recorded
 
 
 def configs(nulls):
@@ -52,9 +55,10 @@ def configs(nulls):
         c[f"fixed_B{b}"] = dict(rule="fixed", B=b, s="full", alts=(1.0,))
         c[f"fixed_loo_B{b}"] = dict(rule="fixed", B=b, s="loo", alts=(1.0,))
     for d in range(nulls):
-        c[f"null_fd_{d}"] = dict(rule="fd", tiled=True, s="full", alts=(1.0,), perm=d)
+        c[f"null_fd_{d}"] = dict(rule="fd", tiled=True, s="full", alts=(1.0,), perm=d,
+                                 bins_from="fd_tiled")
         c[f"null_knuth_{d}"] = dict(rule="knuth", tiled=False, s="full", maxM=KNUTH_MAX,
-                                    alts=(1.0,), perm=d)
+                                    alts=(1.0,), perm=d, bins_from="knuth_untiled")
     return c
 
 
@@ -65,6 +69,50 @@ def pooled_rho(F, Y):
     Xc, Yc = X - X.mean(0), Y - Y.mean(0)
     with np.errstate(invalid="ignore", divide="ignore"):
         return np.abs((Xc * Yc).mean(0) / (Xc.std(0) * Yc.std(0)))
+
+
+def thesis_detrend(X):
+    """Subtract a per-series least-squares line (intercept AND slope) along axis -3, NaN-aware.
+
+    What calc_RPC cell 3 does with `polyfit(dim="time", deg=1)`, per member and cell.
+    (`dcpp_decadal_handles`' own `detrend_time` removes the slope only, keeping each
+    member's mean, which would leave member/model offsets in the pooled f_jugaad.)
+    """
+    X = np.array(X, dtype=float)
+    T = X.shape[-3]
+    t = np.arange(T, dtype=float).reshape((T, 1, 1))
+    ok = ~np.isnan(X)
+    n = ok.sum(-3, keepdims=True)
+    tm = np.where(ok, t, 0).sum(-3, keepdims=True) / n
+    xm = np.where(ok, X, 0).sum(-3, keepdims=True) / n
+    dt = np.where(ok, t - tm, 0)
+    slope = (dt * np.where(ok, X - xm, 0)).sum(-3, keepdims=True) / (dt ** 2).sum(-3, keepdims=True)
+    return X - xm - slope * (t - tm)
+
+
+def load(var, lead):
+    """(F (N,T,ny,nx), o (T,ny,nx), s (T,ny,nx), lats, lons) for one case.
+
+    lead: "cmip5" (thesis ensemble), "sYYYY" (one DCPP-A decade, monthly, thesis
+    preprocessing: raw fields, linear detrend per member and cell, seasonal cycle kept),
+    "sYYYYmoy" (the same after removing the month-of-year climatology), or a
+    `dcpp_handles` lead window such as "2-4".
+    """
+    if lead == "cmip5":
+        import cmip5_thesis_reproduce
+        return cmip5_thesis_reproduce.arrays()
+    if lead.startswith("s"):
+        import dcpp_decadal_handles
+        c = dcpp_decadal_handles.get(int(lead[1:5]), var=var, verbose=False,
+                                     anom="moy" if lead.endswith("moy") else "none",
+                                     detrend_time=False, remove_gm=False)
+        F = thesis_detrend(np.asarray(c.F, float))
+        o = thesis_detrend(np.asarray(c.G, float)[None])[0]
+        return F, o, np.nanmean(F, axis=0), np.asarray(c.lats), np.asarray(c.lons)
+    import dcpp_handles
+    c = dcpp_handles.get(lead=lead, var=var, verbose=False, remove_gm=var.upper() == "SLP")
+    F, o = np.asarray(c.F, float), np.asarray(c.G, float)
+    return F, o, np.nanmean(F, axis=0), np.asarray(c.lats), np.asarray(c.lons)
 
 
 def main():
@@ -78,16 +126,7 @@ def main():
     a = ap.parse_args()
 
     t0 = time.time()
-    if a.lead == "cmip5":
-        import cmip5_thesis_reproduce
-        F, o, s_full, lats, lons = cmip5_thesis_reproduce.arrays()
-    else:
-        import dcpp_handles
-        c = dcpp_handles.get(lead=a.lead, var=a.var, verbose=False,
-                             remove_gm=a.var.upper() == "SLP")
-        F, o = np.asarray(c.F, float), np.asarray(c.G, float)
-        lats, lons = np.asarray(c.lats), np.asarray(c.lons)
-        s_full = np.nanmean(F, axis=0)
+    F, o, s_full, lats, lons = load(a.var, a.lead)
     if a.ny:
         F, o, s_full, lats = F[:, :, :a.ny], o[:, :a.ny], s_full[:, :a.ny], lats[:a.ny]
     N, T = F.shape[:2]
@@ -108,6 +147,8 @@ def main():
         oo = o[perms[kw.pop("perm")]] if "perm" in kw else o
         if kw["s"] == "full":
             kw["s"] = s_full
+        if "bins_from" in kw:                 # rules see only the value multiset, which
+            kw["bins"] = res[f"{kw.pop('bins_from')}__bins"]   # permuting years keeps
         t1 = time.time()
         r = JT.jugaad_maps(F, oo, **kw)
         for k in ("I_o", "I_m", "lam_o", "lam_m", "lam", "bins", "alts"):

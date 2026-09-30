@@ -134,10 +134,23 @@ def test_hist_counts_all_matches_numpy():
           "knuth_logpost == loop: OK")
 
 
+def test_permuted_obs_reuse_bins():
+    F, o = synthetic_cube(seed=5)
+    perm = np.random.default_rng(6).permutation(o.shape[0])
+    for kw in (dict(rule="fd"), dict(rule="knuth", tiled=False, maxM=120)):
+        base = JT.jugaad_maps(F, o, n_jobs=1, **kw)
+        fresh = JT.jugaad_maps(F, o[perm], n_jobs=1, **kw)
+        reuse = JT.jugaad_maps(F, o[perm], n_jobs=1, bins=base["bins"], **kw)
+        assert np.array_equal(fresh["bins"], base["bins"]), kw
+        assert np.array_equal(fresh["I_o"], reuse["I_o"]), kw
+    print("  permuted obs: bins unchanged, reuse == recompute: OK")
+
+
 if __name__ == "__main__":
     test_hist_counts_all_matches_numpy()
     test_info_rpc_bitwise()
     test_explicit_s_matches_full()
     test_loo_means()
     test_optbins_is_knuth_plus_one()
+    test_permuted_obs_reuse_bins()
     print("all passed")
