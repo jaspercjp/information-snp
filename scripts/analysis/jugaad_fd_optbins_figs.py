@@ -87,6 +87,7 @@ def band(z, key):
     for k in ("I_o", "I_m", "lam"):
         d[f"d{k}"] = np.nanmax(d[k], 0) - np.nanmin(d[k], 0)
     d["bins"] = z[f"{key}__bins"]
+    d["alts_arr"] = alts
     d["cap_hit"] = z[f"{key}__cap_hit"] if f"{key}__cap_hit" in z.files else None
     return d
 

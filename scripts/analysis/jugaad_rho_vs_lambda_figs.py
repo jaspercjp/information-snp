@@ -12,7 +12,15 @@ recorded in the json beside it.
 
 Right, the thesis jugaad lambda as specified: I(f_jugaad; o_jugaad) and I(f_jugaad; s_jugaad)
 with full-mean s, FD bins at alt = 1, lambda = lambda_o / lambda_m (from
-jugaad_fd_optbins_run.py). Stippled where its alt 0.5-1.5 band contains 1.
+jugaad_fd_optbins_run.py).
+
+Marks (with boot_<VAR>_lead<LEAD>.npz from jugaad_rho_lambda_boot.py):
+  black dot   RPC not significantly different from 1: the 5-95% interval of 1000 Eade
+              draws (years with replacement, N-3 members without) contains 1. Both columns.
+  red ring    right column only, around a black dot, where in addition the binning range
+              |lambda(1.5x bins) - lambda(0.5x bins)| exceeds lambda at 1.0x bins.
+  grey        corr(s, o) <= 0, masked in both columns as Eade et al. (2014) Fig. 1.
+Without boot files the right column falls back to dots where the alt band contains 1.
 
 The CMIP5 ensemble has member NaNs (2.8%); the rho measures here skip them, as the thesis
 `var_RPC` did (`skipna`). On NaN-free data they equal `smyle_metrics` exactly (checked at run).
@@ -36,9 +44,34 @@ import smyle_metrics as SM                                           # noqa: E40
 import jugaad_thesis as JT                                           # noqa: E402
 from jugaad_fd_optbins_run import OUT, load                          # noqa: E402
 from jugaad_fd_optbins_figs import (CASES, DIV, FIG, INK, LEAD_LABEL, MUTED,  # noqa: E402
-                                    draw_panel, load_case, save, wfrac, wmean)
+                                    draw_panel, load_case, save, stip_size, wfrac, wmean)
 
 TITLES = ("Pearson $\\rho$", "Granger-Lin $\\lambda$ (jugaad)")
+BOOT_TAG = os.environ.get("BOOT_TAG", "")
+RING = "#d40000"
+
+
+def boot_case(var, lead):
+    path = os.path.join(OUT, f"boot_{var}_lead{lead}{BOOT_TAG}.npz")
+    return dict(np.load(path)) if os.path.exists(path) else None
+
+
+def draw_boot(ax, d, r, q05, q95, keep, ring=None):
+    """Map r (masked where not keep), black dots where 5-95% contains 1, red rings on `ring`."""
+    lats, lons = d["lats"], d["lons"]
+    valid = np.isfinite(r) & keep
+    MAP.show(ax, np.where(valid, np.clip(r, 0, 2), np.nan), lats, lons, cmap=DIV,
+             norm=Normalize(0.0, 2.0))
+    LA, LO = np.meshgrid(lats, lons, indexing="ij")
+    ns = valid & (q05 <= 1) & (q95 >= 1)
+    s = stip_size(lats, lons)
+    ax.scatter(LO[ns], LA[ns], s=s, c="#000000", marker="o", linewidths=0,
+               transform=MAP.DATA, zorder=5)
+    rg = ns & ring if ring is not None else np.zeros_like(ns)
+    if rg.any():
+        ax.scatter(LO[rg], LA[rg], s=6 * s, facecolors="none", edgecolors=RING,
+                   linewidths=0.6, marker="o", transform=MAP.DATA, zorder=6)
+    return ns, rg, valid
 
 
 def _corr_t(a, b):
@@ -89,14 +122,37 @@ def figure(lead, ds):
            for i in range(len(rows))]
     res = {"lead": lead, "left": "corr(s,o) / <corr(s_-n, f_n)>_n",
            "right": "jugaad lambda_o/lambda_m, FD bins, alt=1, full-mean s",
-           "stipple": "right only: alt 0.5-1.5 band of lambda contains 1", "rows": {}}
+           "stipple": "5-95% of Eade bootstrap contains 1 (both columns); red ring (right): "
+                      "|lam(1.5x) - lam(0.5x)| > lam(1x); grey: corr(s,o) <= 0", "rows": {}}
     for i, d in enumerate(rows):
         r = rho_case(d["var"], lead)
         rpc_rho = r["rho_o"] / r["rho_m_loo"]
         b = d["rules"]["fd_tiled"]
-        draw_panel(axs[i][0], d, rpc_rho)
-        draw_panel(axs[i][1], d, b["lam1"], np.nanmin(b["lam"], 0), np.nanmax(b["lam"], 0))
+        bt = boot_case(d["var"], lead)
         W = d["W"]
+        marks = {}
+        if bt is None:
+            draw_panel(axs[i][0], d, rpc_rho)
+            draw_panel(axs[i][1], d, b["lam1"], np.nanmin(b["lam"], 0), np.nanmax(b["lam"], 0))
+        else:
+            assert np.allclose(bt["rpc_rho"], rpc_rho, equal_nan=True)
+            both = np.isfinite(bt["rpc_lam"]) & np.isfinite(b["lam1"])   # b["lam1"] is floored
+            assert np.allclose(bt["rpc_lam"][both], b["lam1"][both])
+            keep = r["rho_o"] > 0
+            k1 = int(np.argmin(np.abs(b["alts_arr"] - 1.0)))
+            lo_, hi_ = int(np.argmin(b["alts_arr"])), int(np.argmax(b["alts_arr"]))
+            bin_range = np.abs(b["lam"][hi_] - b["lam"][lo_])
+            ring = bin_range > b["lam"][k1]
+            ns0, _, v0 = draw_boot(axs[i][0], d, rpc_rho, bt["rho_q05"], bt["rho_q95"], keep)
+            ns1, rg1, v1 = draw_boot(axs[i][1], d, b["lam1"], bt["lam_q05"], bt["lam_q95"],
+                                     keep, ring)
+            marks = {"boot": int(bt["boot"]), "masked_rho_o_le0": wfrac(W, ~keep, np.isfinite(r["rho_o"])),
+                     "rho_not_sig": wfrac(W, ns0, v0), "rho_sig_gt1": wfrac(W, v0 & (bt["rho_q05"] > 1), v0),
+                     "rho_sig_lt1": wfrac(W, v0 & (bt["rho_q95"] < 1), v0),
+                     "lam_not_sig": wfrac(W, ns1, v1), "lam_sig_gt1": wfrac(W, v1 & (bt["lam_q05"] > 1), v1),
+                     "lam_sig_lt1": wfrac(W, v1 & (bt["lam_q95"] < 1), v1),
+                     "lam_ring": wfrac(W, rg1, v1),
+                     "lam_binrange_gt_lam_all_cells": wfrac(W, ring, v1)}
         v_r, v_l = np.isfinite(rpc_rho), np.isfinite(b["lam1"])
         res["rows"][d["var"]] = {
             "N": d["N"], "T": d["T"],
@@ -108,6 +164,7 @@ def figure(lead, ds):
                                                   np.isfinite(r["rho_m_mean"]))},
             "lambda": {"lam_o": wmean(W, b["lam_o1"]), "lam_m": wmean(W, b["lam_m1"]),
                        "rpc": wmean(W, b["lam1"]), "area_gt1": wfrac(W, b["lam1"] > 1, v_l)},
+            "marks": marks,
             "spatial_corr_rpc": float(np.corrcoef(rpc_rho[v_r & v_l], b["lam1"][v_r & v_l])[0, 1])}
         for k in range(2):
             axs[i][k].set_title(TITLES[k], fontsize=10, color=INK)
@@ -122,7 +179,7 @@ def figure(lead, ds):
     cb.set_ticklabels(["0", "0.5", "1", "1.5", "≥2"])
     axs[0][0].text(0.0, 1.14, f"{LEAD_LABEL[lead]}  N={rows[0]['N']}", fontsize=8,
                    color=MUTED, transform=axs[0][0].transAxes)
-    save(fig, res, f"rho_vs_lambda_{lead}")
+    save(fig, res, f"rho_vs_lambda_{lead}{BOOT_TAG}")
     return res
 
 
