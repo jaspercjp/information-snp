@@ -138,7 +138,7 @@ def _rule_bins(x, rule, maxM, B):
     return int(B)
 
 
-def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True, bins=None):
+def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True, bins=None, p=None):
     """One grid cell. f `(N, T)`, o `(T,)`, s `(T,)` or `(N, T)` (the latter is s_-n, pooled).
 
     tiled : the rule sizes the o and s axes from their tiled N*T series (thesis) or, if
@@ -146,9 +146,13 @@ def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True, bin
         its likelihood rewards isolating each repeated value (optbins_characterise.py).
         Untiled Knuth is capped at T bins. A pooled s_-n has N*T distinct values and is
         always sized as is.
-    bins : precomputed (B_f, B_o, B_s), skipping the rule. Every rule here depends only on
+    p : `(N, T)` series paired with the tiled obs in I_o, pooled row (n, t) like f; default
+        f itself (the thesis I(f; o)). p = s_-n gives I(s_-n; o), the ensemble-mean analogue.
+        Its bin count B_p comes from the same rule on the pooled p (N*T distinct values).
+    bins : precomputed (B_f, B_o, B_s[, B_p]), skipping the rule. Every rule here depends only on
         the multiset of values, so a permutation null can reuse the unpermuted bins exactly.
-    Returns `(I_o, I_m, bins)`: I_o, I_m `(n_alt,)` in bits; bins = (B_f, B_o, B_s) before `alt`.
+    Returns `(I_o, I_m, bins)`: I_o, I_m `(n_alt,)` in bits; bins = (B_f, B_o, B_s, B_p) before
+    `alt` (B_p = B_f when p is f).
     """
     f = np.array(f, dtype=float)
     f[np.isnan(f)] = 0.0
@@ -156,8 +160,13 @@ def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True, bin
     f_jug = f.flatten()
     o_jug = np.tile(o, N)
     s_jug = np.tile(s, N) if np.ndim(s) == 1 else np.asarray(s, dtype=float).flatten()
+    if p is not None:
+        p = np.array(p, dtype=float)
+        p[np.isnan(p)] = 0.0
+        p_jug = p.flatten()
     if bins is not None:
-        Bf, Bo, Bs = (int(b) for b in bins)
+        Bf, Bo, Bs = (int(b) for b in bins[:3])
+        Bp = int(bins[3]) if len(bins) > 3 else Bf
     elif tiled:
         Bf = _rule_bins(f_jug, rule, maxM, B)
         Bo = _rule_bins(o_jug, rule, maxM, B)
@@ -167,15 +176,20 @@ def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True, bin
         Bo = _rule_bins(np.asarray(o, float), rule, min(maxM, T), B)
         Bs = (_rule_bins(np.asarray(s, float), rule, min(maxM, T), B) if np.ndim(s) == 1
               else _rule_bins(s_jug, rule, maxM, B))
+    if bins is None:
+        Bp = Bf if p is None else _rule_bins(p_jug, rule, maxM, B)
     I_o = np.empty(len(alts))
     I_m = np.empty(len(alts))
-    if None in (Bf, Bo, Bs):                                     # FD undefined here
-        return np.full(len(alts), np.nan), np.full(len(alts), np.nan), (0, 0, 0)
+    if None in (Bf, Bo, Bs, Bp):                                 # FD undefined here
+        return np.full(len(alts), np.nan), np.full(len(alts), np.nan), (0, 0, 0, 0)
     for k, a in enumerate(alts):
         bf = int(np.ceil(Bf * a))
-        I_o[k] = mi_bits(o_jug, f_jug, (int(np.ceil(Bo * a)), bf))
+        if p is None:
+            I_o[k] = mi_bits(o_jug, f_jug, (int(np.ceil(Bo * a)), bf))
+        else:
+            I_o[k] = mi_bits(o_jug, p_jug, (int(np.ceil(Bo * a)), int(np.ceil(Bp * a))))
         I_m[k] = mi_bits(s_jug, f_jug, (int(np.ceil(Bs * a)), bf))
-    return I_o, I_m, (Bf, Bo, Bs)
+    return I_o, I_m, (Bf, Bo, Bs, Bp)
 
 
 def loo_means(F):
@@ -192,27 +206,31 @@ _G = {}
 
 
 def _row(j):
-    F, o, S, kw, pre = _G["F"], _G["o"], _G["S"], _G["kw"], _G["bins"]
+    F, o, S, kw, pre, P = _G["F"], _G["o"], _G["S"], _G["kw"], _G["bins"], _G["P"]
     nx = F.shape[-1]
     na = len(kw["alts"])
-    Io, Im, bins = np.full((na, nx), np.nan), np.full((na, nx), np.nan), np.zeros((3, nx), int)
+    Io, Im, bins = np.full((na, nx), np.nan), np.full((na, nx), np.nan), np.zeros((4, nx), int)
     for i in range(nx):
         s = S[..., j, i]
         if np.all(np.isnan(o[:, j, i])):
             continue
         b = None if pre is None else pre[:, j, i]
-        Io[:, i], Im[:, i], bins[:, i] = cell(F[:, :, j, i], o[:, j, i], s, bins=b, **kw)
+        pp = None if P is None else P[:, :, j, i]
+        Io[:, i], Im[:, i], bins[:, i] = cell(F[:, :, j, i], o[:, j, i], s, bins=b, p=pp, **kw)
     return Io, Im, bins
 
 
 def jugaad_maps(F, o, s="full", rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True,
-                bins=None, n_jobs=None):
+                bins=None, o_vs="f", n_jobs=None):
     """Per-cell jugaad lambda over a map. F `(N, T, ny, nx)`, o `(T, ny, nx)`.
 
     s : "full" (thesis; NaN-skipping member mean), "loo" (s_-n), or an explicit `(T, ny, nx)`.
-    tiled, bins : see `cell`; tiled=True is the thesis. `bins` is `(3, ny, nx)`.
+    tiled, bins : see `cell`; tiled=True is the thesis. `bins` is `(3 or 4, ny, nx)`.
+    o_vs : what the tiled obs is paired with in I_o -- "f" (thesis: each member, I(f; o))
+        or "loo" (the leave-one-out mean of the other members, I(s_-n; o)). I_m is the same
+        either way.
     Cells whose obs are all NaN are skipped (NaN out). Returns a dict of `(n_alt, ny, nx)`
-    arrays I_o, I_m (bits), lam_o, lam_m, lam, plus `bins` `(3, ny, nx)` = (B_f, B_o, B_s)
+    arrays I_o, I_m (bits), lam_o, lam_m, lam, plus `bins` `(4, ny, nx)` = (B_f, B_o, B_s, B_p)
     before `alt`, and for rule="knuth" the boolean `cap_hit` `(3, ny, nx)`.
     """
     if rule not in RULES:
@@ -223,8 +241,11 @@ def jugaad_maps(F, o, s="full", rule="fd", alts=THESIS_ALTS, maxM=400, B=None, t
         S = np.nanmean(F, axis=0) if s == "full" else loo_means(F)
     else:
         S = np.asarray(s, dtype=float)
+    if o_vs not in ("f", "loo"):
+        raise ValueError(f"o_vs must be 'f' or 'loo', got {o_vs!r}")
+    P = loo_means(F) if o_vs == "loo" else None
     ny = F.shape[2]
-    _G.update(F=F, o=o, S=S, bins=bins, kw=dict(rule=rule, alts=tuple(alts), maxM=maxM, B=B, tiled=tiled))
+    _G.update(F=F, o=o, S=S, bins=bins, P=P, kw=dict(rule=rule, alts=tuple(alts), maxM=maxM, B=B, tiled=tiled))
     n_jobs = n_jobs or int(_os.environ.get("SLURM_CPUS_ON_NODE", 1))
     if n_jobs > 1:
         with get_context("fork").Pool(n_jobs) as pool:
@@ -243,6 +264,7 @@ def jugaad_maps(F, o, s="full", rule="fd", alts=THESIS_ALTS, maxM=400, B=None, t
     if rule == "knuth":
         cap_os = maxM if tiled else min(maxM, F.shape[1])
         cap_s = cap_os if S.ndim == 3 else maxM                  # pooled s_-n: N*T values
-        out["cap_hit"] = bins >= np.array([maxM, cap_os, cap_s])[:, None, None]
+        out["cap_hit"] = bins >= np.array([maxM, cap_os, cap_s, maxM])[:, None, None]
     out["tiled"] = tiled
+    out["o_vs"] = o_vs
     return out

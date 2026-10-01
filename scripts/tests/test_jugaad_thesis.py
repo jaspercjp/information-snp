@@ -155,6 +155,23 @@ def test_fd_undefined_cell_is_nan():
     print("  IQR = 0 cell -> NaN, others unaffected: OK")
 
 
+def test_o_vs_loo():
+    F, o = synthetic_cube(seed=8, N=5)
+    r = JT.jugaad_maps(F, o, o_vs="loo", n_jobs=1)
+    base = JT.jugaad_maps(F, o, n_jobs=1)
+    assert np.array_equal(r["I_m"], base["I_m"])                 # denominator untouched
+    L = JT.loo_means(F)
+    j, i = 2, 3
+    Lj = np.where(np.isnan(L[:, :, j, i]), 0.0, L[:, :, j, i]).flatten()
+    oj = np.tile(o[:, j, i], F.shape[0])
+    Bp, Bo = JT.fd_bins(Lj), JT.fd_bins(oj)
+    for k, a in enumerate(JT.THESIS_ALTS):
+        ref = ITM.I(oj, Lj, nbins_alt=(int(np.ceil(Bo * a)), int(np.ceil(Bp * a))))[0]
+        assert r["I_o"][k, j, i] == ref
+    assert r["bins"][3, j, i] == Bp
+    print("  o_vs='loo': I_o == thesis I(tile(o); pooled s_-n), I_m unchanged: OK")
+
+
 if __name__ == "__main__":
     test_hist_counts_all_matches_numpy()
     test_info_rpc_bitwise()
@@ -163,4 +180,5 @@ if __name__ == "__main__":
     test_optbins_is_knuth_plus_one()
     test_permuted_obs_reuse_bins()
     test_fd_undefined_cell_is_nan()
+    test_o_vs_loo()
     print("all passed")

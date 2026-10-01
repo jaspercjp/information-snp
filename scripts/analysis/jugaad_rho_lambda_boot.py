@@ -14,6 +14,13 @@ One draw (Eade et al. 2014 SI, the same draw for both statistics):
      seasonal cycle and within-year autocorrelation stay intact;
   2. take N-3 members WITHOUT replacement; the ensemble mean, the leave-one-out means and
      the jugaad s all come from those members.
+--o-vs loo: the lambda statistic only, with lambda_o = lambda(I(s_-n_jugaad; o_jugaad))
+(the obs paired with the mean of the OTHER members of the draw), lambda_m unchanged.
+Same seed and the same rng calls, so its draws are exactly the draws of the default run
+and the rho column of that run pairs with it. Writes boot_oloo_<VAR>_lead<LEAD>.npz with
+the point estimate's alt 0.5/1/1.5 band (for the binning rings) and, at alt = 1, the
+variant whose lambda_m also uses s_-n.
+
 "RPC not different from 1" stands where the 5-95% interval of the draws contains 1
 (90%, two-sided). Draws are stored so any other interval can be read off later.
 """
@@ -54,6 +61,41 @@ def stats(F, o):
     return rpc_rho, lam["lam"][0], ro
 
 
+def lam_stat(F, o, alts=(1.0,)):
+    """Jugaad lambda with lambda_o = lambda(I(s_-n; o)); full-mean s in lambda_m."""
+    return JT.jugaad_maps(F, o, s=np.nanmean(F, axis=0), rule="fd", alts=alts, o_vs="loo")
+
+
+def main_oloo(a):
+    t0 = time.time()
+    F, o, _, lats, lons = load(a.var, a.lead)
+    if a.ny:
+        F, o, lats = F[:, :, :a.ny], o[:, :a.ny], lats[:a.ny]
+    N, T = F.shape[:2]
+    print(f"{a.var} {a.lead} (o_vs=loo): N={N} T={T} grid={F.shape[2:]} "
+          f"(load {time.time() - t0:.0f}s)", flush=True)
+    pt = lam_stat(F, o, alts=(0.5, 1.0, 1.5))
+    both = JT.jugaad_maps(F, o, s="loo", rule="fd", alts=(1.0,), o_vs="loo")
+    rng = np.random.default_rng([a.seed, sum(map(ord, a.var + a.lead))])
+    B_lam = np.full((a.boot,) + F.shape[2:], np.nan, np.float32)
+    t1 = time.time()
+    for b in range(a.boot):
+        ti = time_index(rng, T, a.lead)                       # identical rng calls to main()
+        mi = rng.choice(N, N - 3, replace=False)
+        B_lam[b] = lam_stat(F[mi][:, ti], o[ti])["lam"][0]
+        if b in (0, 4) or (b + 1) % 100 == 0:
+            print(f"  draw {b + 1}/{a.boot}  {(time.time() - t1) / (b + 1):.1f} s/draw",
+                  flush=True)
+    q = lambda X, p: np.nanpercentile(X, p, axis=0)                  # noqa: E731
+    path = os.path.join(OUT, f"boot_oloo_{a.var}_lead{a.lead}{a.tag}.npz")
+    np.savez_compressed(path, lats=lats, lons=lons, N=N, T=T, boot=a.boot,
+                        alts=pt["alts"], lam=pt["lam"], lam_o=pt["lam_o"], lam_m=pt["lam_m"],
+                        I_o=pt["I_o"], I_m=pt["I_m"], bins=pt["bins"],
+                        lam_both_loo=both["lam"][0], lam_m_loo=both["lam_m"][0],
+                        lam_q05=q(B_lam, 5), lam_q95=q(B_lam, 95), B_lam=B_lam)
+    print(f"-> {path}  ({(time.time() - t0) / 60:.1f} min)")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("var")
@@ -62,7 +104,11 @@ def main():
     ap.add_argument("--seed", type=int, default=2014)
     ap.add_argument("--ny", type=int, help="first ny rows only (timing tests)")
     ap.add_argument("--tag", default="")
+    ap.add_argument("--o-vs", default="f", choices=("f", "loo"),
+                    help="lambda_o partner of the obs: members (thesis) or s_-n")
     a = ap.parse_args()
+    if a.o_vs == "loo":
+        return main_oloo(a)
 
     t0 = time.time()
     F, o, _, lats, lons = load(a.var, a.lead)
