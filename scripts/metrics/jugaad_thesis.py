@@ -130,7 +130,9 @@ def lam_bits(I):
 
 def _rule_bins(x, rule, maxM, B):
     if rule == "fd":
-        return fd_bins(x)
+        # IQR = 0 (more than half the rows identical, e.g. zero-filled NaN members in a
+        # resample) makes the thesis rule int(inf) and crash; flag the cell instead.
+        return fd_bins(x) if iqr(x) > 0 else None
     if rule == "knuth":
         return knuth_bins(x, maxM)
     return int(B)
@@ -167,6 +169,8 @@ def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True, bin
               else _rule_bins(s_jug, rule, maxM, B))
     I_o = np.empty(len(alts))
     I_m = np.empty(len(alts))
+    if None in (Bf, Bo, Bs):                                     # FD undefined here
+        return np.full(len(alts), np.nan), np.full(len(alts), np.nan), (0, 0, 0)
     for k, a in enumerate(alts):
         bf = int(np.ceil(Bf * a))
         I_o[k] = mi_bits(o_jug, f_jug, (int(np.ceil(Bo * a)), bf))

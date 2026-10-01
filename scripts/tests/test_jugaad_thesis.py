@@ -146,6 +146,15 @@ def test_permuted_obs_reuse_bins():
     print("  permuted obs: bins unchanged, reuse == recompute: OK")
 
 
+def test_fd_undefined_cell_is_nan():
+    F, o = synthetic_cube(seed=7)
+    F[:, :, 0, 0] = 0.0
+    F[0, :3, 0, 0] = 1.0                                    # IQR 0: thesis FD would crash
+    r = JT.jugaad_maps(F, o, n_jobs=1)
+    assert np.isnan(r["I_o"][:, 0, 0]).all() and np.isfinite(r["I_o"][:, 1:, :]).all()
+    print("  IQR = 0 cell -> NaN, others unaffected: OK")
+
+
 if __name__ == "__main__":
     test_hist_counts_all_matches_numpy()
     test_info_rpc_bitwise()
@@ -153,4 +162,5 @@ if __name__ == "__main__":
     test_loo_means()
     test_optbins_is_knuth_plus_one()
     test_permuted_obs_reuse_bins()
+    test_fd_undefined_cell_is_nan()
     print("all passed")
