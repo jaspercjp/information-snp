@@ -65,32 +65,55 @@ def knuth_logpost(x, maxM):
     n = len(x)
     M = np.arange(1, maxM + 1)
     c = hist_counts_all(x, maxM)                                    # (maxM, maxM), 0-padded
-    occ = gammaln(c + 0.5).sum(axis=1) - (maxM - M) * gammaln(0.5)  # drop the padding
+    occ = _lgam_half(n)[c].sum(axis=1) - (maxM - M) * gammaln(0.5)  # drop the padding
     return (n * np.log(M) + gammaln(M / 2) - gammaln(n + M / 2)
             - M * gammaln(0.5) + occ)
+
+
+_LGAM = {}
+
+
+def _lgam_half(n):
+    """gammaln(c + 0.5) for c = 0..n, cached: bin counts are integers, so Knuth's posterior
+    becomes a table lookup (the same values as calling gammaln on the counts)."""
+    if n not in _LGAM:
+        _LGAM[n] = gammaln(np.arange(n + 1) + 0.5)
+    return _LGAM[n]
+
+
+_EDGE_IDX = {}
+
+
+def _edge_index(maxM):
+    """(M, k) for every interior edge k = 1..M-1 of every M = 1..maxM, cached per maxM."""
+    if maxM not in _EDGE_IDX:
+        M = np.repeat(np.arange(1, maxM + 1), np.arange(0, maxM))
+        k = np.concatenate([np.arange(1, m) for m in range(1, maxM + 1)])
+        _EDGE_IDX[maxM] = (M, k.astype(float), M.astype(float))
+    return _EDGE_IDX[maxM]
 
 
 def hist_counts_all(x, maxM):
     """`np.histogram(x, bins=M)[0]` for every M = 1..maxM at once, row M-1 zero-padded.
 
-    Replicates numpy's uniform-bin assignment exactly (index from the scaled offset, then
-    the same one-step corrections against `linspace` edges), so Knuth sees the counts the
-    loop over np.histogram would.
+    numpy's uniform-bin assignment, after its one-step corrections against the
+    `np.linspace` edges, is exactly the half-open rule e_k <= x < e_{k+1} (last bin closed
+    at the top). So with x sorted once, bin k of M holds #(x < e_{k+1}) - #(x < e_k): every
+    M's interior edges are located with ONE searchsorted and the counts come from one diff.
+    Edges use linspace's own arithmetic, k * ((hi - lo) / M) + lo, so they are bit-identical
+    to the edges np.histogram builds. Checked against np.histogram in the tests.
     """
-    x = np.asarray(x, dtype=float)
-    lo, hi = float(x.min()), float(x.max())
+    xs = np.sort(np.asarray(x, dtype=float))
+    n = xs.size
+    lo, hi = float(xs[0]), float(xs[-1])
     if lo == hi:
         lo, hi = lo - 0.5, hi + 0.5                                 # numpy's degenerate range
-    M = np.arange(1, maxM + 1)[:, None]
-    X = np.broadcast_to(x, (maxM, len(x)))
-    idx = (((X - lo) / (hi - lo)) * M).astype(np.intp)             # numpy's operation order
-    idx[idx == M] -= 1
-    step = (hi - lo) / M                                            # linspace: k*step + lo,
-    edge = lambda k: np.where(k == M, hi, k * step + lo)           # noqa: E731  last = hi
-    idx[X < edge(idx)] -= 1
-    idx[(X >= edge(idx + 1)) & (idx != M - 1)] += 1
-    flat = (np.arange(maxM)[:, None] * maxM + idx).ravel()
-    return np.bincount(flat, minlength=maxM * maxM).reshape(maxM, maxM)
+    Mi, kf, Mf = _edge_index(maxM)
+    edges = kf * ((hi - lo) / Mf) + lo
+    cum = np.full((maxM, maxM + 1), n, dtype=np.int64)              # #(x < e_k); e_M -> n
+    cum[:, 0] = 0
+    cum[Mi - 1, kf.astype(np.intp)] = np.searchsorted(xs, edges, side="left")
+    return np.diff(cum, axis=1)                                     # zeros beyond bin M
 
 
 def knuth_bins(x, maxM):
