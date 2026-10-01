@@ -194,12 +194,15 @@ def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True, bin
 
 def loo_means(F):
     """Leave-one-out ensemble means, NaN-skipping like `s = f.mean("n")`. `(N, T, ...)` in and out."""
-    F = np.asarray(F, dtype=float)
     ok = ~np.isnan(F)
-    tot = np.where(ok, F, 0.0).sum(axis=0, keepdims=True)
+    out = np.nan_to_num(np.array(F, dtype=float), nan=0.0)    # the one full-size array
+    tot = out.sum(axis=0, keepdims=True)
     cnt = ok.sum(axis=0, keepdims=True)
+    out -= tot                                                  # in place: -(tot - x), then
+    np.negative(out, out=out)                                   # negate (exact), as tot - x
     with np.errstate(invalid="ignore", divide="ignore"):
-        return (tot - np.where(ok, F, 0.0)) / (cnt - ok)
+        out /= cnt - ok
+    return out
 
 
 _G = {}
