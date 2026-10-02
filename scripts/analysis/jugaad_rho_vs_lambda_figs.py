@@ -46,13 +46,25 @@ from jugaad_fd_optbins_run import OUT, load                          # noqa: E40
 from jugaad_fd_optbins_figs import (CASES, DIV, FIG, INK, LEAD_LABEL, MUTED,  # noqa: E402
                                     draw_panel, load_case, save, stip_size, wfrac, wmean)
 
-TITLES = ("Pearson $\\rho$", "Granger-Lin $\\lambda$ (jugaad)")
 BOOT_TAG = os.environ.get("BOOT_TAG", "")
+# LAM_RULE=knuth: the lambda column from Knuth OptBins bins (`knuth_untiled`, I(f; o)
+# numerator), its own bootstrap (boot_knuth_*, the same draws as the rho column), red rings
+# from Knuth's alt band; s1961 and lead 2-4 only; -> rho_vs_lambda_<lead>_knuth.
+LAM_RULE = os.environ.get("LAM_RULE", "fd")
+LAM_KEY = {"fd": "fd_tiled", "knuth": "knuth_untiled"}[LAM_RULE]
+TITLES = ("Pearson $\\rho$", "Granger-Lin $\\lambda$ (jugaad"
+          + (", Knuth)" if LAM_RULE == "knuth" else ")"))
+KNUTH_LEADS = ("s1961", "2-4")
 RING = "#d40000"
 
 
 def boot_case(var, lead):
     path = os.path.join(OUT, f"boot_{var}_lead{lead}{BOOT_TAG}.npz")
+    return dict(np.load(path)) if os.path.exists(path) else None
+
+
+def lam_boot_case(var, lead):
+    path = os.path.join(OUT, f"boot_{LAM_RULE}_{var}_lead{lead}{BOOT_TAG}.npz")
     return dict(np.load(path)) if os.path.exists(path) else None
 
 
@@ -121,14 +133,20 @@ def figure(lead, ds):
     axs = [[MAP.add_ax(fig, len(rows), 2, 2 * i + k + 1) for k in range(2)]
            for i in range(len(rows))]
     res = {"lead": lead, "left": "corr(s,o) / <corr(s_-n, f_n)>_n",
-           "right": "jugaad lambda_o/lambda_m, FD bins, alt=1, full-mean s",
+           "right": f"jugaad lambda_o/lambda_m, {LAM_RULE} bins, alt=1, full-mean s, "
+                    "lambda_o = lambda(I(f; o))",
            "stipple": "5-95% of Eade bootstrap contains 1 (both columns); red ring (right): "
-                      "|lam(1.5x) - lam(0.5x)| > lam(1x); grey: corr(s,o) <= 0", "rows": {}}
+                      "|lam(1.5x) - lam(0.5x)| > lam(1x); grey: corr(s,o) <= 0, and (right) lambda "
+                      "undefined (lambda_m <= 0.02, e.g. Knuth picks one bin for s)", "rows": {}}
     for i, d in enumerate(rows):
         r = rho_case(d["var"], lead)
         rpc_rho = r["rho_o"] / r["rho_m_loo"]
-        b = d["rules"]["fd_tiled"]
+        b = d["rules"][LAM_KEY]
         bt = boot_case(d["var"], lead)
+        if bt is not None and LAM_RULE == "knuth":
+            bk = lam_boot_case(d["var"], lead)
+            bt = None if bk is None else dict(bt, rpc_lam=bk["lam"][1], lam_q05=bk["lam_q05"],
+                                              lam_q95=bk["lam_q95"], boot_lam=int(bk["boot"]))
         W = d["W"]
         marks = {}
         if bt is None:
@@ -179,13 +197,14 @@ def figure(lead, ds):
     cb.set_ticklabels(["0", "0.5", "1", "1.5", "≥2"])
     axs[0][0].text(0.0, 1.14, f"{LEAD_LABEL[lead]}  N={rows[0]['N']}", fontsize=8,
                    color=MUTED, transform=axs[0][0].transAxes)
-    save(fig, res, f"rho_vs_lambda_{lead}{BOOT_TAG}")
+    save(fig, res, f"rho_vs_lambda_{lead}{BOOT_TAG}" + ("_knuth" if LAM_RULE == "knuth" else ""))
     return res
 
 
 def main():
     check_against_smyle()
-    have = [c for c in CASES if os.path.exists(os.path.join(OUT, f"{c[0]}_lead{c[1]}.npz"))]
+    have = [c for c in CASES if os.path.exists(os.path.join(OUT, f"{c[0]}_lead{c[1]}.npz"))
+            and (LAM_RULE == "fd" or c[1] in KNUTH_LEADS)]
     ds = [load_case(*c) for c in have]
     out = {lead: figure(lead, ds) for lead in dict.fromkeys(d["lead"] for d in ds)}
     print(f"\n{'case':<20} {'rho_o':>6} {'rho_m LOO':>9} {'RPC_rho':>8} {'%>1':>6} | "

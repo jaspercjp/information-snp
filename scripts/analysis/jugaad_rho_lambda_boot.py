@@ -14,6 +14,9 @@ One draw (Eade et al. 2014 SI, the same draw for both statistics):
      seasonal cycle and within-year autocorrelation stay intact;
   2. take N-3 members WITHOUT replacement; the ensemble mean, the leave-one-out means and
      the jugaad s all come from those members.
+--rule knuth: Knuth OptBins (sized on the T distinct obs/s values) instead of FD, lambda
+only, -> boot_knuth_<VAR>_lead<LEAD>.npz (or boot_knuth_oloo_* with --o-vs loo).
+
 --o-vs loo: the lambda statistic only, with lambda_o = lambda(I(s_-n_jugaad; o_jugaad))
 (the obs paired with the mean of the OTHER members of the draw), lambda_m unchanged.
 Same seed and the same rng calls, so its draws are exactly the draws of the default run
@@ -61,38 +64,57 @@ def stats(F, o):
     return rpc_rho, lam["lam"][0], ro
 
 
-def lam_stat(F, o, alts=(1.0,)):
-    """Jugaad lambda with lambda_o = lambda(I(s_-n; o)); full-mean s in lambda_m."""
-    return JT.jugaad_maps(F, o, s=np.nanmean(F, axis=0), rule="fd", alts=alts, o_vs="loo")
+def rule_kw(rule):
+    """jugaad_maps binning kwargs: thesis FD, or Knuth sized on the T distinct obs/s values."""
+    from jugaad_fd_optbins_run import KNUTH_MAX
+    return dict(rule="fd") if rule == "fd" else dict(rule="knuth", tiled=False, maxM=KNUTH_MAX)
 
 
-def main_oloo(a):
+def lam_stat(F, o, alts=(1.0,), o_vs="loo", rule="fd"):
+    """Jugaad lambda; lambda_o partner of the obs per `o_vs`; full-mean s in lambda_m."""
+    return JT.jugaad_maps(F, o, s=np.nanmean(F, axis=0), alts=alts, o_vs=o_vs, **rule_kw(rule))
+
+
+def lam_path(a):
+    """boot_oloo_* (FD, s_-n numerator: the original name), else boot_<rule>[_oloo]_*."""
+    if a.rule == "fd" and a.o_vs == "loo":
+        pre = "boot_oloo"
+    else:
+        pre = f"boot_{a.rule}" + ("_oloo" if a.o_vs == "loo" else "")
+    return os.path.join(OUT, f"{pre}_{a.var}_lead{a.lead}{a.tag}.npz")
+
+
+def main_lam(a):
+    """lambda only, same draws as main(); point estimate with its alt 0.5/1/1.5 band."""
     t0 = time.time()
     F, o, _, lats, lons = load(a.var, a.lead)
     if a.ny:
         F, o, lats = F[:, :, :a.ny], o[:, :a.ny], lats[:a.ny]
     N, T = F.shape[:2]
-    print(f"{a.var} {a.lead} (o_vs=loo): N={N} T={T} grid={F.shape[2:]} "
-          f"(load {time.time() - t0:.0f}s)", flush=True)
-    pt = lam_stat(F, o, alts=(0.5, 1.0, 1.5))
-    both = JT.jugaad_maps(F, o, s="loo", rule="fd", alts=(1.0,), o_vs="loo")
+    print(f"{a.var} {a.lead} (lambda only, rule={a.rule}, o_vs={a.o_vs}): N={N} T={T} "
+          f"grid={F.shape[2:]} (load {time.time() - t0:.0f}s)", flush=True)
+    pt = lam_stat(F, o, alts=(0.5, 1.0, 1.5), o_vs=a.o_vs, rule=a.rule)
+    extra = {}
+    if a.o_vs == "loo":
+        both = JT.jugaad_maps(F, o, s="loo", alts=(1.0,), o_vs="loo", **rule_kw(a.rule))
+        extra = dict(lam_both_loo=both["lam"][0], lam_m_loo=both["lam_m"][0])
     rng = np.random.default_rng([a.seed, sum(map(ord, a.var + a.lead))])
     B_lam = np.full((a.boot,) + F.shape[2:], np.nan, np.float32)
     t1 = time.time()
     for b in range(a.boot):
         ti = time_index(rng, T, a.lead)                       # identical rng calls to main()
         mi = rng.choice(N, N - 3, replace=False)
-        B_lam[b] = lam_stat(F[mi][:, ti], o[ti])["lam"][0]
+        Fb = F[mi[:, None], ti]                       # one copy; same values as F[mi][:, ti]
+        B_lam[b] = lam_stat(Fb, o[ti], o_vs=a.o_vs, rule=a.rule)["lam"][0]
         if b in (0, 4) or (b + 1) % 100 == 0:
             print(f"  draw {b + 1}/{a.boot}  {(time.time() - t1) / (b + 1):.1f} s/draw",
                   flush=True)
     q = lambda X, p: np.nanpercentile(X, p, axis=0)                  # noqa: E731
-    path = os.path.join(OUT, f"boot_oloo_{a.var}_lead{a.lead}{a.tag}.npz")
-    np.savez_compressed(path, lats=lats, lons=lons, N=N, T=T, boot=a.boot,
-                        alts=pt["alts"], lam=pt["lam"], lam_o=pt["lam_o"], lam_m=pt["lam_m"],
-                        I_o=pt["I_o"], I_m=pt["I_m"], bins=pt["bins"],
-                        lam_both_loo=both["lam"][0], lam_m_loo=both["lam_m"][0],
-                        lam_q05=q(B_lam, 5), lam_q95=q(B_lam, 95), B_lam=B_lam)
+    path = lam_path(a)
+    np.savez_compressed(path, lats=lats, lons=lons, N=N, T=T, boot=a.boot, rule=a.rule,
+                        o_vs=a.o_vs, alts=pt["alts"], lam=pt["lam"], lam_o=pt["lam_o"],
+                        lam_m=pt["lam_m"], I_o=pt["I_o"], I_m=pt["I_m"], bins=pt["bins"],
+                        lam_q05=q(B_lam, 5), lam_q95=q(B_lam, 95), B_lam=B_lam, **extra)
     print(f"-> {path}  ({(time.time() - t0) / 60:.1f} min)")
 
 
@@ -106,9 +128,12 @@ def main():
     ap.add_argument("--tag", default="")
     ap.add_argument("--o-vs", default="f", choices=("f", "loo"),
                     help="lambda_o partner of the obs: members (thesis) or s_-n")
+    ap.add_argument("--rule", default="fd", choices=("fd", "knuth"),
+                    help="binning rule; anything but the default fd/f runs lambda only")
+    ap.add_argument("--lam-only", action="store_true", help="lambda only, even for fd/f")
     a = ap.parse_args()
-    if a.o_vs == "loo":
-        return main_oloo(a)
+    if a.o_vs == "loo" or a.rule != "fd" or a.lam_only:
+        return main_lam(a)
 
     t0 = time.time()
     F, o, _, lats, lons = load(a.var, a.lead)
@@ -125,7 +150,7 @@ def main():
     for b in range(a.boot):
         ti = time_index(rng, T, a.lead)
         mi = rng.choice(N, N - 3, replace=False)
-        Fb = F[mi][:, ti]
+        Fb = F[mi[:, None], ti]                       # one copy; same values as F[mi][:, ti]
         B_rho[b], B_lam[b], _ = stats(Fb, o[ti])
         if b in (0, 4) or (b + 1) % 100 == 0:
             print(f"  draw {b + 1}/{a.boot}  {(time.time() - t1) / (b + 1):.1f} s/draw",
