@@ -129,17 +129,20 @@ def figure(name):
             if i == 0:
                 ax.set_title(TITLES[k], fontsize=11, color=INK)
             ax.text(0.01, 0.97, f"({next(letters)})", transform=ax.transAxes, ha="left",
-                    va="top", fontsize=9, color=INK,
-                    bbox=dict(boxstyle="square,pad=0.15", fc="white", ec="none", alpha=0.8))
+                    va="top", fontsize=9, color=INK, zorder=20,
+                    bbox=dict(boxstyle="square,pad=0.15", fc="white", ec="none", alpha=0.9))
         lab = d["var"] + (f" {ROWLAB[d['lead']]}" if ROWLAB[d["lead"]] else "")
         axs[i][0].text(-0.03, 0.5, lab, rotation=90, ha="right", va="center", fontsize=10,
                        color=INK, transform=axs[i][0].transAxes)
         axs[i][0].text(-0.085, 0.5, f"N={d['N']}, T={d['T']}", rotation=90, ha="right",
                        va="center", fontsize=8, color=MUTED, transform=axs[i][0].transAxes)
-    cb = fig.colorbar(im, ax=[a for r in axs for a in r], orientation="horizontal",
+    sm = plt.cm.ScalarMappable(norm=Normalize(0.0, 2.0), cmap=DIV)    # continuous bar
+    cb = fig.colorbar(sm, ax=[a for r in axs for a in r], orientation="horizontal",
                       shrink=0.45, pad=0.02, label="RPC")
     cb.set_ticks([0, 0.5, 1, 1.5, 2])
     cb.set_ticklabels(["0", "0.5", "1", "1.5", "≥2"])
+    cb.solids.set_edgecolor("face")                  # no hairline seams between the strips
+    cb.solids.set_rasterized(True)
     for sub in ("png", "pdf", "json"):
         os.makedirs(os.path.join(FIG, sub), exist_ok=True)
     base = f"rpc_rho_lambda_{name}"
