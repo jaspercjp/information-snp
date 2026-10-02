@@ -17,6 +17,12 @@ One draw (Eade et al. 2014 SI, the same draw for both statistics):
 --rule knuth: Knuth OptBins (sized on the T distinct obs/s values) instead of FD, lambda
 only, -> boot_knuth_<VAR>_lead<LEAD>.npz (or boot_knuth_oloo_* with --o-vs loo).
 
+--fixed-bins: every draw reuses each cell's full-data bin counts instead of re-choosing them.
+Needed for Knuth: years resampled with replacement repeat exactly, and Knuth on the T obs / s
+values then resolves the repeats (4 -> 42-44 bins on SLP lead 2-4), so a re-binned draw is
+a different estimator from the mapped one. Binning uncertainty is shown separately (rings).
+-> boot_<rule>[...]_fixbins_*.
+
 --o-vs loo: the lambda statistic only, with lambda_o = lambda(I(s_-n_jugaad; o_jugaad))
 (the obs paired with the mean of the OTHER members of the draw), lambda_m unchanged.
 Same seed and the same rng calls, so its draws are exactly the draws of the default run
@@ -70,12 +76,13 @@ def rule_kw(rule):
     return dict(rule="fd") if rule == "fd" else dict(rule="knuth", tiled=False, maxM=KNUTH_MAX)
 
 
-def lam_stat(F, o, alts=(1.0,), o_vs="loo", rule="fd", s_m="full", loo_size="T"):
+def lam_stat(F, o, alts=(1.0,), o_vs="loo", rule="fd", s_m="full", loo_size="T", bins=None):
     """Jugaad lambda; lambda_o partner of the obs per `o_vs`; lambda_m against the full mean
     s (tiled, s_m="full") or the flattened leave-one-out means (s_m="loo", s_-n axis sized
     per `loo_size`; "T" = on the T cluster centres)."""
     s = np.nanmean(F, axis=0) if s_m == "full" else "loo"
-    return JT.jugaad_maps(F, o, s=s, alts=alts, o_vs=o_vs, loo_size=loo_size, **rule_kw(rule))
+    return JT.jugaad_maps(F, o, s=s, alts=alts, o_vs=o_vs, loo_size=loo_size, bins=bins,
+                          **rule_kw(rule))
 
 
 def lam_path(a):
@@ -84,7 +91,8 @@ def lam_path(a):
         pre = "boot_oloo"
     else:
         pre = (f"boot_{a.rule}" + ("_oloo" if a.o_vs == "loo" else "")
-               + (f"_lmloo{a.loo_size}" if a.s_m == "loo" else ""))
+               + (f"_lmloo{a.loo_size}" if a.s_m == "loo" else "")
+               + ("_fixbins" if a.fixed_bins else ""))
     return os.path.join(OUT, f"{pre}_{a.var}_lead{a.lead}{a.tag}.npz")
 
 
@@ -110,14 +118,16 @@ def main_lam(a):
         ti = time_index(rng, T, a.lead)                       # identical rng calls to main()
         mi = rng.choice(N, N - 3, replace=False)
         Fb = F[mi[:, None], ti]                       # one copy; same values as F[mi][:, ti]
-        B_lam[b] = lam_stat(Fb, o[ti], **kws)["lam"][0]
+        fixed = pt["bins"] if a.fixed_bins else None             # full-data bin counts
+        B_lam[b] = lam_stat(Fb, o[ti], bins=fixed, **kws)["lam"][0]
         if b in (0, 4) or (b + 1) % 100 == 0:
             print(f"  draw {b + 1}/{a.boot}  {(time.time() - t1) / (b + 1):.1f} s/draw",
                   flush=True)
     q = lambda X, p: np.nanpercentile(X, p, axis=0)                  # noqa: E731
     path = lam_path(a)
     np.savez_compressed(path, lats=lats, lons=lons, N=N, T=T, boot=a.boot, rule=a.rule,
-                        o_vs=a.o_vs, s_m=a.s_m, loo_size=a.loo_size, alts=pt["alts"], lam=pt["lam"], lam_o=pt["lam_o"],
+                        o_vs=a.o_vs, s_m=a.s_m, loo_size=a.loo_size, fixed_bins=a.fixed_bins,
+                        alts=pt["alts"], lam=pt["lam"], lam_o=pt["lam_o"],
                         lam_m=pt["lam_m"], I_o=pt["I_o"], I_m=pt["I_m"], bins=pt["bins"],
                         lam_q05=q(B_lam, 5), lam_q95=q(B_lam, 95), B_lam=B_lam, **extra)
     print(f"-> {path}  ({(time.time() - t0) / 60:.1f} min)")
@@ -140,8 +150,10 @@ def main():
                     help="lambda_m partner of f: tiled full mean s or flattened s_-n")
     ap.add_argument("--loo-size", default="T", choices=("T", "pooled"),
                     help="s_-n axis bin sizing when --s-m loo")
+    ap.add_argument("--fixed-bins", action="store_true",
+                    help="every draw uses each cell's FULL-DATA bin counts (lambda only)")
     a = ap.parse_args()
-    if a.o_vs == "loo" or a.rule != "fd" or a.lam_only or a.s_m == "loo":
+    if a.o_vs == "loo" or a.rule != "fd" or a.lam_only or a.s_m == "loo" or a.fixed_bins:
         return main_lam(a)
 
     t0 = time.time()
