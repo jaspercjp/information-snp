@@ -70,17 +70,21 @@ def rule_kw(rule):
     return dict(rule="fd") if rule == "fd" else dict(rule="knuth", tiled=False, maxM=KNUTH_MAX)
 
 
-def lam_stat(F, o, alts=(1.0,), o_vs="loo", rule="fd"):
-    """Jugaad lambda; lambda_o partner of the obs per `o_vs`; full-mean s in lambda_m."""
-    return JT.jugaad_maps(F, o, s=np.nanmean(F, axis=0), alts=alts, o_vs=o_vs, **rule_kw(rule))
+def lam_stat(F, o, alts=(1.0,), o_vs="loo", rule="fd", s_m="full", loo_size="T"):
+    """Jugaad lambda; lambda_o partner of the obs per `o_vs`; lambda_m against the full mean
+    s (tiled, s_m="full") or the flattened leave-one-out means (s_m="loo", s_-n axis sized
+    per `loo_size`; "T" = on the T cluster centres)."""
+    s = np.nanmean(F, axis=0) if s_m == "full" else "loo"
+    return JT.jugaad_maps(F, o, s=s, alts=alts, o_vs=o_vs, loo_size=loo_size, **rule_kw(rule))
 
 
 def lam_path(a):
     """boot_oloo_* (FD, s_-n numerator: the original name), else boot_<rule>[_oloo]_*."""
-    if a.rule == "fd" and a.o_vs == "loo":
+    if a.rule == "fd" and a.o_vs == "loo" and a.s_m == "full":
         pre = "boot_oloo"
     else:
-        pre = f"boot_{a.rule}" + ("_oloo" if a.o_vs == "loo" else "")
+        pre = (f"boot_{a.rule}" + ("_oloo" if a.o_vs == "loo" else "")
+               + (f"_lmloo{a.loo_size}" if a.s_m == "loo" else ""))
     return os.path.join(OUT, f"{pre}_{a.var}_lead{a.lead}{a.tag}.npz")
 
 
@@ -93,9 +97,10 @@ def main_lam(a):
     N, T = F.shape[:2]
     print(f"{a.var} {a.lead} (lambda only, rule={a.rule}, o_vs={a.o_vs}): N={N} T={T} "
           f"grid={F.shape[2:]} (load {time.time() - t0:.0f}s)", flush=True)
-    pt = lam_stat(F, o, alts=(0.5, 1.0, 1.5), o_vs=a.o_vs, rule=a.rule)
+    kws = dict(o_vs=a.o_vs, rule=a.rule, s_m=a.s_m, loo_size=a.loo_size)
+    pt = lam_stat(F, o, alts=(0.5, 1.0, 1.5), **kws)
     extra = {}
-    if a.o_vs == "loo":
+    if a.o_vs == "loo" and a.s_m == "full":
         both = JT.jugaad_maps(F, o, s="loo", alts=(1.0,), o_vs="loo", **rule_kw(a.rule))
         extra = dict(lam_both_loo=both["lam"][0], lam_m_loo=both["lam_m"][0])
     rng = np.random.default_rng([a.seed, sum(map(ord, a.var + a.lead))])
@@ -105,14 +110,14 @@ def main_lam(a):
         ti = time_index(rng, T, a.lead)                       # identical rng calls to main()
         mi = rng.choice(N, N - 3, replace=False)
         Fb = F[mi[:, None], ti]                       # one copy; same values as F[mi][:, ti]
-        B_lam[b] = lam_stat(Fb, o[ti], o_vs=a.o_vs, rule=a.rule)["lam"][0]
+        B_lam[b] = lam_stat(Fb, o[ti], **kws)["lam"][0]
         if b in (0, 4) or (b + 1) % 100 == 0:
             print(f"  draw {b + 1}/{a.boot}  {(time.time() - t1) / (b + 1):.1f} s/draw",
                   flush=True)
     q = lambda X, p: np.nanpercentile(X, p, axis=0)                  # noqa: E731
     path = lam_path(a)
     np.savez_compressed(path, lats=lats, lons=lons, N=N, T=T, boot=a.boot, rule=a.rule,
-                        o_vs=a.o_vs, alts=pt["alts"], lam=pt["lam"], lam_o=pt["lam_o"],
+                        o_vs=a.o_vs, s_m=a.s_m, loo_size=a.loo_size, alts=pt["alts"], lam=pt["lam"], lam_o=pt["lam_o"],
                         lam_m=pt["lam_m"], I_o=pt["I_o"], I_m=pt["I_m"], bins=pt["bins"],
                         lam_q05=q(B_lam, 5), lam_q95=q(B_lam, 95), B_lam=B_lam, **extra)
     print(f"-> {path}  ({(time.time() - t0) / 60:.1f} min)")
@@ -131,8 +136,12 @@ def main():
     ap.add_argument("--rule", default="fd", choices=("fd", "knuth"),
                     help="binning rule; anything but the default fd/f runs lambda only")
     ap.add_argument("--lam-only", action="store_true", help="lambda only, even for fd/f")
+    ap.add_argument("--s-m", default="full", choices=("full", "loo"),
+                    help="lambda_m partner of f: tiled full mean s or flattened s_-n")
+    ap.add_argument("--loo-size", default="T", choices=("T", "pooled"),
+                    help="s_-n axis bin sizing when --s-m loo")
     a = ap.parse_args()
-    if a.o_vs == "loo" or a.rule != "fd" or a.lam_only:
+    if a.o_vs == "loo" or a.rule != "fd" or a.lam_only or a.s_m == "loo":
         return main_lam(a)
 
     t0 = time.time()
