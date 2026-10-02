@@ -172,6 +172,20 @@ def test_o_vs_loo():
     print("  o_vs='loo': I_o == thesis I(tile(o); pooled s_-n), I_m unchanged: OK")
 
 
+def test_lam_m_loo_sizing():
+    F, o = synthetic_cube(seed=9, N=6)
+    F = np.where(np.isnan(F), 0.0, F)
+    r = JT.jugaad_maps(F, o, s="loo", rule="knuth", tiled=False, maxM=60, loo_size="T", n_jobs=1)
+    L = JT.loo_means(F)
+    j, i = 1, 2
+    Bs = JT.knuth_bins(L[:, :, j, i].mean(0), min(60, F.shape[1]))
+    assert r["bins"][2, j, i] == Bs
+    Lj, fj = L[:, :, j, i].flatten(), F[:, :, j, i].flatten()
+    ref = ITM.I(Lj, fj, nbins_alt=(Bs, int(r["bins"][0, j, i])))[0]
+    assert r["I_m"][1, j, i] == ref                                   # alt = 1
+    print("  lam_m with pooled s_-n, Knuth sized on the T cluster centres: OK")
+
+
 if __name__ == "__main__":
     test_hist_counts_all_matches_numpy()
     test_info_rpc_bitwise()
@@ -181,4 +195,5 @@ if __name__ == "__main__":
     test_permuted_obs_reuse_bins()
     test_fd_undefined_cell_is_nan()
     test_o_vs_loo()
+    test_lam_m_loo_sizing()
     print("all passed")

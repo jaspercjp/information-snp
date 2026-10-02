@@ -161,7 +161,8 @@ def _rule_bins(x, rule, maxM, B):
     return int(B)
 
 
-def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True, bins=None, p=None):
+def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True, bins=None, p=None,
+         loo_size="pooled"):
     """One grid cell. f `(N, T)`, o `(T,)`, s `(T,)` or `(N, T)` (the latter is s_-n, pooled).
 
     tiled : the rule sizes the o and s axes from their tiled N*T series (thesis) or, if
@@ -169,6 +170,10 @@ def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True, bin
         its likelihood rewards isolating each repeated value (optbins_characterise.py).
         Untiled Knuth is capped at T bins. A pooled s_-n has N*T distinct values and is
         always sized as is.
+    loo_size : how the s axis is sized when s is pooled s_-n `(N, T)` and tiled=False --
+        "pooled" (the rule on all N*T rows) or "T" (the rule on the T cluster centres
+        mean_n s_-n[n, t] = s[t], capped at T). s_-n[t] differs from s[t] by ~f_n/N, so the
+        pooled series is T tight clusters, which Knuth resolves bin by bin.
     p : `(N, T)` series paired with the tiled obs in I_o, pooled row (n, t) like f; default
         f itself (the thesis I(f; o)). p = s_-n gives I(s_-n; o), the ensemble-mean analogue.
         Its bin count B_p comes from the same rule on the pooled p (N*T distinct values).
@@ -197,8 +202,12 @@ def cell(f, o, s, rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True, bin
     else:
         Bf = _rule_bins(f_jug, rule, maxM, B)
         Bo = _rule_bins(np.asarray(o, float), rule, min(maxM, T), B)
-        Bs = (_rule_bins(np.asarray(s, float), rule, min(maxM, T), B) if np.ndim(s) == 1
-              else _rule_bins(s_jug, rule, maxM, B))
+        if np.ndim(s) == 1:
+            Bs = _rule_bins(np.asarray(s, float), rule, min(maxM, T), B)
+        elif loo_size == "T":
+            Bs = _rule_bins(np.nanmean(np.asarray(s, float), axis=0), rule, min(maxM, T), B)
+        else:
+            Bs = _rule_bins(s_jug, rule, maxM, B)
     if bins is None:
         Bp = Bf if p is None else _rule_bins(p_jug, rule, maxM, B)
     I_o = np.empty(len(alts))
@@ -247,11 +256,11 @@ def _row(j):
 
 
 def jugaad_maps(F, o, s="full", rule="fd", alts=THESIS_ALTS, maxM=400, B=None, tiled=True,
-                bins=None, o_vs="f", n_jobs=None):
+                bins=None, o_vs="f", loo_size="pooled", n_jobs=None):
     """Per-cell jugaad lambda over a map. F `(N, T, ny, nx)`, o `(T, ny, nx)`.
 
     s : "full" (thesis; NaN-skipping member mean), "loo" (s_-n), or an explicit `(T, ny, nx)`.
-    tiled, bins : see `cell`; tiled=True is the thesis. `bins` is `(3 or 4, ny, nx)`.
+    tiled, bins, loo_size : see `cell`; tiled=True is the thesis. `bins` is `(3 or 4, ny, nx)`.
     o_vs : what the tiled obs is paired with in I_o -- "f" (thesis: each member, I(f; o))
         or "loo" (the leave-one-out mean of the other members, I(s_-n; o)). I_m is the same
         either way.
@@ -271,7 +280,8 @@ def jugaad_maps(F, o, s="full", rule="fd", alts=THESIS_ALTS, maxM=400, B=None, t
         raise ValueError(f"o_vs must be 'f' or 'loo', got {o_vs!r}")
     P = loo_means(F) if o_vs == "loo" else None
     ny = F.shape[2]
-    _G.update(F=F, o=o, S=S, bins=bins, P=P, kw=dict(rule=rule, alts=tuple(alts), maxM=maxM, B=B, tiled=tiled))
+    _G.update(F=F, o=o, S=S, bins=bins, P=P, kw=dict(rule=rule, alts=tuple(alts), maxM=maxM, B=B, tiled=tiled,
+                                                      loo_size=loo_size))
     n_jobs = n_jobs or int(_os.environ.get("SLURM_CPUS_ON_NODE", 1))
     if n_jobs > 1:
         with get_context("fork").Pool(n_jobs) as pool:
