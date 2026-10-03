@@ -15,6 +15,24 @@ Each statistic gets its own test. The ρ dots say whether the ρ RPC differs fro
 dots say whether the λ RPC differs from 1. The two columns are paired only in that they use
 the same resampled data.
 
+> **Current production figures** (`rpc_rho_lambda_lead2-4`, `rpc_rho_lambda_decadal`, from
+> `scripts/analysis/rpc_rho_lambda_production.py`) differ from the description below in three ways:
+>
+> 1. **Bins are fixed.** Each λ draw keeps the cell's **full-data Knuth bin counts**
+>    (`--fixed-bins`, giving `boot_knuth_lmlooT_fixbins_*`). Re-choosing Knuth inside a draw is
+>    wrong here: resampled years repeat exactly, and Knuth on the T obs and s values then
+>    resolves the repeats (4 → 42–44 bins on SLP lead 2-4, with λ_o 0.26 → 0.48 inside the
+>    draws). The draw would then be a different estimator from the one mapped. Binning
+>    uncertainty is shown only by the red rings.
+> 2. **λ_m uses leave-one-out means.** λ_m = λ(I(f_jugaad; s₋ₙ_jugaad)): each member's rows are
+>    paired with the flattened mean of the other drawn members, not with tiled s. The s₋ₙ axis is
+>    sized on its T cluster centres, mean_n s₋ₙ[n, t] = s[t].
+> 3. **PRECT is decadal s1978** (GPCP starts in 1979). Its row is in the decadal figure.
+>
+> The ρ draws are unchanged. Caveat: with fixed bins, cells where Knuth gives the obs one bin
+> have λ_o = 0 in every draw and count as significantly below 1 by construction. For
+> TREFHT s1961 that is 37.6 of its 97.8 percentage points.
+
 ---
 
 ## 0. Input data (once, before any resampling)
