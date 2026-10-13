@@ -1,12 +1,12 @@
 # Thesis jugaad λ: Freedman–Diaconis vs Knuth OptBins, and how much the binning moves it
 
-Code: branch `jugaad-fd-optbins`. The main pieces:
-- `scripts/metrics/jugaad_thesis.py`
-- `scripts/analysis/jugaad_fd_optbins_{run,figs}.py`
-- `scripts/analysis/cmip5_thesis_reproduce.py`
-- `scripts/tests/test_jugaad_thesis.py`
+Code: `scripts/` (see `scripts/README.md`). `bash scripts/run_all.sh` rebuilds everything here.
+- `scripts/jugaad.py`: the measures; `scripts/run.py`: point estimates; `scripts/boot.py`: bootstrap
+- `scripts/tables.py`, `scripts/plots.py`: the tables and figures in this folder
+- `scripts/data-acquisition/`: raw data to the per-case input arrays
+- `scripts/tests/test_jugaad.py`: bitwise checks against the thesis code in `scripts/thesis-old/`
 
-Raw outputs are in `$SCRATCH/snp_jugaad_fd_optbins/`.
+Raw outputs are in `$SNP_OUT` (default `$SCRATCH/snp_jugaad/`).
 
 The formulation is the thesis one:
 - `f_jugaad` = members flattened, NaN → 0.
@@ -58,7 +58,7 @@ PRECT has no s1961 case, because GPCP starts in 1979.
 
 ## CMIP5 reproduction
 
-- **Data:** the thesis data were rebuilt with `scripts/cubes/build_cmip5_thesis_ensemble.py`.
+- **Data:** the thesis data were rebuilt with `scripts/data-acquisition/build_cmip5_thesis_ensemble.py`.
   - The 49 psl files come from the CEDA ESGF replica, all checksum-verified. Provenance is in `data/models/PROVENANCE_psl.json`.
   - The obs are HadSLP2 from the Met Office.
 - **Obs:** stamping obs on day 16 reproduces calc_RPC's saved cell-8 obs moments exactly (variance 158673.163, skew 0.129, kurtosis 2.216).
@@ -72,3 +72,7 @@ PRECT has no s1961 case, because GPCP starts in 1979.
 - `jugaad_lam_maps_<case>`: FD λ, Knuth λ and pooled Pearson ρ_o/ρ_m. Cells are stippled where the alt 0.5–1.5 band of λ contains 1.
 - `jugaad_binning_uncertainty`: ΔI against I per cell, with the 1:1 line.
 - `jugaad_bins_sensitivity`: mean I and λ against a common bin count, with FD and Knuth shown with their alt bands.
+- `jugaad_knuth_lam_terms_<case>`: the three λ terms under Knuth bins, λ_o with I(f; o) and with I(s₋ₙ; o), and λ_m.
+- `rho_vs_lambda_<case>`: ρ RPC beside the jugaad λ RPC, with Eade bootstrap dots (`BOOTSTRAP.md`). The λ column uses Knuth bins for lead 2-4 and s1961, and the thesis FD bins for cmip5 and s1961moy.
+- `rpc_rho_lambda_{lead2-4,decadal}` (png, pdf): the production maps, ρ RPC beside the Knuth λ RPC with λ_m from s₋ₙ and fixed-bin bootstrap dots. The `_oloo_` versions add a third column with λ_o from I(s₋ₙ; o).
+- Each png has a json in `json/` with the area summaries it shows. `NOTES.txt` holds working notes on the two kinds of uncertainty.

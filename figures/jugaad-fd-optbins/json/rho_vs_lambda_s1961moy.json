@@ -1,0 +1,72 @@
+{
+ "lead": "s1961moy",
+ "left": "corr(s,o) / <corr(s_-n, f_n)>_n",
+ "right": "jugaad lambda_o/lambda_m, fd bins, alt=1, full-mean s, lambda_o = lambda(I(f; o))",
+ "stipple": "5-95% of Eade bootstrap contains 1 (both columns); red ring (right): |lam(1.5x) - lam(0.5x)| > lam(1x); grey: corr(s,o) <= 0, and (right) lambda undefined (lambda_m <= 0.02, e.g. Knuth picks one bin for s)",
+ "rows": {
+  "SLP": {
+   "N": 92,
+   "T": 120,
+   "rho": {
+    "rho_o": 0.05710463031310593,
+    "rho_m_loo": 0.07557939712575502,
+    "rho_m_ensmean": 0.1525557728733836,
+    "rpc_loo": 4.123751560199814,
+    "area_rpc_loo_gt1": 0.3923362483404615,
+    "rpc_ensmean": 0.37531623356040694,
+    "area_rpc_ensmean_gt1": 0.19357502971753335
+   },
+   "lambda": {
+    "lam_o": 0.44640319489235747,
+    "lam_m": 0.470972460773337,
+    "rpc": 0.9491236797416277,
+    "area_gt1": 0.21625507512530723
+   },
+   "marks": {
+    "boot": 1000,
+    "masked_rho_o_le0": 0.3264682779727915,
+    "rho_not_sig": 0.9390953975332029,
+    "rho_sig_gt1": 0.028375626144706508,
+    "rho_sig_lt1": 0.03252897632209061,
+    "lam_not_sig": 0.9032774807366151,
+    "lam_sig_gt1": 0.0005164090689212305,
+    "lam_sig_lt1": 0.0962061101944638,
+    "lam_ring": 0.0,
+    "lam_binrange_gt_lam_all_cells": 0.0
+   },
+   "spatial_corr_rpc": 0.006038090215576501
+  },
+  "TREFHT": {
+   "N": 112,
+   "T": 120,
+   "rho": {
+    "rho_o": 0.0914007661785094,
+    "rho_m_loo": 0.15602319434009326,
+    "rho_m_ensmean": 0.21122093597659122,
+    "rpc_loo": 0.6774218545769047,
+    "area_rpc_loo_gt1": 0.3520921483101996,
+    "rpc_ensmean": 0.4131068082260105,
+    "area_rpc_ensmean_gt1": 0.2305278912743466
+   },
+   "lambda": {
+    "lam_o": 0.4496806285373664,
+    "lam_m": 0.48206349133627086,
+    "rpc": 0.9342640036336994,
+    "area_gt1": 0.23586584297584312
+   },
+   "marks": {
+    "boot": 1000,
+    "masked_rho_o_le0": 0.3012755503866277,
+    "rho_not_sig": 0.8225455571450113,
+    "rho_sig_gt1": 0.0980734698984367,
+    "rho_sig_lt1": 0.07938097295655203,
+    "lam_not_sig": 0.8455442965321677,
+    "lam_sig_gt1": 0.008612490471049802,
+    "lam_sig_lt1": 0.14584321299678252,
+    "lam_ring": 0.0,
+    "lam_binrange_gt_lam_all_cells": 0.0
+   },
+   "spatial_corr_rpc": -0.0038360359319179727
+  }
+ }
+}

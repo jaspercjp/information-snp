@@ -16,32 +16,34 @@ __pycache__/
 /data/djf_cube.npz
 /data/djf_lambda_cache.npz
 
-# SMYLE: 48 GB of raw hindcast files, rebuilt by scripts/fetch_smyle.py
+# SMYLE: 48 GB of raw hindcast files (code removed in the cleanup; see git history)
 /data/smyle/
-# the (var, lead) cubes reduced from them, by scripts/build_smyle_cube.py
+# the (var, lead) cubes reduced from them
 /data/smyle_cubes/
-# rho and lambda fields, by scripts/rpc_smyle.py
+# rho and lambda fields
 /data/smyle_rpc_cache.npz
-# HadSLP2r observations, by scripts/fetch_hadslp2r.py
+# observations, by scripts/data-acquisition/fetch_{hadslp2r,obs}.py
 /data/obs/
 
-# DePreSys4 (CMIP6 DCPP HadGEM3-GC31-MM), rebuilt by scripts/fetch_depresys4.py
+# DePreSys4 (CMIP6 DCPP HadGEM3-GC31-MM), by scripts/data-acquisition/{fetch,build}_depresys4*.py
 /data/depresys4/
 /data/depresys4_files.json
 /data/depresys4_cubes/
 /data/_cubes_n48_backup/
 
-# DCPP decadal, rebuilt by scripts/fetch_dcpp.py and scripts/build_dcpp_cube.py
+# DCPP decadal, by scripts/data-acquisition/fetch_dcpp.py, build_dcpp_cube.py, build_dcpp_monthly_cache.py
 /data/dcpp_monthly_cache/
 /data/dcpp_cubes/
 /data/dcpp_files.json
-# common-grid cubes, by scripts/build_common_grid_cubes.py
+# per-case input arrays, by scripts/data-acquisition/make_cases.py
+/data/cases/
+# common-grid cubes (code removed in the cleanup)
 /data/common_grid/
-# pairwise MI fields, by scripts/compute_and_store_pairwise_MI.py
+# pairwise MI fields (code removed in the cleanup)
 /data/pairwise_MI/
 /data/MI_F_pairwise_dcpp_SLP_13-60.npy
 
-# cubes and caches rebuilt by scripts/, from the infomeasure-updates side
+# cubes and caches from the infomeasure-updates side (code removed in the cleanup)
 /data/annual25_cube.npz
 /data/smyle_cube.npz
 /data/hindcast_mi.npz

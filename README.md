@@ -9,9 +9,18 @@ The data utilized was not included in this repository, but they can be downloade
 When extrapolating datasets, I have chosen to fill unrecorded data with NaN. The calculations are then done either by ignoring them or replacing them with zeros. 
 
 - `notebooks/gaussian_arrays.ipynb` contains code used to study the properties of the information theory predictability measures on randomly generated Gaussian samples. 
-- `noteboks/jugaad.ipynb` investigates different questions regarding how the information theory measures change with respect to the size of the ensemble (using the "tiling" jugaad)
+- `notebooks/jugaad.ipynb` investigates different questions regarding how the information theory measures change with respect to the size of the ensemble (using the "tiling" jugaad)
 - `notebooks/calc_RPC.ipynb` contains the main calculations of the RPC using both variance-based and information-based measures. 
 
-- `scripts/DataInventory.py` is a utility script used to keep track of all data files downloaded using `notebooks/download_data.ipynb`. 
-- `scripts/InfoTheoryMetrics.py` contains functions that calculate entropy and mutual information. 
+The thesis code is in `scripts/thesis-old/` (the notebooks import it from there), and the thesis figures are in `figures/thesis-old/`:
+- `scripts/thesis-old/DataInventory.py` is a utility script used to keep track of all data files downloaded using `notebooks/download_data.ipynb`.
+- `scripts/thesis-old/InfoTheoryMetrics.py` contains functions that calculate entropy and mutual information.
+- `scripts/thesis-old/info_rpc_parallel.py` is a parallel drop-in for `InfoTheoryMetrics.info_RPC` with bitwise-identical output.
+
+## Binning uncertainty of the jugaad lambda
+
+`figures/jugaad-fd-optbins/` (see its `README.md` and `BOOTSTRAP.md`) is reproduced end to end by `scripts/`:
+- `scripts/data-acquisition/`: raw downloads to the per-case input arrays (`data/cases/`); see its `README.md`.
+- `scripts/{jugaad,data,run,boot,tables}.py`: the analysis (499 lines), `scripts/plots.py`: the figures.
+- `bash scripts/run_all.sh` submits the whole pipeline to Slurm; `scripts/README.md` has the details. 
 

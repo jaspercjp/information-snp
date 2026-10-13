@@ -4,22 +4,23 @@ This file documents the bootstrap behind the stippling in `rho_vs_lambda_<case>.
 follows Eade et al. (2014, GRL) supporting information.
 
 - **Code:**
-  - Draws: `scripts/analysis/jugaad_rho_lambda_boot.py`
-  - Figures: `scripts/analysis/jugaad_rho_vs_lambda_figs.py`
-  - Measures: `scripts/metrics/jugaad_thesis.py`
-- **Raw draws:** `$SCRATCH/snp_jugaad_fd_optbins/`
-  - `boot_<VAR>_lead<LEAD>.npz` holds ρ and the FD λ.
-  - `boot_knuth_<VAR>_lead<LEAD>.npz` holds the Knuth λ.
+  - Draws: `scripts/boot.py`
+  - Figures: `scripts/plots.py`
+  - Measures: `scripts/jugaad.py`
+- **Raw draws:** `$SNP_OUT` (default `$SCRATCH/snp_jugaad/`)
+  - `boot_fd_<VAR>_<case>.npz` holds ρ and the FD λ.
+  - `boot_knuth_<VAR>_<case>.npz` holds the Knuth λ (bins re-chosen per draw) of `rho_vs_lambda_{2-4,s1961}`.
+  - `boot_lmloo_<VAR>_<case>.npz` and `boot_olmloo_<VAR>_<case>.npz` hold the Knuth λ of the production figures.
 
 Each statistic gets its own test. The ρ dots say whether the ρ RPC differs from 1. The λ
 dots say whether the λ RPC differs from 1. The two columns are paired only in that they use
 the same resampled data.
 
 > **Current production figures** (`rpc_rho_lambda_lead2-4`, `rpc_rho_lambda_decadal`, from
-> `scripts/analysis/rpc_rho_lambda_production.py`) differ from the description below in three ways:
+> `scripts/plots.py`) differ from the description below in three ways:
 >
 > 1. **Bins are fixed.** Each λ draw keeps the cell's **full-data Knuth bin counts**
->    (`--fixed-bins`, giving `boot_knuth_lmlooT_fixbins_*`). Re-choosing Knuth inside a draw is
+>    (`boot.py ... lmloo`, giving `boot_lmloo_*`). Re-choosing Knuth inside a draw is
 >    wrong here: resampled years repeat exactly, and Knuth on the T obs and s values then
 >    resolves the repeats (4 → 42–44 bins on SLP lead 2-4, with λ_o 0.26 → 0.48 inside the
 >    draws). The draw would then be a different estimator from the one mapped. Binning
@@ -28,6 +29,11 @@ the same resampled data.
 >    paired with the flattened mean of the other drawn members, not with tiled s. The s₋ₙ axis is
 >    sized on its T cluster centres, mean_n s₋ₙ[n, t] = s[t].
 > 3. **PRECT is decadal s1978** (GPCP starts in 1979). Its row is in the decadal figure.
+>
+>
+> The `rpc_rho_lambda_oloo_*` figures add a third column (`boot.py ... olmloo`): the same, with
+> λ_o = λ(I(s₋ₙ_jugaad; o_jugaad)), its s₋ₙ axis sized on the T cluster centres like λ_m's, and
+> green rings for its binning band.
 >
 > The ρ draws are unchanged. Caveat: with fixed bins, cells where Knuth gives the obs one bin
 > have λ_o = 0 in every draw and count as significantly below 1 by construction. For
@@ -54,7 +60,7 @@ the same resampled data.
 1. **Seed.** `rng = np.random.default_rng([2014, sum(ord(c) for c in VAR + LEAD)])`. This
    gives one fixed stream per case.
 2. **For each draw b = 1 … 1000, in this exact order of random-number calls:**
-   1. **Time indices `ti`, with replacement** (`time_index`).
+   1. **Time indices `ti`, with replacement** (`boot.draws`).
       - **lead 2-4:** T start dates drawn independently: `rng.integers(0, T, T)`.
       - **s1961 (monthly):** whole calendar years. Draw `T // 12 = 10` year indices with replacement, then take all 12 months of each: `ti = year*12 + [0..11]`. This keeps the seasonal cycle and the within-year autocorrelation intact.
    2. **Members `mi`, without replacement:** `rng.choice(N, N - 3, replace=False)`. That is 59 members at lead 2-4, 89 for SLP s1961 and 109 for TREFHT s1961.
@@ -62,31 +68,33 @@ the same resampled data.
    3. **Resampled data:** `Fb = F[mi, :][:, ti]` (written `F[mi[:, None], ti]`, one copy) and `ob = o[ti]`.
       - The obs and every member get the same `ti`.
       - Duplicated years appear as duplicated time steps.
-3. **Same draws for both columns.** The ρ run and the λ-only Knuth run (`--rule knuth`) use the
-   same seed and make the same random-number calls in the same order, so draw b is the same
-   (`ti`, `mi`) in both. I checked this directly: a code change was confirmed not to alter any
-   draw.
+3. **Same draws for both columns.** Every `boot.py` mode (`fd`, `knuth`, `lmloo`, `olmloo`) uses the
+   same seed and makes the same random-number calls in the same order, so draw b is the same
+   (`ti`, `mi`) in all of them. The rewrite into `scripts/` was checked against the stored
+   draws bitwise (point estimates and the first draws of every bootstrap file), on the CPU
+   generation each file was made on: last-bit float64 differences between Sherlock's node
+   generations (AMD Milan sh03 vs Siena/Genoa sh04) are expected.
 
 ---
 
-## 2. ρ RPC on one draw (`stats` → `rho_measures`)
+## 2. ρ RPC on one draw (`boot.fd_stats` → `jugaad.rho_measures`)
 
 Given Fb, with N' = N − 3 members and T time steps, and ob:
 
 1. **Ensemble mean** of the drawn members: `s = nanmean(Fb, axis=0)`.
-2. **ρ_o = corr(s, ob)** along time, per grid cell (`_corr_t`).
+2. **ρ_o = corr(s, ob)** along time, per grid cell (`jugaad.corr_t`).
    - It uses the times where both series are finite, with the means and sums taken over those times.
    - Duplicated years count as many times as they were drawn.
-3. **Leave-one-out means** `s₋ₙ`: the NaN-skipping mean of the other N' − 1 drawn members (`jugaad_thesis.loo_means`).
-4. **ρ_m = ⟨corr(s₋ₙ, f_n)⟩ₙ**, the average over the N' drawn members of each member's correlation with the mean of the others. Same `_corr_t`, no variance decomposition.
+3. **Leave-one-out means** `s₋ₙ`: the NaN-skipping mean of the other N' − 1 drawn members (`jugaad.loo_means`).
+4. **ρ_m = ⟨corr(s₋ₙ, f_n)⟩ₙ**, the average over the N' drawn members of each member's correlation with the mean of the others. Same `corr_t`, no variance decomposition.
 5. **RPC_ρ = ρ_o / ρ_m.**
 
-- **Matches the project definition:** on NaN-free data, `rho_measures` equals `smyle_metrics.pearson_coeff` and `ensemble_SNR_loo` to 1e-12. The figure script checks this every time it runs.
+- **Matches the project definition:** on NaN-free data, `rho_measures` equals the project's earlier `smyle_metrics.pearson_coeff` and `ensemble_SNR_loo` to 1e-12 (checked when this was written; `scripts/tests/test_jugaad.py` checks ρ_o against `np.corrcoef`).
 - **Ensemble-mean ρ_m:** sd(s)/⟨sd(f_n)⟩ is computed only on the full data, for the json. It is not bootstrapped.
 
 ---
 
-## 3. λ RPC on one draw (`jugaad_thesis.jugaad_maps`)
+## 3. λ RPC on one draw (`jugaad.maps`)
 
 Same Fb and ob. The ensemble mean `s = nanmean(Fb, axis=0)` comes from the drawn members.
 Then, independently per grid cell:
@@ -121,7 +129,7 @@ For each statistic separately, per grid cell:
 3. **Significantly above 1:** `q05 > 1`. **Significantly below 1:** `q95 < 1`.
 4. **What is plotted:**
    - The mapped colour is the full-data point estimate, not the bootstrap mean or median.
-   - The figure script asserts that the point estimate stored with the draws equals the stored map.
+   - The point estimate is stored with the draws, so the map and its dots come from one file.
 
 The draws are percentile intervals with no bias correction and no multiple-testing correction,
 as in Eade.
@@ -161,13 +169,13 @@ as in Eade.
 
 ```bash
 PY=/oak/stanford/groups/cyaolai/JasperChen/VirtualEnv/SNP_env/bin/python
-# rho + FD lambda draws (one file per case)
-$PY scripts/analysis/jugaad_rho_lambda_boot.py SLP 2-4 --boot 1000
-# Knuth lambda draws, same (ti, mi) as above
-$PY scripts/analysis/jugaad_rho_lambda_boot.py SLP 2-4 --boot 1000 --rule knuth
-# figures (Knuth lambda column; s1961 and lead 2-4)
-LAM_RULE=knuth $PY scripts/analysis/jugaad_rho_vs_lambda_figs.py
+$PY scripts/boot.py SLP 2-4 fd        # rho + FD lambda draws -> boot_fd_SLP_2-4.npz
+$PY scripts/boot.py SLP 2-4 knuth     # Knuth lambda, bins re-chosen per draw (rho_vs_lambda), same draws
+$PY scripts/boot.py SLP 2-4 lmloo     # Knuth lambda, lambda_m from s_-n, fixed bins, same draws
+$PY scripts/boot.py SLP 2-4 olmloo    # the same with lambda_o from I(s_-n; o)
+$PY scripts/plots.py                  # every figure; or bash scripts/run_all.sh for all of it
 ```
 
-Cases run: SLP, PRECT, TREFHT for lead 2-4; SLP and TREFHT for s1961 (GPCP, the PRECT obs,
-starts in 1979).
+Cases: `fd` for the eight `data.CASES` and PRECT s1978; `knuth` for lead 2-4 and SLP, TREFHT
+s1961 (the Knuth column of `rho_vs_lambda_{2-4,s1961}`); `lmloo` and `olmloo` for the six
+production rows (SLP, PRECT, TREFHT at lead 2-4; SLP s1961, PRECT s1978, TREFHT s1961).

@@ -1,0 +1,443 @@
+[
+ {
+  "file": "psl_Amon_CanCM4_decadal1961_r4i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/CCCma/CanCM4/decadal1961/mon/atmos/Amon/r4i1p1/v20120622/psl/psl_Amon_CanCM4_decadal1961_r4i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "331d0705d7c13e7239ac0c7b7bb567ead92411232f73aaa4c4efcd628c6d76fe",
+  "size": 3949448,
+  "thesis_version": null,
+  "version": "v20120622"
+ },
+ {
+  "file": "psl_Amon_CanCM4_decadal1961_r5i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/CCCma/CanCM4/decadal1961/mon/atmos/Amon/r5i1p1/v20120622/psl/psl_Amon_CanCM4_decadal1961_r5i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "6ad9684616ead62c18ec5ac45cbca97d6cf4c408b489e21550057b9cf37c10b5",
+  "size": 3949448,
+  "thesis_version": null,
+  "version": "v20120622"
+ },
+ {
+  "file": "psl_Amon_CanCM4_decadal1961_r6i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/CCCma/CanCM4/decadal1961/mon/atmos/Amon/r6i1p1/v20120622/psl/psl_Amon_CanCM4_decadal1961_r6i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "67fbbf9a12c0c671e580a8aeaee989abaca1a3fabba8261b33922fa4580c5145",
+  "size": 3949448,
+  "thesis_version": null,
+  "version": "v20120622"
+ },
+ {
+  "file": "psl_Amon_CanCM4_decadal1961_r7i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/CCCma/CanCM4/decadal1961/mon/atmos/Amon/r7i1p1/v20120622/psl/psl_Amon_CanCM4_decadal1961_r7i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "4066c501c116115a13b11a3cfccea489b9faeed74c9726a6a2c081c8f09581ed",
+  "size": 3949448,
+  "thesis_version": null,
+  "version": "v20120622"
+ },
+ {
+  "file": "psl_Amon_CanCM4_decadal1961_r8i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/CCCma/CanCM4/decadal1961/mon/atmos/Amon/r8i1p1/v20120622/psl/psl_Amon_CanCM4_decadal1961_r8i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "b27eb2d0fa7cc9040d8ff5caaa5bdf628ecb2662ac3af122c7c47ba1a9688b9c",
+  "size": 3949448,
+  "thesis_version": null,
+  "version": "v20120622"
+ },
+ {
+  "file": "psl_Amon_CanCM4_decadal1961_r9i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/CCCma/CanCM4/decadal1961/mon/atmos/Amon/r9i1p1/v20120622/psl/psl_Amon_CanCM4_decadal1961_r9i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "b156a1507d044021ddfb81b76433bf84acbb91baba765166ee1ff8d4689d9028",
+  "size": 3949448,
+  "thesis_version": null,
+  "version": "v20120622"
+ },
+ {
+  "file": "psl_Amon_CanCM4_decadal1961_r10i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/CCCma/CanCM4/decadal1961/mon/atmos/Amon/r10i1p1/v20120622/psl/psl_Amon_CanCM4_decadal1961_r10i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "2a3b7a50fd67066eb115ee5293c83b5b54f430a339a20c280b249c2954ce619e",
+  "size": 3949448,
+  "thesis_version": null,
+  "version": "v20120622"
+ },
+ {
+  "file": "psl_Amon_CanCM4_decadal1961_r1i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/CCCma/CanCM4/decadal1961/mon/atmos/Amon/r1i1p1/v20120622/psl/psl_Amon_CanCM4_decadal1961_r1i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "8c99f83fa8cfeaf7df7b09c14b28b8602c3eae1549c3b5acb772bbabce4b0c79",
+  "size": 3949448,
+  "thesis_version": null,
+  "version": "v20120622"
+ },
+ {
+  "file": "psl_Amon_CanCM4_decadal1961_r2i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/CCCma/CanCM4/decadal1961/mon/atmos/Amon/r2i1p1/v20120622/psl/psl_Amon_CanCM4_decadal1961_r2i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "c4f55c8036ebf49bb8832f5c0146b478fdbfe41a98a78c546fbf70d89d3aa89d",
+  "size": 3949448,
+  "thesis_version": null,
+  "version": "v20120622"
+ },
+ {
+  "file": "psl_Amon_CanCM4_decadal1961_r3i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/CCCma/CanCM4/decadal1961/mon/atmos/Amon/r3i1p1/v20120622/psl/psl_Amon_CanCM4_decadal1961_r3i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "df1423fc633938eae7337a9a128026584f4d67224a97f834c1e03306026561c1",
+  "size": 3949448,
+  "thesis_version": null,
+  "version": "v20120622"
+ },
+ {
+  "file": "psl_Amon_MIROC5_decadal1961_r5i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MIROC/MIROC5/decadal1961/mon/atmos/Amon/r5i1p1/v20120710/psl/psl_Amon_MIROC5_decadal1961_r5i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "86f43f7ae1f4a4e911fe28879ce61bfd345afe1d9a41b0bec8cb883684c27526",
+  "size": 15748820,
+  "thesis_version": null,
+  "version": "v20120710"
+ },
+ {
+  "file": "psl_Amon_MIROC5_decadal1961_r6i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MIROC/MIROC5/decadal1961/mon/atmos/Amon/r6i1p1/v20120710/psl/psl_Amon_MIROC5_decadal1961_r6i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "225a4a739c37c0d28af43b560bddf4171cde10de5178aa701ab65acaf0c6e1cb",
+  "size": 15748820,
+  "thesis_version": null,
+  "version": "v20120710"
+ },
+ {
+  "file": "psl_Amon_MIROC5_decadal1961_r1i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MIROC/MIROC5/decadal1961/mon/atmos/Amon/r1i1p1/v20120710/psl/psl_Amon_MIROC5_decadal1961_r1i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "4e8b23632db8991a8d0f3b333569d8fcd155137a32d1f567af6a3a821df30f33",
+  "size": 15748820,
+  "thesis_version": null,
+  "version": "v20120710"
+ },
+ {
+  "file": "psl_Amon_MIROC5_decadal1961_r2i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MIROC/MIROC5/decadal1961/mon/atmos/Amon/r2i1p1/v20120710/psl/psl_Amon_MIROC5_decadal1961_r2i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "785121061773745f4848d706f8e77dc731d991d60c1e2329d8835bfe02c36437",
+  "size": 15748820,
+  "thesis_version": null,
+  "version": "v20120710"
+ },
+ {
+  "file": "psl_Amon_MIROC5_decadal1961_r3i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MIROC/MIROC5/decadal1961/mon/atmos/Amon/r3i1p1/v20120710/psl/psl_Amon_MIROC5_decadal1961_r3i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "9043aab19476dcf12132e0bdfb8870f135898a957c7bba3cf3b8ad8bf89653fb",
+  "size": 15748820,
+  "thesis_version": null,
+  "version": "v20120710"
+ },
+ {
+  "file": "psl_Amon_MIROC5_decadal1961_r4i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MIROC/MIROC5/decadal1961/mon/atmos/Amon/r4i1p1/v20120710/psl/psl_Amon_MIROC5_decadal1961_r4i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "a92fe83c2af2f95978476e47c14749f247ecdb17bd0bc547cd7ab0087899346d",
+  "size": 15748820,
+  "thesis_version": null,
+  "version": "v20120710"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r10i2p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r10i2p1/v20120416/psl/psl_Amon_HadCM3_decadal1961_r10i2p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "258fabd15c70b6f8cf726019468caa7826ec26c5b788ef968d8d13309290e541",
+  "size": 3435500,
+  "thesis_version": "v20120416",
+  "version": "v20120416"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r10i3p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r10i3p1/v20120427/psl/psl_Amon_HadCM3_decadal1961_r10i3p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "1fd59f2fe20e6b0424d195a660d3e1a50fb89b2d2467f7913d750ccb782bd476",
+  "size": 3435500,
+  "thesis_version": "v20120427",
+  "version": "v20120427"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r1i2p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r1i2p1/v20120416/psl/psl_Amon_HadCM3_decadal1961_r1i2p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "9a20634cc9400064c7895132a2b6fc4470865c1f48c9a3d47c555507afd66bf2",
+  "size": 3435500,
+  "thesis_version": "v20120416",
+  "version": "v20120416"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r1i3p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r1i3p1/v20120427/psl/psl_Amon_HadCM3_decadal1961_r1i3p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "0d221c0d93918655651298bff9a5a936f4aa54496f67400ca87bf7104265a1a8",
+  "size": 3435500,
+  "thesis_version": "v20120427",
+  "version": "v20120427"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r2i2p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r2i2p1/v20120416/psl/psl_Amon_HadCM3_decadal1961_r2i2p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "312652fb7301425a9a58c2345c1c2011fac92206d1601520e8384809d5e1cf9e",
+  "size": 3435500,
+  "thesis_version": "v20120416",
+  "version": "v20120416"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r2i3p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r2i3p1/v20120427/psl/psl_Amon_HadCM3_decadal1961_r2i3p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "093a6c0117e2811df27852b87b37bfbff31462fa64af3fbcf4cd6c4504ca05e9",
+  "size": 3435500,
+  "thesis_version": "v20120427",
+  "version": "v20120427"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r3i2p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r3i2p1/v20120416/psl/psl_Amon_HadCM3_decadal1961_r3i2p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "794423f1e8f1ff87574c756cf49af352bfd880153a4fe82c9439b37d41fb15df",
+  "size": 3435500,
+  "thesis_version": "v20120416",
+  "version": "v20120416"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r3i3p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r3i3p1/v20120427/psl/psl_Amon_HadCM3_decadal1961_r3i3p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "7ee7d4c5da80c5ef2f3f1ec83d2d4a61a8b1b0715483a4766e663c8e25a66c47",
+  "size": 3435500,
+  "thesis_version": "v20120427",
+  "version": "v20120427"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r4i2p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r4i2p1/v20120416/psl/psl_Amon_HadCM3_decadal1961_r4i2p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "a99c786712ec18f9310f37573834a44f69a0e6364b58a430de120238cbc376e9",
+  "size": 3435500,
+  "thesis_version": "v20120416",
+  "version": "v20120416"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r4i3p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r4i3p1/v20120427/psl/psl_Amon_HadCM3_decadal1961_r4i3p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "7b6a4ad966f643c7157131acda079bdc286963789fff15210f170205ffcb4781",
+  "size": 3435500,
+  "thesis_version": "v20120427",
+  "version": "v20120427"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r5i2p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r5i2p1/v20120416/psl/psl_Amon_HadCM3_decadal1961_r5i2p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "34a488f72a2364376e5776b8292d289efac660245783211e06d8b9015e2fccc8",
+  "size": 3435500,
+  "thesis_version": "v20120416",
+  "version": "v20120416"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r5i3p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r5i3p1/v20120427/psl/psl_Amon_HadCM3_decadal1961_r5i3p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "f0be4ceede3752d9364063c9bb9dce5e1ab62544b365ba240924356de682ddaa",
+  "size": 3435500,
+  "thesis_version": "v20120427",
+  "version": "v20120427"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r6i2p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r6i2p1/v20120416/psl/psl_Amon_HadCM3_decadal1961_r6i2p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "4b41e0189f79f3727a6181d29c4e3f2ff2f019f98d2d02058cf599d644daecdf",
+  "size": 3435500,
+  "thesis_version": "v20120416",
+  "version": "v20120416"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r6i3p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r6i3p1/v20120427/psl/psl_Amon_HadCM3_decadal1961_r6i3p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "3effa3b34530f4dc031e3a86932b3fc01ccd93a217913b810cf4c3b181f10e51",
+  "size": 3435500,
+  "thesis_version": "v20120427",
+  "version": "v20120427"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r7i2p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r7i2p1/v20120416/psl/psl_Amon_HadCM3_decadal1961_r7i2p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "901842b4bc8c96405b888c07273ea4c994c1696e282cb56a8e4283632172ea5a",
+  "size": 3435500,
+  "thesis_version": "v20120416",
+  "version": "v20120416"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r7i3p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r7i3p1/v20120427/psl/psl_Amon_HadCM3_decadal1961_r7i3p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "7555a6b624950e13dd7a21bb6b8e30277f3c15df6162a6230ce925995f603144",
+  "size": 3435500,
+  "thesis_version": "v20120427",
+  "version": "v20120427"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r8i2p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r8i2p1/v20120416/psl/psl_Amon_HadCM3_decadal1961_r8i2p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "7dc227fe691c26e7e299854f9be1598c9e6d8aeb974d82150e7306ef3f71a962",
+  "size": 3435500,
+  "thesis_version": "v20120416",
+  "version": "v20120416"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r8i3p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r8i3p1/v20120427/psl/psl_Amon_HadCM3_decadal1961_r8i3p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "c376c5ff2bd2af35723a2b51b68efd189ac32c4a7cbab3297ac5461fdd62e459",
+  "size": 3435500,
+  "thesis_version": "v20120427",
+  "version": "v20120427"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r9i2p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r9i2p1/v20120416/psl/psl_Amon_HadCM3_decadal1961_r9i2p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "7bbf249511d27d54321b788bc97129385c08b44dbd665c1b51e6ea635cca2ebe",
+  "size": 3435500,
+  "thesis_version": "v20120416",
+  "version": "v20120416"
+ },
+ {
+  "file": "psl_Amon_HadCM3_decadal1961_r9i3p1_196111-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/decadal1961/mon/atmos/Amon/r9i3p1/v20120427/psl/psl_Amon_HadCM3_decadal1961_r9i3p1_196111-197112.nc",
+  "ctype": "SHA256",
+  "sum": "752ebc6f3c87e3f79679364348eaeeac5304d0059aa5e73e61b02e8db7608660",
+  "size": 3435500,
+  "thesis_version": "v20120427",
+  "version": "v20120427"
+ },
+ {
+  "file": "psl_Amon_MPI-ESM-LR_decadal1961_r3i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MPI-M/MPI-ESM-LR/decadal1961/mon/atmos/Amon/r3i1p1/v20120529/psl/psl_Amon_MPI-ESM-LR_decadal1961_r3i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "7c089fcc477e15006dec8ee85bbd35d820da04c1f74e19aa0303dfa4452ec50b",
+  "size": 8865156,
+  "thesis_version": null,
+  "version": "v20120529"
+ },
+ {
+  "file": "psl_Amon_MPI-ESM-LR_decadal1961_r1i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MPI-M/MPI-ESM-LR/decadal1961/mon/atmos/Amon/r1i1p1/v20120529/psl/psl_Amon_MPI-ESM-LR_decadal1961_r1i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "74db3200457d01b3e7e568198c05bf39414a74f6863ce54ac5faaaa07f5e3a7d",
+  "size": 8865156,
+  "thesis_version": null,
+  "version": "v20120529"
+ },
+ {
+  "file": "psl_Amon_MPI-ESM-LR_decadal1961_r2i1p1_196201-197112.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MPI-M/MPI-ESM-LR/decadal1961/mon/atmos/Amon/r2i1p1/v20120529/psl/psl_Amon_MPI-ESM-LR_decadal1961_r2i1p1_196201-197112.nc",
+  "ctype": "SHA256",
+  "sum": "23123969b58eeeecbb5f5faa5bf7933290d9b8a8661fab8d131e4f547951ddf1",
+  "size": 8865156,
+  "thesis_version": null,
+  "version": "v20120529"
+ },
+ {
+  "file": "psl_Amon_GFDL-CM2p1_decadal1961_r10i1p1_196101-197012.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/NOAA-GFDL/GFDL-CM2p1/decadal1961/mon/atmos/Amon/r10i1p1/v20110601/psl/psl_Amon_GFDL-CM2p1_decadal1961_r10i1p1_196101-197012.nc",
+  "ctype": "SHA256",
+  "sum": "97eaa78ee53c0c2d0c440c786eb12cc7556a024032908a03744f50ffd3c84ef5",
+  "size": 6236448,
+  "thesis_version": "v20110601",
+  "version": "v20110601"
+ },
+ {
+  "file": "psl_Amon_GFDL-CM2p1_decadal1961_r2i1p1_196101-197012.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/NOAA-GFDL/GFDL-CM2p1/decadal1961/mon/atmos/Amon/r2i1p1/v20110601/psl/psl_Amon_GFDL-CM2p1_decadal1961_r2i1p1_196101-197012.nc",
+  "ctype": "SHA256",
+  "sum": "96efc489de86ea35507c13e5abd84b76dbea4fcb6de2362575a5661eeff2b805",
+  "size": 6236448,
+  "thesis_version": "v20110601",
+  "version": "v20110601"
+ },
+ {
+  "file": "psl_Amon_GFDL-CM2p1_decadal1961_r1i1p1_196101-197012.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/NOAA-GFDL/GFDL-CM2p1/decadal1961/mon/atmos/Amon/r1i1p1/v20110601/psl/psl_Amon_GFDL-CM2p1_decadal1961_r1i1p1_196101-197012.nc",
+  "ctype": "SHA256",
+  "sum": "9cb10b12d64b1058bd5ff8b38fc0a8f0f50ce40a262fb68209789f4931fbdc34",
+  "size": 6236448,
+  "thesis_version": "v20110601",
+  "version": "v20110601"
+ },
+ {
+  "file": "psl_Amon_GFDL-CM2p1_decadal1961_r3i1p1_196101-197012.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/NOAA-GFDL/GFDL-CM2p1/decadal1961/mon/atmos/Amon/r3i1p1/v20110601/psl/psl_Amon_GFDL-CM2p1_decadal1961_r3i1p1_196101-197012.nc",
+  "ctype": "SHA256",
+  "sum": "e285977bd3acd837ade0c57cb0d32a81100aaa38b54d5822e091f9d35059b28d",
+  "size": 6236448,
+  "thesis_version": "v20110601",
+  "version": "v20110601"
+ },
+ {
+  "file": "psl_Amon_GFDL-CM2p1_decadal1961_r4i1p1_196101-197012.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/NOAA-GFDL/GFDL-CM2p1/decadal1961/mon/atmos/Amon/r4i1p1/v20110601/psl/psl_Amon_GFDL-CM2p1_decadal1961_r4i1p1_196101-197012.nc",
+  "ctype": "SHA256",
+  "sum": "aa054d09d56f7f719110ea147dad9a3c3755f95a5319254eb957284296562f85",
+  "size": 6236448,
+  "thesis_version": "v20110601",
+  "version": "v20110601"
+ },
+ {
+  "file": "psl_Amon_GFDL-CM2p1_decadal1961_r5i1p1_196101-197012.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/NOAA-GFDL/GFDL-CM2p1/decadal1961/mon/atmos/Amon/r5i1p1/v20110601/psl/psl_Amon_GFDL-CM2p1_decadal1961_r5i1p1_196101-197012.nc",
+  "ctype": "SHA256",
+  "sum": "3097856a6a31a766a1909c0953ffa4fcaea731c2dad5629ceb20c1c17b50328e",
+  "size": 6236448,
+  "thesis_version": "v20110601",
+  "version": "v20110601"
+ },
+ {
+  "file": "psl_Amon_GFDL-CM2p1_decadal1961_r9i1p1_196101-197012.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/NOAA-GFDL/GFDL-CM2p1/decadal1961/mon/atmos/Amon/r9i1p1/v20110601/psl/psl_Amon_GFDL-CM2p1_decadal1961_r9i1p1_196101-197012.nc",
+  "ctype": "SHA256",
+  "sum": "fe48dd78c0d3fe478571844b7c67dd23368a4ca6190180089e8c67e2d5bcd1a4",
+  "size": 6236448,
+  "thesis_version": "v20110601",
+  "version": "v20110601"
+ },
+ {
+  "file": "psl_Amon_GFDL-CM2p1_decadal1961_r6i1p1_196101-197012.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/NOAA-GFDL/GFDL-CM2p1/decadal1961/mon/atmos/Amon/r6i1p1/v20110601/psl/psl_Amon_GFDL-CM2p1_decadal1961_r6i1p1_196101-197012.nc",
+  "ctype": "SHA256",
+  "sum": "12af3011ec99472ac61e29bda3ce7a9ab91f92470a570dcd2acaf56927363fad",
+  "size": 6236448,
+  "thesis_version": "v20110601",
+  "version": "v20110601"
+ },
+ {
+  "file": "psl_Amon_GFDL-CM2p1_decadal1961_r7i1p1_196101-197012.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/NOAA-GFDL/GFDL-CM2p1/decadal1961/mon/atmos/Amon/r7i1p1/v20110601/psl/psl_Amon_GFDL-CM2p1_decadal1961_r7i1p1_196101-197012.nc",
+  "ctype": "SHA256",
+  "sum": "a3f08bc375d4e3dddd81594d79a2706b80ef6b1566d0d86fc3309d77d916c0dd",
+  "size": 6236448,
+  "thesis_version": "v20110601",
+  "version": "v20110601"
+ },
+ {
+  "file": "psl_Amon_GFDL-CM2p1_decadal1961_r8i1p1_196101-197012.nc",
+  "url": "https://esgf.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/NOAA-GFDL/GFDL-CM2p1/decadal1961/mon/atmos/Amon/r8i1p1/v20110601/psl/psl_Amon_GFDL-CM2p1_decadal1961_r8i1p1_196101-197012.nc",
+  "ctype": "SHA256",
+  "sum": "03b3236d564baeafae6e4cdade0b7bef64ff80157034afa297733128f133ecb5",
+  "size": 6236448,
+  "thesis_version": "v20110601",
+  "version": "v20110601"
+ }
+]
