@@ -16,7 +16,7 @@ The thesis code is in `scripts/thesis-old/` (the notebooks import it from there)
 - `scripts/thesis-old/DataInventory.py` is a utility script used to keep track of all data files downloaded using `notebooks/download_data.ipynb`.
 - `scripts/thesis-old/InfoTheoryMetrics.py` contains functions that calculate entropy and mutual information.
 - `scripts/thesis-old/info_rpc_parallel.py` is a parallel drop-in for `InfoTheoryMetrics.info_RPC` with bitwise-identical output.
-- `scripts/thesis-old/gaussian_array_metrics.py` regenerates `figures/thesis-old/from-notebooks/gaussian-array.png` (the metrics against the correlation r on Gaussian arrays, from `notebooks/gaussian_arrays.ipynb`); run it inside an allocation, with `ml system texlive` for the original's LaTeX fonts.
+- `scripts/thesis-old/gaussian_array_metrics.py` redraws the thesis Gaussian-array figure (`gaussian-array.png`, from `notebooks/gaussian_arrays.ipynb`) as `figures/thesis-old/from-notebooks/gaussian-array-lambda-rho.{png,pdf}`: λ_m, ρ_m^(1) and ρ_m^(2) against the correlation r, without γ_m. It replots from the saved `.npz` in seconds; `--recompute` redoes the arrays (about 6 min, inside an allocation). Use `ml system texlive` for LaTeX fonts.
 
 ## Binning uncertainty of the jugaad lambda
 
