@@ -12,7 +12,7 @@ Everything in `figures/jugaad-fd-optbins/` is produced by the scripts here.
 | `plots.py` | every figure and its json (plotting, not counted) | |
 | `run_all.sh` | submits the whole pipeline to Slurm: point (array) + boot (array) -> figures | |
 | `data-acquisition/` | raw downloads to the per-case input arrays (`$SNP_DATA/cases/`); see its README | |
-| `thesis-old/` | the original thesis code: `InfoTheoryMetrics.py`, `DataInventory.py`, and `info_rpc_parallel.py`, a parallel `info_RPC` with bitwise-identical output | |
+| `thesis-old/` | the original thesis code: `InfoTheoryMetrics.py`, `DataInventory.py`, `info_rpc_parallel.py`, a parallel `info_RPC` with bitwise-identical output, and `gaussian_array_metrics.py`, the thesis figure of γ_m, λ_m, ρ_m^(1) and ρ_m^(2) against r on correlated Gaussian arrays (`figures/thesis-old/from-notebooks/gaussian-array.png`) | |
 | `tests/test_jugaad.py` | `jugaad.maps` and `info_rpc_parallel.info_RPC` against the thesis `info_RPC`, bitwise | |
 
 The five analysis modules come to 498 lines (347 without docstrings, comments and blank lines).
