@@ -96,7 +96,7 @@ def lam(d, k):
 
 
 def plot(d):
-    fig, axs = plt.subplots(1, 3, figsize=(7.2, 3.05), layout="constrained")
+    fig, axs = plt.subplots(1, 3, figsize=(7.2, 2.75), layout="constrained")
     _, lam_m = lam(d, "I_m")
     ax = axs[0]
     ax.plot(d["r"], lam_m, color=BLUE, lw=1.6, label=r"$\lambda_m$")
@@ -105,7 +105,7 @@ def plot(d):
     ax.set_xlabel("Correlation between members, $r$")
     ax.set_ylabel("Predictable component")
     style.panel_label(ax, "a", "Gaussian Members", inside=True)
-    titles = {"linear": r"Signal $\mathbfit{g(x) = x}$", "exp": r"$\mathbfit{g(x) = e^{x}}$"}
+    titles = {"linear": r"Signal $\mathbf{g(x) = x}$", "exp": r"Signal $\mathbf{g(x) = e^{x}}$"}
     for ax, (letter, g) in zip(axs[1:], (("b", "linear"), ("c", "exp"))):
         _, ls_ = lam(d, f"{g}_I_s")
         _, lf_ = lam(d, f"{g}_I_f")
@@ -122,8 +122,9 @@ def plot(d):
                yticks=np.arange(0, 1.01, 0.25))
         ax.set_aspect("equal")
     axs[0].legend(loc="lower right", handlelength=2.2, borderpad=0.5, labelspacing=0.35)
-    fig.legend(*axs[1].get_legend_handles_labels(), loc="outside lower center", ncol=4,
-               handlelength=2.2, borderpad=0.5, columnspacing=1.4)
+    for ax in axs[1:]:
+        ax.legend(loc="lower right", fontsize=7, handlelength=2.0, borderpad=0.4,
+                  labelspacing=0.3, handletextpad=0.5)
     style.save(fig, NAME)
 
 
