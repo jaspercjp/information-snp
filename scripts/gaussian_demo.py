@@ -35,7 +35,8 @@ N_A, M_A, R = 500, 10000, np.linspace(0, 1, 100)                    # panel (a)
 N_O, T_O, R_M, A = 40, 40000, 0.5, np.linspace(0, 1, 51)            # panels (b, c)
 P_NULL = 4
 G = {"linear": lambda x: x, "exp": np.exp}
-BLUE, ORANGE = style.SERIES[0], style.SERIES[1]
+BLUE, ORANGE = style.SERIES[0], style.SERIES[1]             # (a): lambda_m, rho_m
+AQUA, VIOLET = style.SERIES[2], "#4a3aa7"                    # (b, c): lambda_o, rho_o; validated with (a)
 
 
 def info(X, Y, rng):
@@ -108,10 +109,10 @@ def plot(d):
     for ax, (letter, g) in zip(axs[1:], (("b", "linear"), ("c", "exp"))):
         _, ls_ = lam(d, f"{g}_I_s")
         _, lf_ = lam(d, f"{g}_I_f")
-        ax.plot(d["a"], ls_, color=BLUE, lw=1.6, label=r"$\lambda_o$, $I(s;o)$")
-        ax.plot(d["a"], lf_, color=BLUE, lw=1.6, ls=(0, (4, 2.5)), label=r"$\lambda_o$, $I(f;o)$")
-        ax.plot(d["a"], np.abs(d[f"{g}_rho_s"]), color=ORANGE, lw=1.6, label=r"$\rho_o$, corr$(s,o)$")
-        ax.plot(d["a"], np.abs(d[f"{g}_rho_f"]), color=ORANGE, lw=1.6, ls=(0, (4, 2.5)),
+        ax.plot(d["a"], ls_, color=AQUA, lw=1.6, label=r"$\lambda_o$, $I(s;o)$")
+        ax.plot(d["a"], lf_, color=AQUA, lw=1.6, ls=(0, (4, 2.5)), label=r"$\lambda_o$, $I(f;o)$")
+        ax.plot(d["a"], np.abs(d[f"{g}_rho_s"]), color=VIOLET, lw=1.6, label=r"$\rho_o$, corr$(s,o)$")
+        ax.plot(d["a"], np.abs(d[f"{g}_rho_f"]), color=VIOLET, lw=1.6, ls=(0, (4, 2.5)),
                 label=r"$\rho_o$, corr$(f,o)$")
         ax.set_xlabel("Signal fraction of var($o$), $a$")
         style.panel_label(ax, letter, titles[g], inside=True)
