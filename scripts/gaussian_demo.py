@@ -118,7 +118,7 @@ def plot(d):
         style.panel_label(ax, letter, titles[g], inside=True)
     for ax in axs:
         style.tidy(ax)
-        ax.set(xlim=(-0.015, 1.015), ylim=(-0.015, 1.03), xticks=np.arange(0, 1.01, 0.25),
+        ax.set(xlim=(-0.015, 1.015), ylim=(0, 1.03), xticks=np.arange(0, 1.01, 0.25),
                yticks=np.arange(0, 1.01, 0.25))
         ax.set_aspect("equal")
     axs[0].legend(loc="lower right", handlelength=2.2, borderpad=0.5, labelspacing=0.35)
