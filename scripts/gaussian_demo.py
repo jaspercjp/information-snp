@@ -96,10 +96,9 @@ def lam(d, k):
 
 def plot(d):
     fig, axs = plt.subplots(1, 3, figsize=(7.2, 3.05), layout="constrained")
-    lam_m, lam_m_deb = lam(d, "I_m")
+    _, lam_m = lam(d, "I_m")
     ax = axs[0]
-    ax.plot(d["r"], lam_m, color=BLUE, lw=1.0, ls=(0, (1, 1.6)), alpha=0.8, label=r"$\lambda_m$, plug-in")
-    ax.plot(d["r"], lam_m_deb, color=BLUE, lw=1.6, label=r"$\lambda_m$")
+    ax.plot(d["r"], lam_m, color=BLUE, lw=1.6, label=r"$\lambda_m$")
     ax.plot(d["r"], d["rho_m_1"], color=ORANGE, lw=1.6, label=r"$\rho_m^{(1)}$")
     ax.plot(d["r"], d["rho_m_2"], color=ORANGE, lw=1.6, ls=(0, (4, 2.5)), label=r"$\rho_m^{(2)}$")
     ax.set_xlabel("Correlation between members, $r$")
