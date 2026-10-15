@@ -1,12 +1,12 @@
 #!/bin/bash
-# Reproduce figures/jugaad-fd-optbins: submits three Slurm jobs and returns at once.
+# Reproduce the map and binning figures (figures/{main-text,supp-info}): submits three Slurm jobs.
 #
 #   bash scripts/run_all.sh          # after data-acquisition/make_cases.py has written $SNP_DATA/cases
 #
 #   point    run.py for the 8 cases                     (array, minutes each)
 #   boot     boot.py, 9 x fd + 5 x knuth + 6 x lmloo + 6 x olmloo   (array, up to ~6 h each at 16 cores)
 #   figures  tables.py + plots.py, after both succeed   (afterok dependency)
-# Outputs go to $SNP_OUT (default $SCRATCH/snp_jugaad), figures to figures/jugaad-fd-optbins.
+# Outputs go to $SNP_OUT (default $SCRATCH/snp_jugaad), figures to figures/{main-text,supp-info}/{png,pdf}, json to figures/data.
 set -euo pipefail
 
 # sbatch runs a spooled copy of this file, so the jobs find scripts/ through SNP_SCRIPTS

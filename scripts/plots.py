@@ -1,6 +1,8 @@
-"""Every figure in figures/jugaad-fd-optbins, from the outputs of run.py and boot.py.
+"""Every map and binning figure, from the outputs of run.py and boot.py.
 
-    python scripts/plots.py     -> figures/jugaad-fd-optbins/{png,pdf,json}/
+    python scripts/plots.py     -> figures/{main-text,supp-info}/{png,pdf}/, json in figures/data/
+
+rpc_rho_lambda_oloo_decadal goes to main-text, the rest to supp-info (style.MAIN_TEXT).
 
     jugaad_lam_maps_<case>         FD lambda, Knuth lambda, pooled Pearson rho_o/rho_m; stippled
                                    where the alt 0.5-1.5 band of lambda contains 1
@@ -16,7 +18,6 @@ around a dot, |lam(1.5x bins) - lam(0.5x bins)| > lam(1x bins); grey, corr(s, o)
 lambda undefined (lambda_m <= 0.02). The json next to each png holds its area summaries.
 """
 import json
-import os
 
 import numpy as np
 import matplotlib
@@ -25,7 +26,8 @@ import matplotlib.pyplot as plt                                      # noqa: E40
 from matplotlib.colors import LinearSegmentedColormap, Normalize     # noqa: E402
 import cartopy.crs as ccrs                                           # noqa: E402
 
-from data import CASES, FIG, PRODUCTION, out                         # noqa: E402
+import style as sty                                                  # noqa: E402  (font, rc)
+from data import CASES, PRODUCTION, out                              # noqa: E402
 from tables import FLOOR, RULES, SHORT, gauss_I, load_case, ratio, wfrac, wmean  # noqa: E402
 
 PROJ, DATA = ccrs.PlateCarree(central_longitude=180), ccrs.PlateCarree()
@@ -114,16 +116,11 @@ def grid_fig(nrows, ncols, size):
                  for i in range(nrows)]
 
 
-def save(fig, res, name, dpi=140, pdf=False):
-    for sub in ("png", "json") + (("pdf",) if pdf else ()):
-        os.makedirs(os.path.join(FIG, sub), exist_ok=True)
-    fig.savefig(os.path.join(FIG, "png", name + ".png"), dpi=dpi, bbox_inches="tight")
-    if pdf:
-        fig.savefig(os.path.join(FIG, "pdf", name + ".pdf"), bbox_inches="tight")
+def save(fig, res, name, dpi=140):
+    sty.save(fig, name, dpi=dpi)
     plt.close(fig)
-    with open(os.path.join(FIG, "json", name + ".json"), "w") as fh:
+    with open(sty.data_path(name + ".json"), "w") as fh:
         json.dump(res, fh, indent=1)
-    print(f"-> {name}.png", flush=True)
 
 
 def q(B, p):
@@ -348,7 +345,7 @@ def production(name, oloo=False):
             if i == 0:
                 ax.set_title(titles[c], fontsize=11, color=INK)
             ax.text(0.01, 0.97, f"({next(letters)})", transform=ax.transAxes, ha="left", va="top",
-                    fontsize=9, color=INK, zorder=20,
+                    fontsize=9, color=INK, zorder=20, fontweight="bold",
                     bbox=dict(boxstyle="square,pad=0.15", fc="white", ec="none", alpha=0.9))
         lab = var + ("" if case == "2-4" else f" {case}")
         axs[i][0].text(-0.03, 0.5, lab, rotation=90, ha="right", va="center", fontsize=10, color=INK,
@@ -356,7 +353,7 @@ def production(name, oloo=False):
         axs[i][0].text(-0.085, 0.5, f"N={N}, T={T}", rotation=90, ha="right", va="center", fontsize=8,
                        color=MUTED, transform=axs[i][0].transAxes)
     colorbar(fig, axs, 0.45)
-    save(fig, res, f"rpc_rho_lambda_{'oloo_' if oloo else ''}{name}", dpi=300, pdf=True)
+    save(fig, res, f"rpc_rho_lambda_{'oloo_' if oloo else ''}{name}", dpi=300)
 
 
 def main():

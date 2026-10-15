@@ -1,4 +1,4 @@
-"""Eade et al. (2014) bootstrap of the RPC maps; method in figures/jugaad-fd-optbins/BOOTSTRAP.md.
+"""Eade et al. (2014) bootstrap of the RPC maps; method in figures/notes/BOOTSTRAP.md.
 
     python scripts/boot.py SLP 2-4 fd [--boot 1000]     -> $SNP_OUT/boot_fd_SLP_2-4.npz
 

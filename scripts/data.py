@@ -7,7 +7,6 @@ import numpy as np
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.environ.get("SNP_DATA", os.path.join(REPO, "data"))
 OUT = os.environ.get("SNP_OUT", os.path.join(os.environ.get("SCRATCH", DATA), "snp_jugaad"))
-FIG = os.path.join(REPO, "figures", "jugaad-fd-optbins")
 
 # PRECT has no s1961 (GPCP starts in 1979); the production decadal row uses s1978.
 CASES = [("SLP", "cmip5"), ("SLP", "s1961"), ("TREFHT", "s1961"), ("SLP", "s1961moy"),

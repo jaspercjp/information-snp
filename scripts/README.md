@@ -1,6 +1,6 @@
 # scripts
 
-Everything in `figures/jugaad-fd-optbins/` is produced by the scripts here.
+Every figure in `figures/{main-text,supp-info}/` except the hand-saved `thesis-*` ones is produced by the scripts here (see `figures/README.md`).
 
 | file | role | lines |
 |---|---|---|
@@ -9,10 +9,13 @@ Everything in `figures/jugaad-fd-optbins/` is produced by the scripts here.
 | `run.py` | point estimates for one case, every binning configuration -> `point_<VAR>_<case>.npz` | 46 |
 | `boot.py` | the Eade et al. (2014) bootstrap, modes `fd`, `knuth`, `lmloo`, `olmloo` -> `boot_<mode>_<VAR>_<case>.npz` | 71 |
 | `tables.py` | `jugaad_fd_optbins_table` and `jugaad_lam_terms` (md + json), and the area-summary helpers | 166 |
-| `plots.py` | every figure and its json (plotting, not counted) | |
+| `plots.py` | every map and binning figure, and its json (plotting, not counted) | |
+| `style.py` | font (Helvetica Neue if present, else TeX Gyre Heros), bold panel titles, and `save`: main-text or supp-info, png + pdf | |
+| `gaussian_demo.py` | main-text `gaussian-array-lambda-rho`: debiased λ_m against ρ_m on Gaussian arrays, λ_o against ρ_o for o = g(x) + noise | |
+| `flattened_hist.py` | main-text `flattened-histograms`: pooled s, o, f of the decadal rows against Gaussians, log density | |
 | `run_all.sh` | submits the whole pipeline to Slurm: point (array) + boot (array) -> figures | |
 | `data-acquisition/` | raw downloads to the per-case input arrays (`$SNP_DATA/cases/`); see its README | |
-| `thesis-old/` | the original thesis code: `InfoTheoryMetrics.py`, `DataInventory.py`, `info_rpc_parallel.py`, a parallel `info_RPC` with bitwise-identical output, and `gaussian_array_metrics.py`, the thesis Gaussian-array figure redrawn: λ_m, ρ_m^(1) and ρ_m^(2) against r (`figures/thesis-old/from-notebooks/gaussian-array-lambda-rho.{png,pdf}`, curves in the `.npz`) | |
+| `thesis-old/` | the original thesis code: `InfoTheoryMetrics.py`, `DataInventory.py`, `info_rpc_parallel.py`, a parallel `info_RPC` with bitwise-identical output, and `gaussian_array_metrics.py`, the thesis Gaussian-array figure (`supp-info/thesis-gaussian-array`) | |
 | `tests/test_jugaad.py` | `jugaad.maps` and `info_rpc_parallel.info_RPC` against the thesis `info_RPC`, bitwise | |
 
 The five analysis modules come to 498 lines (347 without docstrings, comments and blank lines).

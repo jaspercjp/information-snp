@@ -1,15 +1,15 @@
-"""The two tables in figures/jugaad-fd-optbins, from the point_<case>.npz files of run.py.
+"""The two binning tables, from the point_<case>.npz files of run.py.
 
-    python scripts/tables.py    -> jugaad_fd_optbins_table.{md,json}, jugaad_lam_terms.{md,json}
+    python scripts/tables.py    -> figures/data/jugaad_fd_optbins_table.{md,json}, jugaad_lam_terms.{md,json}
 
 Area means and shares are cos-lat weighted. dI = max - min over the thesis band alt 0.5/1/1.5.
 """
 import json
-import os
 
 import numpy as np
 
-from data import CASES, FIG, out
+from data import CASES, out
+from style import data_path
 
 SHORT = {"cmip5": "CMIP5", "s1961": "s1961", "s1961moy": "s1961 moy", "2-4": "lead 2-4", "s1978": "s1978"}
 RULES = (("fd", "FD (thesis)"), ("knuth", "Knuth"))
@@ -152,10 +152,9 @@ def lam_terms_table(ds):
 
 
 def write(name, res, md):
-    os.makedirs(os.path.join(FIG, "json"), exist_ok=True)
-    with open(os.path.join(FIG, "json", name + ".json"), "w") as fh:
+    with open(data_path(name + ".json"), "w") as fh:
         json.dump(res, fh, indent=1)
-    with open(os.path.join(FIG, name + ".md"), "w") as fh:
+    with open(data_path(name + ".md"), "w") as fh:
         fh.write("\n".join(md) + "\n")
     print("\n".join(md))
 
