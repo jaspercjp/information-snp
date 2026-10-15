@@ -105,7 +105,7 @@ def plot(d):
     ax.set_xlabel("Correlation between members, $r$")
     ax.set_ylabel("Predictable component")
     style.panel_label(ax, "a", "Signal: Gaussian members")
-    titles = {"linear": r"Skill: $o = x$ + noise", "exp": r"Skill: $o = e^{x}$ + noise"}
+    titles = {"linear": r"Skill: $g(x) = x$", "exp": r"Skill: $g(x) = e^{x}$"}
     for ax, (letter, g) in zip(axs[1:], (("b", "linear"), ("c", "exp"))):
         _, ls_ = lam(d, f"{g}_I_s")
         _, lf_ = lam(d, f"{g}_I_f")
@@ -114,8 +114,10 @@ def plot(d):
         ax.plot(d["a"], np.abs(d[f"{g}_rho_s"]), color=ORANGE, lw=1.6, label=r"$\rho_o$, corr$(s,o)$")
         ax.plot(d["a"], np.abs(d[f"{g}_rho_f"]), color=ORANGE, lw=1.6, ls=(0, (4, 2.5)),
                 label=r"$\rho_o$, corr$(f,o)$")
-        ax.set_xlabel("Predictable fraction of var($o$), $a$")
+        ax.set_xlabel("Signal fraction of var($o$), $a$")
         style.panel_label(ax, letter, titles[g])
+        ax.text(0.03, 0.97, r"$o = \sqrt{a}\,\hat{g}(x) + \sqrt{1-a}\,\eta$",
+                transform=ax.transAxes, ha="left", va="top", fontsize=7.5, color=style.MUTED)
     for ax in axs:
         style.tidy(ax)
         ax.set(xlim=(-0.015, 1.015), ylim=(-0.015, 1.03), xticks=np.arange(0, 1.01, 0.25),
@@ -124,6 +126,9 @@ def plot(d):
     axs[0].legend(loc="lower right", handlelength=2.2, borderpad=0.5, labelspacing=0.35)
     fig.legend(*axs[1].get_legend_handles_labels(), loc="outside lower right", ncol=4,
                handlelength=2.2, borderpad=0.5, columnspacing=1.4)
+    fig.text(0.005, 0.005, "(b, c) $\\hat{g}$: $g$ standardised; members $f_n = \\sqrt{0.5}\\,x + "
+             "\\sqrt{0.5}\\,e_n$,\n$N = 40$, $s$ their mean; $x, \\eta, e_n \\sim$ N(0, 1)",
+             ha="left", va="bottom", fontsize=6.5, color=style.MUTED, linespacing=1.5)
     style.save(fig, NAME)
 
 
