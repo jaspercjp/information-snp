@@ -44,7 +44,7 @@ matplotlib.rcParams.update({
     "font.family": FONT, "font.weight": "normal", "font.size": 9,
     "axes.titleweight": "bold", "axes.titlesize": 10, "figure.titleweight": "normal",
     "mathtext.fontset": "custom", "mathtext.rm": FONT, "mathtext.sf": FONT, "mathtext.cal": FONT, "mathtext.tt": FONT,
-    "mathtext.it": f"{FONT}:italic", "mathtext.bf": f"{FONT}:bold", "mathtext.default": "it",
+    "mathtext.it": f"{FONT}:italic", "mathtext.bf": f"{FONT}:bold", "mathtext.bfit": f"{FONT}:italic:bold", "mathtext.default": "it",
     "axes.unicode_minus": True, "pdf.fonttype": 42, "svg.fonttype": "none",
     "text.color": INK, "axes.labelcolor": INK, "xtick.labelcolor": INK, "ytick.labelcolor": INK,
     "xtick.color": MUTED, "ytick.color": MUTED, "axes.edgecolor": MUTED,
@@ -83,6 +83,14 @@ def tidy(ax, grid=True):
     ax.tick_params(length=3, width=0.8)
 
 
-def panel_label(ax, letter, title=None, **kw):
-    """Bold '(a) title' at the top left of the axes, as the panel title."""
-    ax.set_title(f"({letter})" + (f" {title}" if title else ""), loc="left", **kw)
+def panel_label(ax, letter, title=None, inside=False, **kw):
+    """Bold '(a) title' at the top left of the axes, as the panel title; inside=True puts the
+    bold '(a)' in the axes' upper-left corner and centres the title."""
+    if not inside:
+        ax.set_title(f"({letter})" + (f" {title}" if title else ""), loc="left", **kw)
+        return
+    ax.text(0.025, 0.975, f"({letter})", transform=ax.transAxes, ha="left", va="top",
+            fontweight="bold", fontsize=matplotlib.rcParams["axes.titlesize"], zorder=20,
+            bbox=dict(boxstyle="square,pad=0.15", fc="white", ec="none"))
+    if title:
+        ax.set_title(title, loc="center", **kw)
