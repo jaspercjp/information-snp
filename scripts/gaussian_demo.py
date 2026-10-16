@@ -1,5 +1,6 @@
 """Main-text figure gaussian-array-lambda-rho: lambda against rho on synthetic ensembles; and
-supp-info gaussian-array-rm-sensitivity, its panel (b) at other member signal shares R_M.
+supp-info gaussian-array-rm-sensitivity, its panel (b) at other member signal shares R_M, and
+gaussian-array-heterogeneous-rm, panel (b) with a different signal share for every member.
 
     python scripts/gaussian_demo.py [--recompute] [--seed S]
         -> figures/{main-text,supp-info}/{png,pdf}/..., curves in figures/data/*.npz
@@ -24,6 +25,11 @@ move only with r or a, not with a fresh draw per point.
 gaussian-array-rm-sensitivity: panel (b) (g = x) for R_M in RMS, with one x, z_n and eta for
 every R_M and a (common random numbers), so the panels differ only through R_M. Expected
 rho(s; o) = sqrt(R_M a) / sqrt(R_M + (1 - R_M)/N), rho(f; o) = sqrt(R_M a), rho_m ~ sqrt(R_M).
+gaussian-array-heterogeneous-rm: panel (b) with f_n = sqrt(R_n) x + sqrt(1 - R_n) z_n, R_n per member,
+mean 0.5 in each panel: (a) R_n = 0.5 for all, (b) R_n evenly spaced over [0.1, 0.9], (c) half the
+members at 0.1, half at 0.9. rho_m = <corr(f_n, s_-n)> ~ <sqrt(R_n)> (0.707, 0.685, 0.632; Jensen), so
+rho RPC = 1 near a = <sqrt(R_n)>^2. The pooled (s_-n, f_n) pairs are a mixture of Gaussians with
+different correlations, not Gaussian, so lambda_m need not equal rho_m.
 Bins: Knuth's rule, sized as in the production estimator (o and s_-n on their T values, the
 members on all N T). Every I is the plug-in MI minus the mean of P_NULL time-permutation nulls,
 lambda = sqrt(1 - 2^(-2 I)). Runs in ~12 min with 7 worker processes over the curve points
@@ -42,8 +48,13 @@ import style                                                         # noqa: E40
 from jugaad import KNUTH_MAX, knuth_bins, lam_bits, loo_means, mi_bits   # noqa: E402
 
 NAME, NAME_RM = "gaussian-array-lambda-rho", "gaussian-array-rm-sensitivity"
+NAME_HET = "gaussian-array-heterogeneous-rm"
 RMS = (0.2, 0.4, 0.6, 0.8)                                   # supp-info: members' signal shares
 N, T = 500, 40000
+HET = {"homogeneous": np.full(N, 0.5), "uniform": np.linspace(0.1, 0.9, N),
+       "two groups": np.where(np.arange(N) % 2 == 0, 0.1, 0.9)}          # per-member R_n, mean 0.5
+HET_TITLES = (r"$\mathbf{R_n = 0.5}$", r"$\mathbf{R_n}$ from 0.1 to 0.9",
+              r"$\mathbf{R_n \in \{0.1, 0.9\}}$")
 R, A = np.linspace(0, 1, 100), np.linspace(0, 1, 51)        # panel (a) r; panels (b, c) a
 R_M = 0.5                                                    # (b, c): the members' signal share
 P_NULL = 4
@@ -138,24 +149,37 @@ def compute(seed):
     return res
 
 
-def compute_rm(seed):
-    """Panel (b) at each R_M in RMS, one x, z_n, eta for all of them."""
+def skill_runs(seed, tag, shares):
+    """Panel (b) (g = x) for each per-member signal-share array in shares, one x, z_n, eta for all
+    of them -> keys rm<i>_*."""
     jobs = int(os.environ.get("SNP_DEMO_JOBS", min(7, int(os.environ.get("SLURM_CPUS_ON_NODE", 1)))))
-    rng = np.random.default_rng([seed, 2])
+    rng = np.random.default_rng([seed, tag])
     x, Z, eta = rng.standard_normal(T), rng.standard_normal((N, T)), rng.standard_normal(T)
-    res = dict(a=A, rm=np.array(RMS), seed=seed)
-    for i, rm in enumerate(RMS):
-        F = np.sqrt(rm) * x + np.sqrt(1 - rm) * Z
+    res = dict(a=A, seed=seed)
+    for i, R in enumerate(shares):
+        R = np.broadcast_to(np.asarray(R, float), (N,))[:, None]
+        F = np.sqrt(R) * x + np.sqrt(1 - R) * Z
         _D.clear()
         _D.update(F=F, s=F.mean(0), gx={"linear": x}, eta=eta)
-        ens = ensemble(F, np.random.default_rng([seed, 2, i]))
+        ens = ensemble(F, np.random.default_rng([seed, tag, i]))
         with get_context("fork").Pool(jobs) as pool:
-            out = np.array(pool.map(point_o, [("linear", a, [seed, 3, i, k]) for k, a in enumerate(A)])).T
+            out = np.array(pool.map(point_o, [("linear", a, [seed, tag + 1, i, k]) for k, a in enumerate(A)])).T
         res.update({f"rm{i}_{k}": v for k, v in zip(KEYS[len(KEYS_M):], out)})
         res.update({f"rm{i}_{k}": np.full(A.size, v) for k, v in zip(KEYS_M, ens)})
-        print(f"R_M = {rm}: lambda_m {lam_bits(ens[0] - ens[1]):.3f}, rho_m {ens[3]:.3f}", flush=True)
+        print(f"shares {i} (mean {R.mean():.2f}, <sqrt R> {np.sqrt(R).mean():.3f}): lambda_m "
+              f"{lam_bits(ens[0] - ens[1]):.3f}, rho_m {ens[3]:.3f}", flush=True)
     _D.clear()
     return res
+
+
+def compute_rm(seed):
+    """Panel (b) at each R_M in RMS."""
+    return dict(skill_runs(seed, 2, RMS), rm=np.array(RMS))
+
+
+def compute_het(seed):
+    """Panel (b) for each per-member R_n design in HET."""
+    return dict(skill_runs(seed, 4, list(HET.values())), shares=np.stack(list(HET.values())))
 
 
 def lam(d, k):
@@ -218,12 +242,23 @@ def plot_rm(d):
     style.save(fig, NAME_RM)
 
 
+def plot_het(d):
+    fig, axs = plt.subplots(1, 3, figsize=(7.2, 3.2), layout="constrained", sharey=True)
+    for i, (ax, letter) in enumerate(zip(axs, "abc")):
+        skill_panel(ax, d, f"rm{i}", letter, HET_TITLES[i], legends=False)
+    axs[0].set_ylabel("Predictable component")
+    fig.legend(*axs[0].get_legend_handles_labels(), loc="outside lower center", ncol=6,
+               **dict(LEGEND, fontsize=7.5))
+    style.save(fig, NAME_HET)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--recompute", action="store_true", help="redo the arrays even if the npz exists")
     args = ap.parse_args()
-    for name, comp, draw in ((NAME, compute, plot), (NAME_RM, compute_rm, plot_rm)):
+    for name, comp, draw in ((NAME, compute, plot), (NAME_RM, compute_rm, plot_rm),
+                             (NAME_HET, compute_het, plot_het)):
         npz = style.data_path(name + ".npz")
         if args.recompute or not os.path.exists(npz):
             np.savez(npz, **comp(args.seed))
