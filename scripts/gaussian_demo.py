@@ -15,7 +15,10 @@ independent, s the member mean, s_-n the mean of the other N - 1.
     lambda_o from I(s; o) and from I(f; o) (o tiled against every member); rho_o = corr(s, o) and
     the pooled corr(f, o). A member is at most sqrt(R_M) correlated with x, so the (f; o) curves
     stop near sqrt(0.5). The ensemble's own lambda_m and rho_m (= rho_m^(2)) are drawn for
-    reference, solid black and grey; they do not depend on a.
+    reference, solid black and grey.
+Common random numbers: (a) reuses one z_0 and z_n at every r; (b) and (c) share one ensemble
+(x, z_n) and one eta at every a, so lambda_m and rho_m there are one value each and the curves
+move only with r or a, not with a fresh draw per point.
 Bins: Knuth's rule, sized as in the production estimator (o and s_-n on their T values, the
 members on all N T). Every I is the plug-in MI minus the mean of P_NULL time-permutation nulls,
 lambda = sqrt(1 - 2^(-2 I)). Runs in ~12 min with 7 worker processes over the curve points
@@ -87,33 +90,45 @@ def skill(F, s, o, rng):
     return I_s, null_s, I_f, null_f, corr(s, o), corr(F.ravel(), np.tile(o, N))
 
 
+_D = {}                     # one draw per panel, set before the pool forks (workers share it)
+
+
 def point_m(args):
-    """Panel (a) at one r."""
+    """Panel (a) at one r, from the panel's one z_0 and z_n."""
     r, seed = args
-    rng = np.random.default_rng(seed)
-    F = np.sqrt(r) * rng.standard_normal(T) + np.sqrt(1 - r) * rng.standard_normal((N, T))
-    return ensemble(F, rng)
+    F = np.sqrt(r) * _D["z0"] + np.sqrt(1 - r) * _D["Z"]
+    return ensemble(F, np.random.default_rng(seed))
 
 
 def point_o(args):
-    """Panels (b, c) at one (g, a): the fixed ensemble and its skill against o."""
+    """Panels (b, c) at one (g, a): the one fixed ensemble's skill against o."""
     g, a, seed = args
-    rng = np.random.default_rng(seed)
-    x = rng.standard_normal(T)
-    F = np.sqrt(R_M) * x + np.sqrt(1 - R_M) * rng.standard_normal((N, T))
-    gx = G[g](x)
-    o = np.sqrt(a) * (gx - gx.mean()) / gx.std() + np.sqrt(1 - a) * rng.standard_normal(T)
-    return ensemble(F, rng) + skill(F, F.mean(0), o, rng)
+    o = np.sqrt(a) * _D["gx"][g] + np.sqrt(1 - a) * _D["eta"]
+    return skill(_D["F"], _D["s"], o, np.random.default_rng(seed))
 
 
 def compute(seed):
+    """Common random numbers: panel (a) reuses one z_0, z_n at every r; panels (b, c) share one
+    ensemble (x, z_n) and one eta at every a and for both g. Only the nulls' permutations vary."""
     jobs = int(os.environ.get("SNP_DEMO_JOBS", min(7, int(os.environ.get("SLURM_CPUS_ON_NODE", 1)))))
+    rng = np.random.default_rng([seed, 0])
+    _D.update(z0=rng.standard_normal(T), Z=rng.standard_normal((N, T)))
     with get_context("fork").Pool(jobs) as pool:
         m = np.array(pool.map(point_m, [(r, [seed, 0, k]) for k, r in enumerate(R)])).T
-        res = dict(r=R, a=A, seed=seed, **dict(zip(KEYS_M, m)))
+    res = dict(r=R, a=A, seed=seed, **dict(zip(KEYS_M, m)))
+    rng = np.random.default_rng([seed, 1])
+    x = rng.standard_normal(T)
+    F = np.sqrt(R_M) * x + np.sqrt(1 - R_M) * rng.standard_normal((N, T))
+    gx = {g: (G[g](x) - G[g](x).mean()) / G[g](x).std() for g in G}
+    _D.clear()
+    _D.update(F=F, s=F.mean(0), gx=gx, eta=rng.standard_normal(T))
+    ens = ensemble(F, rng)                                         # one value: F is fixed
+    with get_context("fork").Pool(jobs) as pool:
         for j, g in enumerate(G):
             out = np.array(pool.map(point_o, [(g, a, [seed, j + 1, k]) for k, a in enumerate(A)])).T
-            res.update({f"{g}_{k}": v for k, v in zip(KEYS, out)})
+            res.update({f"{g}_{k}": v for k, v in zip(KEYS[len(KEYS_M):], out)})
+            res.update({f"{g}_{k}": np.full(A.size, v) for k, v in zip(KEYS_M, ens)})
+    _D.clear()
     return res
 
 
