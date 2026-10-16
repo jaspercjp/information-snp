@@ -25,7 +25,8 @@ fixed-ensemble-lambda-o: the members do not change with a, f_n = sqrt(R_M) x + s
 g(x) = x and g(x) = exp(x). Same N, T, bins and estimators as the bottom row above. A member is at
 most sqrt(R_M) correlated with x, so the (f; o) curves stop near sqrt(0.5) at a = 1; with g = exp
 the observations are a nonlinear function of the members' signal, which lambda_o sees and
-rho_o, a linear measure, does not fully.
+rho_o, a linear measure, does not fully. The ensemble's own lambda_m and rho_m (= rho_m^(2), from
+s_-n like lambda_m) are drawn for reference, dashed black and grey; they do not depend on a.
 Both run in under a minute on 16 cores (multiprocessing over the curve points).
 """
 import argparse
@@ -84,11 +85,16 @@ def point(args):
     gx = (gx - gx.mean()) / gx.std()
     F = np.sqrt(a) * gx + np.sqrt(1 - a) * rng.standard_normal((N, T))
     o = np.sqrt(a) * gx + np.sqrt(1 - a) * rng.standard_normal(T)
+    return ensemble(F, rng) + skill(F, F.mean(0), o, rng)
+
+
+def ensemble(F, rng):
+    """lambda_m terms from I(s_-n; f) pooled, rho_m^(1) and rho_m^(2)."""
     s, L = F.mean(0), loo_means(F)
     I_m, null_m = info(L, F, rng, size_x=L.mean(0))                 # s_-n on its T centres
     rho1 = np.sqrt(np.var(s) / np.mean(np.var(F, axis=1)))
     rho2 = np.mean([corr(F[n], L[n]) for n in range(N)])
-    return (I_m, null_m, rho1, rho2) + skill(F, s, o, rng)
+    return I_m, null_m, rho1, rho2
 
 
 def skill(F, s, o, rng):
@@ -106,7 +112,7 @@ def point_fixed(args):
     F = np.sqrt(R_M) * x + np.sqrt(1 - R_M) * rng.standard_normal((N, T))
     gx = G[g](x)
     o = np.sqrt(a) * (gx - gx.mean()) / gx.std() + np.sqrt(1 - a) * rng.standard_normal(T)
-    return skill(F, F.mean(0), o, rng)
+    return ensemble(F, rng) + skill(F, F.mean(0), o, rng)
 
 
 def compute(seed, fn, keys, tag):
@@ -131,13 +137,21 @@ def skill_curves(ax, d, g):
     ax.plot(a, np.abs(d[f"{g}_rho_f"]), color=RHO_O, lw=1.6, ls=DASH, label=r"$\rho_o$, corr$(f,o)$")
 
 
-def finish(ax):
+LEGEND = dict(fontsize=7, handlelength=2.0, borderpad=0.4, labelspacing=0.3, handletextpad=0.5)
+
+
+def finish(ax, n_low=None):
+    """Axes limits and style; the first n_low curves (all by default) in a lower-right legend,
+    the rest in a second one at the top left, beside the panel letter."""
     style.tidy(ax)
     ax.set(xlim=(-0.015, 1.015), ylim=(0, 1.03), xticks=np.arange(0, 1.01, 0.25),
            yticks=np.arange(0, 1.01, 0.25))
     ax.set_aspect("equal")
-    ax.legend(loc="lower right", fontsize=7, handlelength=2.0, borderpad=0.4,
-              labelspacing=0.3, handletextpad=0.5)
+    h, lab = ax.get_legend_handles_labels()
+    low = ax.legend(h[:n_low], lab[:n_low], loc="lower right", **LEGEND)
+    if n_low is not None:
+        ax.add_artist(low)
+        ax.legend(h[n_low:], lab[n_low:], loc="upper left", bbox_to_anchor=(0.11, 1.0), **LEGEND)
 
 
 def plot(d):
@@ -163,9 +177,11 @@ def plot_fixed(d):
     fig, axs = plt.subplots(1, 2, figsize=(5.0, 2.75), layout="constrained", sharey=True)
     for ax, letter, g in zip(axs, "ab", G):
         skill_curves(ax, d, g)
+        ax.plot(d["a"], lam(d, f"{g}_I_m"), color="black", lw=1.2, ls=DASH, label=r"$\lambda_m$")
+        ax.plot(d["a"], d[f"{g}_rho_m_2"], color="0.55", lw=1.2, ls=DASH, label=r"$\rho_m$")
         style.panel_label(ax, letter, TITLES[g], inside=True)
         ax.set_xlabel("Signal fraction of var($o$), $a$")
-        finish(ax)
+        finish(ax, n_low=4)
     axs[0].set_ylabel("Predictable component")
     style.save(fig, NAME_FIXED)
 
@@ -176,7 +192,7 @@ def main():
     ap.add_argument("--recompute", action="store_true", help="redo the arrays even if the npz exists")
     args = ap.parse_args()
     for name, fn, keys, tag, draw in ((NAME, point, KEYS, 0, plot),
-                                      (NAME_FIXED, point_fixed, KEYS_O, 1, plot_fixed)):
+                                      (NAME_FIXED, point_fixed, KEYS, 1, plot_fixed)):
         npz = style.data_path(name + ".npz")
         if args.recompute or not os.path.exists(npz):
             np.savez(npz, **compute(args.seed, fn, keys, tag))
