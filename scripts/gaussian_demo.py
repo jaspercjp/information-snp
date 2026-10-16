@@ -3,8 +3,8 @@
     python scripts/gaussian_demo.py [--recompute] [--seed S]
         -> figures/main-text/{png,pdf}/gaussian-array-lambda-rho, curves in figures/data/*.npz
 
-One generative model for every panel. A predictable signal x ~ N(0, 1), T = 40000 times; with
-g_hat = g(x) standardised, N = 40 members and the observations share the signal fraction a:
+One generative model for every panel. A predictable signal x ~ N(0, 1), T = 600 times; with
+g_hat = g(x) standardised, N = 500 members and the observations share the signal fraction a:
     f_n = sqrt(a) g_hat(x) + sqrt(1 - a) z_n,    o = sqrt(a) g_hat(x) + sqrt(1 - a) eta,
 z_n, eta ~ N(0, 1) independent, s the member mean, s_-n the mean of the other N - 1. So any two
 members, and o with any member, correlate at a: the observations are one more member (a
@@ -14,9 +14,10 @@ Top row, the ensemble: lambda_m from I(s_-n; f), pooled (the jugaad flattening w
     rho_m^(2) = <corr(f_n, s_-n)>.
 Bottom row, the observations: lambda_o from I(s; o) and from I(f; o) (o tiled against every
     member); rho_o = corr(s, o) and the pooled corr(f, o).
-Every I is the plug-in histogram MI minus the mean of P_NULL time-permutation nulls (the bias),
+Bins: Knuth's rule, sized as in the production estimator (o and s_-n on their T values, the
+members on all N T). Every I is the plug-in MI minus the mean of P_NULL time-permutation nulls,
 lambda = sqrt(1 - 2^(-2 I)). For Gaussian pairs lambda = |rho|, so the left column checks the
-estimators. Runs in ~1 min on 16 cores (multiprocessing over the curve points).
+estimators. Runs in under a minute on 16 cores (multiprocessing over the curve points).
 """
 import argparse
 import os
@@ -31,7 +32,7 @@ import style                                                         # noqa: E40
 from jugaad import KNUTH_MAX, knuth_bins, lam_bits, loo_means, mi_bits   # noqa: E402
 
 NAME = "gaussian-array-lambda-rho"
-N, T, A = 40, 40000, np.linspace(0, 1, 51)
+N, T, A = 500, 600, np.linspace(0, 1, 51)
 P_NULL = 4
 G = {"linear": lambda x: x, "exp": np.exp}
 TITLES = {"linear": r"Signal $\mathbf{g(x) = x}$", "exp": r"Signal $\mathbf{g(x) = e^{x}}$"}
@@ -42,11 +43,18 @@ KEYS = ("I_m", "I_m_null", "rho_m_1", "rho_m_2",
         "I_s", "I_s_null", "I_f", "I_f_null", "rho_s", "rho_f")
 
 
-def info(X, Y, rng):
-    """Plug-in I(X; Y) in bits on the pooled (N, T) arrays, Knuth bins per axis, and the mean
-    of P_NULL nulls that permute X along time (the same permutation for every row)."""
+def knuth(v):
+    return knuth_bins(v, min(KNUTH_MAX, len(v)))
+
+
+def info(X, Y, rng, size_x=None):
+    """Plug-in I(X; Y) in bits on the pooled (N, T) arrays, and the mean of P_NULL nulls that
+    permute X along time (the same permutation for every row). Knuth bins as the production
+    estimator (run.py KNUTH, boot.py lmloo): an axis that repeats or nearly repeats one series
+    over the members (tiled o, s_-n) is sized on its T values `size_x`, capped at T; the members'
+    axis Y on all N T values."""
     x, y = X.ravel(), Y.ravel()
-    bins = (knuth_bins(x, KNUTH_MAX), knuth_bins(y, KNUTH_MAX))
+    bins = (knuth(x if size_x is None else size_x), knuth(y))
     I = mi_bits(x, y, bins)
     null = np.mean([mi_bits(X[:, rng.permutation(X.shape[1])].ravel(), y, bins)
                     for _ in range(P_NULL)])
@@ -67,11 +75,11 @@ def point(args):
     F = np.sqrt(a) * gx + np.sqrt(1 - a) * rng.standard_normal((N, T))
     o = np.sqrt(a) * gx + np.sqrt(1 - a) * rng.standard_normal(T)
     s, L = F.mean(0), loo_means(F)
-    I_m, null_m = info(L, F, rng)
+    I_m, null_m = info(L, F, rng, size_x=L.mean(0))                 # s_-n on its T centres
     rho1 = np.sqrt(np.var(s) / np.mean(np.var(F, axis=1)))
     rho2 = np.mean([corr(F[n], L[n]) for n in range(N)])
     I_s, null_s = info(s[None], o[None], rng)
-    I_f, null_f = info(np.tile(o, (N, 1)), F, rng)                   # null permutes o in time
+    I_f, null_f = info(np.tile(o, (N, 1)), F, rng, size_x=o)        # null permutes o in time
     return (I_m, null_m, rho1, rho2, I_s, null_s, I_f, null_f, corr(s, o),
             corr(F.ravel(), np.tile(o, N)))
 
