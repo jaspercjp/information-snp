@@ -11,7 +11,7 @@ Every figure in `figures/{main-text,supp-info}/` except the hand-saved `thesis-*
 | `tables.py` | `jugaad_fd_optbins_table` and `jugaad_lam_terms` (md + json), and the area-summary helpers | 166 |
 | `plots.py` | every map and binning figure, and its json (plotting, not counted) | |
 | `style.py` | font (Helvetica Neue if present, else TeX Gyre Heros), bold panel titles, and `save`: main-text or supp-info, png + pdf | |
-| `gaussian_demo.py` | main-text `gaussian-array-lambda-rho`: debiased λ_m against ρ_m on Gaussian arrays, λ_o against ρ_o for o = g(x) + noise | |
+| `gaussian_demo.py` | main-text `gaussian-array-lambda-rho` (perfect model: members and o share the signal fraction a; λ_m vs ρ_m, λ_o vs ρ_o) and `fixed-ensemble-lambda-o` (members fixed, linear in x; only o = √a g(x) + noise varies) | |
 | `flattened_hist.py` | main-text `flattened-histograms`: pooled s, o, f of the decadal rows against Gaussians, log density | |
 | `run_all.sh` | submits the whole pipeline to Slurm: point (array) + boot (array) -> figures | |
 | `data-acquisition/` | raw downloads to the per-case input arrays (`$SNP_DATA/cases/`); see its README | |
