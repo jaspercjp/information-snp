@@ -15,6 +15,7 @@ Every figure in `figures/{main-text,supp-info}/` except the hand-saved `thesis-*
 | `member_lam_m.py` | supp-info `lambda-m-member-rpc` + `figures/data/lambda-m-member.json`: λ_m with one member as pseudo-observation (λ(I(s′₋ₙ; f_k)), the λ_o construction) against production λ_m, and the RPC > 1 area, for the six production cases; flags the one-bin (λ = 0) cells | |
 | `member_rho_m.py` | supp-info `rho-m-member-rpc-all[-lead2-4]` + `figures/data/rho-m-member-all.json`: the ρ counterpart, every member, unpooled as production: ρ_m^(k) = corr(s₋ₖ, f_k) (mean over k = production ρ_m), RPC_k = ρ_o / ρ_m^(k) | |
 | `run_member_lam_m.sh` | submits `member_lam_m.py --members all`: one Slurm array task per production case, then the summary (json + figures `lambda-m-member-rpc-all[-lead2-4]`) | |
+| `siegert_demo.py` | supp-info `siegert-model-ensemble-size`: λ and ρ (o and m) and both RPCs under the Siegert et al. (2016) model, β = 0.1 and 0.9, against ensemble size N, with the analytic values | |
 | `flattened_hist.py` | main-text `flattened-histograms`: pooled s, o, f of the decadal rows against Gaussians, log density | |
 | `run_all.sh` | submits the whole pipeline to Slurm: point (array) + boot (array) -> figures | |
 | `data-acquisition/` | raw downloads to the per-case input arrays (`$SNP_DATA/cases/`); see its README | |
