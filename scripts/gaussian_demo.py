@@ -1,7 +1,9 @@
-"""Main-text figure gaussian-array-lambda-rho: lambda against rho on synthetic ensembles.
+"""Main-text figure gaussian-array-lambda-rho: lambda against rho on synthetic ensembles; and
+supp-info gaussian-array-rm-sensitivity, its panel (b) at other member signal shares R_M.
 
     python scripts/gaussian_demo.py [--recompute] [--seed S]
-        -> figures/main-text/{png,pdf}/gaussian-array-lambda-rho, curves in figures/data/*.npz
+        -> figures/{main-text,supp-info}/{png,pdf}/..., curves in figures/data/*.npz
+           (each npz is reused unless --recompute)
 
 N = 500 members of T = 40000 standard-normal draws in every panel; z_0, z_n, x, eta ~ N(0, 1)
 independent, s the member mean, s_-n the mean of the other N - 1.
@@ -19,6 +21,9 @@ independent, s the member mean, s_-n the mean of the other N - 1.
 Common random numbers: (a) reuses one z_0 and z_n at every r; (b) and (c) share one ensemble
 (x, z_n) and one eta at every a, so lambda_m and rho_m there are one value each and the curves
 move only with r or a, not with a fresh draw per point.
+gaussian-array-rm-sensitivity: panel (b) (g = x) for R_M in RMS, with one x, z_n and eta for
+every R_M and a (common random numbers), so the panels differ only through R_M. Expected
+rho(s; o) = sqrt(R_M a) / sqrt(R_M + (1 - R_M)/N), rho(f; o) = sqrt(R_M a), rho_m ~ sqrt(R_M).
 Bins: Knuth's rule, sized as in the production estimator (o and s_-n on their T values, the
 members on all N T). Every I is the plug-in MI minus the mean of P_NULL time-permutation nulls,
 lambda = sqrt(1 - 2^(-2 I)). Runs in ~12 min with 7 worker processes over the curve points
@@ -36,7 +41,8 @@ import matplotlib.pyplot as plt                                      # noqa: E40
 import style                                                         # noqa: E402
 from jugaad import KNUTH_MAX, knuth_bins, lam_bits, loo_means, mi_bits   # noqa: E402
 
-NAME = "gaussian-array-lambda-rho"
+NAME, NAME_RM = "gaussian-array-lambda-rho", "gaussian-array-rm-sensitivity"
+RMS = (0.2, 0.4, 0.6, 0.8)                                   # supp-info: members' signal shares
 N, T = 500, 40000
 R, A = np.linspace(0, 1, 100), np.linspace(0, 1, 51)        # panel (a) r; panels (b, c) a
 R_M = 0.5                                                    # (b, c): the members' signal share
@@ -132,6 +138,26 @@ def compute(seed):
     return res
 
 
+def compute_rm(seed):
+    """Panel (b) at each R_M in RMS, one x, z_n, eta for all of them."""
+    jobs = int(os.environ.get("SNP_DEMO_JOBS", min(7, int(os.environ.get("SLURM_CPUS_ON_NODE", 1)))))
+    rng = np.random.default_rng([seed, 2])
+    x, Z, eta = rng.standard_normal(T), rng.standard_normal((N, T)), rng.standard_normal(T)
+    res = dict(a=A, rm=np.array(RMS), seed=seed)
+    for i, rm in enumerate(RMS):
+        F = np.sqrt(rm) * x + np.sqrt(1 - rm) * Z
+        _D.clear()
+        _D.update(F=F, s=F.mean(0), gx={"linear": x}, eta=eta)
+        ens = ensemble(F, np.random.default_rng([seed, 2, i]))
+        with get_context("fork").Pool(jobs) as pool:
+            out = np.array(pool.map(point_o, [("linear", a, [seed, 3, i, k]) for k, a in enumerate(A)])).T
+        res.update({f"rm{i}_{k}": v for k, v in zip(KEYS[len(KEYS_M):], out)})
+        res.update({f"rm{i}_{k}": np.full(A.size, v) for k, v in zip(KEYS_M, ens)})
+        print(f"R_M = {rm}: lambda_m {lam_bits(ens[0] - ens[1]):.3f}, rho_m {ens[3]:.3f}", flush=True)
+    _D.clear()
+    return res
+
+
 def lam(d, k):
     """Debiased lambda from I and its null mean."""
     return lam_bits(d[k] - d[k + "_null"])
@@ -156,20 +182,40 @@ def plot(d):
     finish(ax)
     ax.legend(loc="lower right", handlelength=2.2, borderpad=0.5, labelspacing=0.35)
     for ax, letter, g in zip(axs[1:], "bc", G):
-        a = d["a"]
-        ax.plot(a, lam(d, f"{g}_I_s"), color=LAM_O, lw=1.6, label=r"$\lambda_o$, $I(s;o)$")
-        ax.plot(a, lam(d, f"{g}_I_f"), color=LAM_O, lw=1.6, ls=DASH, label=r"$\lambda_o$, $I(f;o)$")
-        ax.plot(a, np.abs(d[f"{g}_rho_s"]), color=RHO_O, lw=1.6, label=r"$\rho_o$, corr$(s,o)$")
-        ax.plot(a, np.abs(d[f"{g}_rho_f"]), color=RHO_O, lw=1.6, ls=DASH, label=r"$\rho_o$, corr$(f,o)$")
-        ax.plot(a, lam(d, f"{g}_I_m"), color="black", lw=1.2, label=r"$\lambda_m$")
-        ax.plot(a, d[f"{g}_rho_m_2"], color="0.55", lw=1.2, label=r"$\rho_m$")
-        ax.set_xlabel("Signal fraction of var($o$), $a$")
-        style.panel_label(ax, letter, TITLES[g], inside=True)
-        finish(ax)
-        h, lab = ax.get_legend_handles_labels()                    # skill lower right,
-        ax.add_artist(ax.legend(h[:4], lab[:4], loc="lower right", **LEGEND))
-        ax.legend(h[4:], lab[4:], loc="upper left", bbox_to_anchor=(0.11, 1.0), **LEGEND)
+        skill_panel(ax, d, g, letter, TITLES[g])
     style.save(fig, NAME)
+
+
+def skill_panel(ax, d, k, letter, title, xlabel=True, legends=True):
+    """lambda_o, rho_o from s and f, and the ensemble's lambda_m, rho_m; d keys prefixed k_."""
+    a = d["a"]
+    ax.plot(a, lam(d, f"{k}_I_s"), color=LAM_O, lw=1.6, label=r"$\lambda_o$, $I(s;o)$")
+    ax.plot(a, lam(d, f"{k}_I_f"), color=LAM_O, lw=1.6, ls=DASH, label=r"$\lambda_o$, $I(f;o)$")
+    ax.plot(a, np.abs(d[f"{k}_rho_s"]), color=RHO_O, lw=1.6, label=r"$\rho_o$, corr$(s,o)$")
+    ax.plot(a, np.abs(d[f"{k}_rho_f"]), color=RHO_O, lw=1.6, ls=DASH, label=r"$\rho_o$, corr$(f,o)$")
+    ax.plot(a, lam(d, f"{k}_I_m"), color="black", lw=1.2, label=r"$\lambda_m$")
+    ax.plot(a, d[f"{k}_rho_m_2"], color="0.55", lw=1.2, label=r"$\rho_m$")
+    if xlabel:
+        ax.set_xlabel("Signal fraction of var($o$), $a$")
+    style.panel_label(ax, letter, title, inside=True)
+    finish(ax)
+    if not legends:
+        return
+    h, lab = ax.get_legend_handles_labels()                        # skill lower right,
+    ax.add_artist(ax.legend(h[:4], lab[:4], loc="lower right", **LEGEND))
+    ax.legend(h[4:], lab[4:], loc="upper left", bbox_to_anchor=(0.11, 1.0), **LEGEND)
+
+
+def plot_rm(d):
+    fig, axs = plt.subplots(2, 2, figsize=(5.0, 5.5), layout="constrained", sharex=True, sharey=True)
+    for i, (ax, letter) in enumerate(zip(axs.flat, "abcd")):
+        skill_panel(ax, d, f"rm{i}", letter, rf"$\mathbf{{R_M = {RMS[i]}}}$", xlabel=i >= 2,
+                    legends=False)
+    for ax in axs[:, 0]:
+        ax.set_ylabel("Predictable component")
+    fig.legend(*axs[0, 0].get_legend_handles_labels(), loc="outside lower center", ncol=3,
+               **dict(LEGEND, fontsize=8))                         # one key for the four panels
+    style.save(fig, NAME_RM)
 
 
 def main():
@@ -177,10 +223,11 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--recompute", action="store_true", help="redo the arrays even if the npz exists")
     args = ap.parse_args()
-    npz = style.data_path(NAME + ".npz")
-    if args.recompute or not os.path.exists(npz):
-        np.savez(npz, **compute(args.seed))
-    plot(dict(np.load(npz)))
+    for name, comp, draw in ((NAME, compute, plot), (NAME_RM, compute_rm, plot_rm)):
+        npz = style.data_path(name + ".npz")
+        if args.recompute or not os.path.exists(npz):
+            np.savez(npz, **comp(args.seed))
+        draw(dict(np.load(npz)))
 
 
 if __name__ == "__main__":
