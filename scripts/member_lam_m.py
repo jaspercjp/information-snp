@@ -1,8 +1,11 @@
 """lambda_m from one member as pseudo-observation, against the production lambda_m: does RPC > 1 move?
 
-    python scripts/member_lam_m.py [--members 5] [--recompute]
-        -> $SNP_OUT/member_lam_m_<VAR>_<case>.npz, figures/data/lambda-m-member.json,
-           figures/supp-info/{png,pdf}/lambda-m-member-rpc (the decadal rows)
+    python scripts/member_lam_m.py [--members 5|all] [--recompute]
+        -> $SNP_OUT/member_lam_m[_all]_<VAR>_<case>.npz, figures/data/lambda-m-member[-all].json,
+           figures/supp-info/{png,pdf}/lambda-m-member-rpc[-all][-lead2-4]
+    python scripts/member_lam_m.py --members all --case TREFHT:s1961     one case, npz only
+    python scripts/member_lam_m.py --members all --summarize             json + figures only
+    bash scripts/run_member_lam_m.sh       all members, one Slurm array task per case + summary
 
 The production oloo RPC (boot.py olmloo point estimate) is lambda_o / lambda_m with
     lambda_o = lambda(I(s_-n~; o~))      the N leave-one-out means against o, tiled (jugaad)
@@ -41,22 +44,37 @@ OLOO = dict(rule="knuth", tiled=False, s="loo", loo_size="T", o_vs="loo", alts=(
 BANDS = 6                   # latitude bands per maps call: bins are per cell, so this is exact
 
 
-def maps(F, o, key):
-    """jugaad.maps(F, o, **OLOO)[key][0] in latitude bands (the largest case is ~10 GB at once)."""
+def maps(F, o):
+    """(lam_o, lam_m) of jugaad.maps(F, o, **OLOO) at alt 1, in latitude bands (the largest
+    case is ~10 GB at once otherwise)."""
     rows = np.array_split(np.arange(F.shape[2]), BANDS)
-    return np.concatenate([J.maps(F[:, :, r], o[:, r], **OLOO)[key][0] for r in rows], axis=0)
+    out = [J.maps(F[:, :, r], o[:, r], **OLOO) for r in rows]
+    return tuple(np.concatenate([m[k][0] for m in out], axis=0) for k in ("lam_o", "lam_m"))
 
 
-def compute(var, case, K):
+def compute(var, case, K, path):
+    """K evenly spaced members (K = None: all of them). Writes path; resumes from path + '.part'
+    (saved every 10 members) if a previous run was cut off."""
     F, o, s, lats, lons = load(var, case)
     N = F.shape[0]
-    lam_o, lam_m = maps(F, o, "lam_o"), maps(F, o, "lam_m")
-    ks = np.unique(np.round(np.linspace(0, N - 1, K)).astype(int))
-    others = lambda k: np.arange(N) != k                            # noqa: E731
-    lam_k = np.stack([maps(F[others(k)], F[k], "lam_o") for k in ks])
-    rho_o = J.rho_measures(F, o, s)[0]
-    return dict(lats=lats, lons=lons, N=N, T=F.shape[1], members=ks, lam_o=lam_o, lam_m=lam_m,
-                lam_m_k=lam_k, rho_o=rho_o)
+    ks = np.arange(N) if K is None else np.unique(np.round(np.linspace(0, N - 1, K)).astype(int))
+    part = path + ".part.npz"
+    if os.path.exists(part):
+        z = dict(np.load(part))
+        lam_o, lam_m, rho_o, done = z["lam_o"], z["lam_m"], z["rho_o"], list(z["lam_m_k"])
+        print(f"{var} {case}: resuming at member {len(done)}/{len(ks)}", flush=True)
+    else:
+        (lam_o, lam_m), rho_o, done = maps(F, o), J.rho_measures(F, o, s)[0], []
+    for i in range(len(done), len(ks)):
+        k = ks[i]
+        done.append(maps(F[np.arange(N) != k], F[k])[0])
+        if (i + 1) % 10 == 0 and i + 1 < len(ks):
+            np.savez(part, lam_o=lam_o, lam_m=lam_m, rho_o=rho_o, lam_m_k=np.stack(done))
+            print(f"{var} {case}: {i + 1}/{len(ks)} members", flush=True)
+    np.savez_compressed(path, lats=lats, lons=lons, N=N, T=F.shape[1], members=ks, lam_o=lam_o,
+                        lam_m=lam_m, lam_m_k=np.stack(done), rho_o=rho_o)
+    if os.path.exists(part):
+        os.remove(part)
 
 
 def defined(z):
@@ -96,7 +114,7 @@ def summary(z):
             "all": shares(z), "defined": shares(defined(z))}
 
 
-def figure(cases, Z):
+def figure(cases, Z, name):
     fig, axs = P.grid_fig(len(cases), 3, (14.4, 2.9 * len(cases) + 1.2))
     titles = (r"$\lambda_o / \lambda_m$ (production)",
               r"$\lambda_o / \langle\lambda_m^{(k)}\rangle_k$ (member as observation)",
@@ -119,37 +137,44 @@ def figure(cases, Z):
     P.colorbar(fig, [r[:2] for r in axs], 0.6)
     P.colorbar(fig, [r[2:] for r in axs], 0.9, norm=LMN, label=r"$\lambda_m$ ratio",
                ticks=(0.5, 0.75, 1, 1.25, 1.5), labels=("≤0.5", "0.75", "1", "1.25", "≥1.5"))
-    style.save(fig, NAME, dpi=200)
+    style.save(fig, name, dpi=200)
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--members", type=int, default=5)
+    ap.add_argument("--members", default="5", help="number of evenly spaced members, or 'all'")
+    ap.add_argument("--case", help="VAR:case, compute this case only (no json, no figure)")
+    ap.add_argument("--summarize", action="store_true", help="json and figures from existing npz only")
     ap.add_argument("--recompute", action="store_true")
     args = ap.parse_args()
+    K = None if args.members == "all" else int(args.members)
+    tag = "_all" if K is None else ""
+    path = lambda var, case: os.path.join(OUT, f"member_lam_m{tag}_{var}_{case}.npz")  # noqa: E731
     os.makedirs(OUT, exist_ok=True)
+    cases = [c for cs in PRODUCTION.values() for c in cs]
+    if args.case:
+        cases = [tuple(args.case.split(":"))]
+    for var, case in cases:
+        if not args.summarize and (args.recompute or not os.path.exists(path(var, case))):
+            compute(var, case, K, path(var, case))
+    if args.case:
+        return
     Z, res = {}, {}
-    for name, cases in PRODUCTION.items():
-        for var, case in cases:
-            path = os.path.join(OUT, f"member_lam_m_{var}_{case}.npz")
-            if args.recompute or not os.path.exists(path):
-                np.savez_compressed(path, **compute(var, case, args.members))
-            Z[var, case] = dict(np.load(path))
-            res[f"{var} {case}"] = summary(Z[var, case])
-            e = res[f"{var} {case}"]
-            for kind in ("all", "defined"):
-                d = e[kind]
-                print(f"{var:6s} {case:6s} {kind:7s} area {d['area_valid']:.2f} | RPC>1: production "
-                      f"{d['area_rpc_gt1_production']:.3f}, member mean {d['area_rpc_gt1_member_mean']:.3f}"
-                      f" (per member {' '.join(f'{a:.2f}' for a in d['area_rpc_gt1_member'])}) | lam_m "
-                      f"{d['area_mean_lam_m_production']:.3f} -> {d['area_mean_lam_m_member_mean']:.3f}",
-                      flush=True)
-            print(f"{'':14s} one-bin area: lam_o {e['area_lam_o_onebin']:.3f}, lam_m "
-                  f"{e['area_lam_m_onebin']:.3f}, lam_m^(k) "
-                  + " ".join(f"{a:.2f}" for a in e["area_lam_m_k_onebin"]), flush=True)
-    with open(style.data_path("lambda-m-member.json"), "w") as fh:
+    for var, case in cases:
+        Z[var, case] = dict(np.load(path(var, case)))
+        e = res[f"{var} {case}"] = summary(Z[var, case])
+        for kind in ("all", "defined"):
+            d, pm = e[kind], np.array(e[kind]["area_rpc_gt1_member"])
+            print(f"{var:6s} {case:6s} {kind:7s} area {d['area_valid']:.2f} | RPC>1: production "
+                  f"{d['area_rpc_gt1_production']:.3f}, member mean {d['area_rpc_gt1_member_mean']:.3f}"
+                  f" (single members {pm.min():.2f}-{np.median(pm):.2f}-{pm.max():.2f}, K={pm.size}) | "
+                  f"lam_m {d['area_mean_lam_m_production']:.3f} -> {d['area_mean_lam_m_member_mean']:.3f}",
+                  flush=True)
+    with open(style.data_path(f"lambda-m-member{tag.replace('_', '-')}.json"), "w") as fh:
         json.dump(res, fh, indent=1)
-    figure(PRODUCTION["decadal"], Z)
+    figure(PRODUCTION["decadal"], Z, NAME + tag.replace("_", "-"))
+    if K is None:
+        figure(PRODUCTION["lead2-4"], Z, NAME + "-all-lead2-4")
 
 
 if __name__ == "__main__":
