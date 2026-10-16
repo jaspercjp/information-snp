@@ -25,7 +25,8 @@ move only with r or a, not with a fresh draw per point.
 gaussian-array-rm-sensitivity: panel (b) (g = x) for R_M in RMS, with one x, z_n and eta for
 every R_M and a (common random numbers), so the panels differ only through R_M. Expected
 rho(s; o) = sqrt(R_M a) / sqrt(R_M + (1 - R_M)/N), rho(f; o) = sqrt(R_M a), rho_m ~ sqrt(R_M).
-gaussian-array-heterogeneous-rm: panel (b) with f_n = sqrt(R_n) x + sqrt(1 - R_n) z_n, R_n per member,
+gaussian-array-heterogeneous-rm: panels (b) (top row) and (c) (bottom row, o from exp(x)) with
+f_n = sqrt(R_n) x + sqrt(1 - R_n) z_n, R_n per member,
 mean 0.5 in each panel: (a) R_n = 0.5 for all, (b) R_n evenly spaced over [0.1, 0.9], (c) half the
 members at 0.1, half at 0.9. rho_m = <corr(f_n, s_-n)> ~ <sqrt(R_n)> (0.707, 0.685, 0.632; Jensen), so
 rho RPC = 1 near a = <sqrt(R_n)>^2. The pooled (s_-n, f_n) pairs are a mixture of Gaussians with
@@ -149,9 +150,9 @@ def compute(seed):
     return res
 
 
-def skill_runs(seed, tag, shares):
-    """Panel (b) (g = x) for each per-member signal-share array in shares, one x, z_n, eta for all
-    of them -> keys rm<i>_*."""
+def skill_runs(seed, tag, shares, g="linear", prefix="rm"):
+    """Panel (b) (g = x) or (c) (g = exp) for each per-member signal-share array in shares, one x,
+    z_n, eta for all of them -> keys <prefix><i>_*."""
     jobs = int(os.environ.get("SNP_DEMO_JOBS", min(7, int(os.environ.get("SLURM_CPUS_ON_NODE", 1)))))
     rng = np.random.default_rng([seed, tag])
     x, Z, eta = rng.standard_normal(T), rng.standard_normal((N, T)), rng.standard_normal(T)
@@ -160,12 +161,13 @@ def skill_runs(seed, tag, shares):
         R = np.broadcast_to(np.asarray(R, float), (N,))[:, None]
         F = np.sqrt(R) * x + np.sqrt(1 - R) * Z
         _D.clear()
-        _D.update(F=F, s=F.mean(0), gx={"linear": x}, eta=eta)
+        gx = G[g](x)
+        _D.update(F=F, s=F.mean(0), gx={g: (gx - gx.mean()) / gx.std()}, eta=eta)
         ens = ensemble(F, np.random.default_rng([seed, tag, i]))
         with get_context("fork").Pool(jobs) as pool:
-            out = np.array(pool.map(point_o, [("linear", a, [seed, tag + 1, i, k]) for k, a in enumerate(A)])).T
-        res.update({f"rm{i}_{k}": v for k, v in zip(KEYS[len(KEYS_M):], out)})
-        res.update({f"rm{i}_{k}": np.full(A.size, v) for k, v in zip(KEYS_M, ens)})
+            out = np.array(pool.map(point_o, [(g, a, [seed, tag + 1, i, k]) for k, a in enumerate(A)])).T
+        res.update({f"{prefix}{i}_{k}": v for k, v in zip(KEYS[len(KEYS_M):], out)})
+        res.update({f"{prefix}{i}_{k}": np.full(A.size, v) for k, v in zip(KEYS_M, ens)})
         print(f"shares {i} (mean {R.mean():.2f}, <sqrt R> {np.sqrt(R).mean():.3f}): lambda_m "
               f"{lam_bits(ens[0] - ens[1]):.3f}, rho_m {ens[3]:.3f}", flush=True)
     _D.clear()
@@ -177,9 +179,15 @@ def compute_rm(seed):
     return dict(skill_runs(seed, 2, RMS), rm=np.array(RMS))
 
 
-def compute_het(seed):
-    """Panel (b) for each per-member R_n design in HET."""
-    return dict(skill_runs(seed, 4, list(HET.values())), shares=np.stack(list(HET.values())))
+def compute_het(seed, have=None):
+    """Panels (b) (g = x, keys rm<i>) and (c) (g = exp, keys ex<i>) for each per-member R_n design
+    in HET; reuses the g = x half of `have` (an older npz) if it is there."""
+    res = dict(have) if have is not None and "rm0_I_s" in have else dict(
+        skill_runs(seed, 4, list(HET.values())), shares=np.stack(list(HET.values())))
+    if "ex0_I_s" not in res:
+        res.update({k: v for k, v in skill_runs(seed, 7, list(HET.values()), g="exp", prefix="ex").items()
+                    if k.startswith("ex")})
+    return res
 
 
 def lam(d, k):
@@ -243,11 +251,13 @@ def plot_rm(d):
 
 
 def plot_het(d):
-    fig, axs = plt.subplots(1, 3, figsize=(7.2, 3.2), layout="constrained", sharey=True)
-    for i, (ax, letter) in enumerate(zip(axs, "abc")):
-        skill_panel(ax, d, f"rm{i}", letter, HET_TITLES[i], legends=False)
-    axs[0].set_ylabel("Predictable component")
-    fig.legend(*axs[0].get_legend_handles_labels(), loc="outside lower center", ncol=6,
+    fig, axs = plt.subplots(2, 3, figsize=(7.2, 5.6), layout="constrained", sharex=True, sharey=True)
+    for r, (g, prefix, letters) in enumerate(zip(G, ("rm", "ex"), ("abc", "def"))):
+        for i, (ax, letter) in enumerate(zip(axs[r], letters)):
+            skill_panel(ax, d, f"{prefix}{i}", letter, HET_TITLES[i] if r == 0 else None,
+                        xlabel=r == 1, legends=False)
+        axs[r, 0].set_ylabel(TITLES[g] + "\nPredictable component")   # row label: the signal g
+    fig.legend(*axs[0, 0].get_legend_handles_labels(), loc="outside lower center", ncol=6,
                **dict(LEGEND, fontsize=7.5))
     style.save(fig, NAME_HET)
 
@@ -262,6 +272,8 @@ def main():
         npz = style.data_path(name + ".npz")
         if args.recompute or not os.path.exists(npz):
             np.savez(npz, **comp(args.seed))
+        elif name == NAME_HET and "ex0_I_s" not in np.load(npz):         # add the g = exp row
+            np.savez(npz, **compute_het(args.seed, have=dict(np.load(npz))))
         draw(dict(np.load(npz)))
 
 
