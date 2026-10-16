@@ -3,20 +3,20 @@
     python scripts/gaussian_demo.py [--recompute] [--seed S]
         -> figures/main-text/{png,pdf}/gaussian-array-lambda-rho, curves in figures/data/*.npz
 
-(a) lambda_m. N = 500 members of M = 10000 standard normals with pairwise correlation r,
-    f_n = sqrt(r) z_0 + sqrt(1 - r) z_n (the notebook's multivariate draw, in distribution).
-    lambda_m from I(s_-n; f), pooled, Knuth bins: the production oloo estimator. Plug-in MI is
-    biased up by ~(B-1)^2 / (2 n ln 2) bits, which lambda ~ sqrt(2 ln2 I) turns into a floor of
-    ~0.1 at r = 0 (~0.2 with the thesis FD bins); subtracting the mean of P time-permutation nulls (lam-o-hist-null's
-    "debiased I") removes it, so lambda_m follows rho_m down to 0.
-    rho_m^(1) = sqrt(var s / <var f_n>), rho_m^(2) = <corr(f_n, s_-n)>.
-(b, c) lambda_o. A predictable signal x ~ N(0, 1); N = 40 members f_n = sqrt(0.5) x + sqrt(0.5) e_n,
-    s their mean; observations o = sqrt(a) g(x) + sqrt(1 - a) eta, g standardised, for
-    (b) g(x) = x and (c) g(x) = exp(x), against a, the predictable fraction of var(o).
-    lambda_o from I(s; o) and from I(f; o) (jugaad: o tiled against every member), debiased
-    as in (a); rho_o = corr(s, o) and the pooled corr(f, o). For Gaussian pairs lambda = |rho|, so
-    (b) checks the estimator; in (c) MI is unchanged by the monotone g but corr is not.
-Runs in ~4 min on 16 cores (multiprocessing over the curve points).
+One generative model for every panel. A predictable signal x ~ N(0, 1), T = 40000 times; with
+g_hat = g(x) standardised, N = 40 members and the observations share the signal fraction a:
+    f_n = sqrt(a) g_hat(x) + sqrt(1 - a) z_n,    o = sqrt(a) g_hat(x) + sqrt(1 - a) eta,
+z_n, eta ~ N(0, 1) independent, s the member mean, s_-n the mean of the other N - 1. So any two
+members, and o with any member, correlate at a: the observations are one more member (a
+perfect model), and the RPC should be 1. Columns: g(x) = x (Gaussian) and g(x) = exp(x) (skewed).
+Top row, the ensemble: lambda_m from I(s_-n; f), pooled (the jugaad flattening with s_-n, as
+    the production oloo estimator), Knuth bins; rho_m^(1) = sqrt(var s / <var f_n>),
+    rho_m^(2) = <corr(f_n, s_-n)>.
+Bottom row, the observations: lambda_o from I(s; o) and from I(f; o) (o tiled against every
+    member); rho_o = corr(s, o) and the pooled corr(f, o).
+Every I is the plug-in histogram MI minus the mean of P_NULL time-permutation nulls (the bias),
+lambda = sqrt(1 - 2^(-2 I)). For Gaussian pairs lambda = |rho|, so the left column checks the
+estimators. Runs in ~1 min on 16 cores (multiprocessing over the curve points).
 """
 import argparse
 import os
@@ -31,12 +31,15 @@ import style                                                         # noqa: E40
 from jugaad import KNUTH_MAX, knuth_bins, lam_bits, loo_means, mi_bits   # noqa: E402
 
 NAME = "gaussian-array-lambda-rho"
-N_A, M_A, R = 500, 10000, np.linspace(0, 1, 100)                    # panel (a)
-N_O, T_O, R_M, A = 40, 40000, 0.5, np.linspace(0, 1, 51)            # panels (b, c)
+N, T, A = 40, 40000, np.linspace(0, 1, 51)
 P_NULL = 4
 G = {"linear": lambda x: x, "exp": np.exp}
-BLUE, ORANGE = style.SERIES[0], style.SERIES[1]             # (a): lambda_m, rho_m
-LAM_O, RHO_O = "tomato", "darkseagreen"                      # (b, c): lambda_o, rho_o
+TITLES = {"linear": r"Signal $\mathbf{g(x) = x}$", "exp": r"Signal $\mathbf{g(x) = e^{x}}$"}
+LAM_M, RHO_M = style.SERIES[0], style.SERIES[1]             # top row: lambda_m, rho_m
+LAM_O, RHO_O = "tomato", "darkseagreen"                      # bottom row: lambda_o, rho_o
+DASH = (0, (4, 2.5))
+KEYS = ("I_m", "I_m_null", "rho_m_1", "rho_m_2",
+        "I_s", "I_s_null", "I_f", "I_f_null", "rho_s", "rho_f")
 
 
 def info(X, Y, rng):
@@ -55,76 +58,62 @@ def corr(a, b):
     return np.sum(a * b) / np.sqrt(np.sum(a * a) * np.sum(b * b))
 
 
-def point_m(args):
-    r, seed = args
-    rng = np.random.default_rng(seed)
-    f = np.sqrt(r) * rng.standard_normal(M_A) + np.sqrt(1 - r) * rng.standard_normal((N_A, M_A))
-    s, L = f.mean(0), loo_means(f)
-    I, null = info(L, f, rng)
-    rho1 = np.sqrt(np.var(s) / np.mean(np.var(f, axis=1)))
-    rho2 = np.mean([corr(f[n], L[n]) for n in range(N_A)])
-    return I, null, rho1, rho2
-
-
-def point_o(args):
+def point(args):
+    """Both rows at one (g, a): the ensemble measures and the skill against o."""
     g, a, seed = args
     rng = np.random.default_rng(seed)
-    x = rng.standard_normal(T_O)
-    F = np.sqrt(R_M) * x + np.sqrt(1 - R_M) * rng.standard_normal((N_O, T_O))
-    s = F.mean(0)
-    gx = G[g](x)
-    o = np.sqrt(a) * (gx - gx.mean()) / gx.std() + np.sqrt(1 - a) * rng.standard_normal(T_O)
+    gx = G[g](rng.standard_normal(T))
+    gx = (gx - gx.mean()) / gx.std()
+    F = np.sqrt(a) * gx + np.sqrt(1 - a) * rng.standard_normal((N, T))
+    o = np.sqrt(a) * gx + np.sqrt(1 - a) * rng.standard_normal(T)
+    s, L = F.mean(0), loo_means(F)
+    I_m, null_m = info(L, F, rng)
+    rho1 = np.sqrt(np.var(s) / np.mean(np.var(F, axis=1)))
+    rho2 = np.mean([corr(F[n], L[n]) for n in range(N)])
     I_s, null_s = info(s[None], o[None], rng)
-    I_f, null_f = info(np.tile(o, (N_O, 1)), F, rng)                 # null permutes o in time
-    return I_s, null_s, I_f, null_f, corr(s, o), corr(F.ravel(), np.tile(o, N_O))
+    I_f, null_f = info(np.tile(o, (N, 1)), F, rng)                   # null permutes o in time
+    return (I_m, null_m, rho1, rho2, I_s, null_s, I_f, null_f, corr(s, o),
+            corr(F.ravel(), np.tile(o, N)))
 
 
 def compute(seed):
+    res = dict(a=A, seed=seed)
     with get_context("fork").Pool(int(os.environ.get("SLURM_CPUS_ON_NODE", 1))) as pool:
-        m = np.array(pool.map(point_m, [(r, [seed, 0, k]) for k, r in enumerate(R)])).T
-        res = dict(r=R, I_m=m[0], I_m_null=m[1], rho_m_1=m[2], rho_m_2=m[3], a=A, seed=seed)
         for j, g in enumerate(G):
-            o = np.array(pool.map(point_o, [(g, a, [seed, j + 1, k]) for k, a in enumerate(A)])).T
-            res.update({f"{g}_{k}": v for k, v in
-                        zip(("I_s", "I_s_null", "I_f", "I_f_null", "rho_s", "rho_f"), o)})
+            out = np.array(pool.map(point, [(g, a, [seed, j, k]) for k, a in enumerate(A)])).T
+            res.update({f"{g}_{k}": v for k, v in zip(KEYS, out)})
     return res
 
 
 def lam(d, k):
-    """(plug-in, debiased) lambda from I and its null mean."""
-    return lam_bits(d[k]), lam_bits(d[k] - d[k + "_null"])
+    """Debiased lambda from I and its null mean."""
+    return lam_bits(d[k] - d[k + "_null"])
 
 
 def plot(d):
-    fig, axs = plt.subplots(1, 3, figsize=(7.2, 2.75), layout="constrained")
-    _, lam_m = lam(d, "I_m")
-    ax = axs[0]
-    ax.plot(d["r"], lam_m, color=BLUE, lw=1.6, label=r"$\lambda_m$")
-    ax.plot(d["r"], d["rho_m_1"], color=ORANGE, lw=1.6, label=r"$\rho_m^{(1)}$")
-    ax.plot(d["r"], d["rho_m_2"], color=ORANGE, lw=1.6, ls=(0, (4, 2.5)), label=r"$\rho_m^{(2)}$")
-    ax.set_xlabel("Correlation between members, $r$")
-    ax.set_ylabel("Predictable component")
-    style.panel_label(ax, "a", "Gaussian Members", inside=True)
-    titles = {"linear": r"Signal $\mathbf{g(x) = x}$", "exp": r"Signal $\mathbf{g(x) = e^{x}}$"}
-    for ax, (letter, g) in zip(axs[1:], (("b", "linear"), ("c", "exp"))):
-        _, ls_ = lam(d, f"{g}_I_s")
-        _, lf_ = lam(d, f"{g}_I_f")
-        ax.plot(d["a"], ls_, color=LAM_O, lw=1.6, label=r"$\lambda_o$, $I(s;o)$")
-        ax.plot(d["a"], lf_, color=LAM_O, lw=1.6, ls=(0, (4, 2.5)), label=r"$\lambda_o$, $I(f;o)$")
-        ax.plot(d["a"], np.abs(d[f"{g}_rho_s"]), color=RHO_O, lw=1.6, label=r"$\rho_o$, corr$(s,o)$")
-        ax.plot(d["a"], np.abs(d[f"{g}_rho_f"]), color=RHO_O, lw=1.6, ls=(0, (4, 2.5)),
-                label=r"$\rho_o$, corr$(f,o)$")
-        ax.set_xlabel("Signal fraction of var($o$), $a$")
-        style.panel_label(ax, letter, titles[g], inside=True)
-    for ax in axs:
+    fig, axs = plt.subplots(2, 2, figsize=(5.0, 5.0), layout="constrained", sharex=True, sharey=True)
+    a = d["a"]
+    for c, g in enumerate(G):
+        top, bot = axs[0, c], axs[1, c]
+        top.plot(a, lam(d, f"{g}_I_m"), color=LAM_M, lw=1.6, label=r"$\lambda_m$")
+        top.plot(a, d[f"{g}_rho_m_1"], color=RHO_M, lw=1.6, label=r"$\rho_m^{(1)}$")
+        top.plot(a, d[f"{g}_rho_m_2"], color=RHO_M, lw=1.6, ls=DASH, label=r"$\rho_m^{(2)}$")
+        bot.plot(a, lam(d, f"{g}_I_s"), color=LAM_O, lw=1.6, label=r"$\lambda_o$, $I(s;o)$")
+        bot.plot(a, lam(d, f"{g}_I_f"), color=LAM_O, lw=1.6, ls=DASH, label=r"$\lambda_o$, $I(f;o)$")
+        bot.plot(a, np.abs(d[f"{g}_rho_s"]), color=RHO_O, lw=1.6, label=r"$\rho_o$, corr$(s,o)$")
+        bot.plot(a, np.abs(d[f"{g}_rho_f"]), color=RHO_O, lw=1.6, ls=DASH, label=r"$\rho_o$, corr$(f,o)$")
+        style.panel_label(top, "ab"[c], TITLES[g], inside=True)
+        style.panel_label(bot, "cd"[c], inside=True)
+        bot.set_xlabel("Signal fraction of variance, $a$")
+    for ax in axs.flat:
         style.tidy(ax)
         ax.set(xlim=(-0.015, 1.015), ylim=(0, 1.03), xticks=np.arange(0, 1.01, 0.25),
                yticks=np.arange(0, 1.01, 0.25))
         ax.set_aspect("equal")
-    axs[0].legend(loc="lower right", handlelength=2.2, borderpad=0.5, labelspacing=0.35)
-    for ax in axs[1:]:
         ax.legend(loc="lower right", fontsize=7, handlelength=2.0, borderpad=0.4,
                   labelspacing=0.3, handletextpad=0.5)
+    for ax in axs[:, 0]:
+        ax.set_ylabel("Predictable component")
     style.save(fig, NAME)
 
 
