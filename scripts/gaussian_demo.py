@@ -241,7 +241,7 @@ def skill_panel(ax, d, k, letter, title, xlabel=True, legends=True):
 def plot_rm(d):
     fig, axs = plt.subplots(2, 2, figsize=(5.0, 5.5), layout="constrained", sharex=True, sharey=True)
     for i, (ax, letter) in enumerate(zip(axs.flat, "abcd")):
-        skill_panel(ax, d, f"rm{i}", letter, rf"$\mathbf{{R_M = {RMS[i]}}}$", xlabel=i >= 2,
+        skill_panel(ax, d, f"rm{i}", letter, rf"$\mathbf{{R_n = {RMS[i]}}}$", xlabel=i >= 2,
                     legends=False)
     for ax in axs[:, 0]:
         ax.set_ylabel("Predictable component")
