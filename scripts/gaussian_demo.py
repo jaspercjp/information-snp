@@ -3,7 +3,7 @@
     python scripts/gaussian_demo.py [--recompute] [--seed S]
         -> figures/main-text/{png,pdf}/gaussian-array-lambda-rho, curves in figures/data/*.npz
 
-N = 500 members of T = 30000 standard-normal draws in every panel; z_0, z_n, x, eta ~ N(0, 1)
+N = 500 members of T = 40000 standard-normal draws in every panel; z_0, z_n, x, eta ~ N(0, 1)
 independent, s the member mean, s_-n the mean of the other N - 1.
 (a) Gaussian members f_n = sqrt(r) z_0 + sqrt(1 - r) z_n, pairwise correlation r (the notebook's
     multivariate draw, in distribution). lambda_m from I(s_-n; f), pooled (the jugaad flattening
@@ -15,11 +15,11 @@ independent, s the member mean, s_-n the mean of the other N - 1.
     lambda_o from I(s; o) and from I(f; o) (o tiled against every member); rho_o = corr(s, o) and
     the pooled corr(f, o). A member is at most sqrt(R_M) correlated with x, so the (f; o) curves
     stop near sqrt(0.5). The ensemble's own lambda_m and rho_m (= rho_m^(2)) are drawn for
-    reference, dashed black and grey; they do not depend on a.
+    reference, solid black and grey; they do not depend on a.
 Bins: Knuth's rule, sized as in the production estimator (o and s_-n on their T values, the
 members on all N T). Every I is the plug-in MI minus the mean of P_NULL time-permutation nulls,
-lambda = sqrt(1 - 2^(-2 I)). Runs in ~8 min with 8 worker processes over the curve points
-($SNP_DEMO_JOBS; each holds ~1 GB at T = 30000, so the default stays inside a 16 GB allocation).
+lambda = sqrt(1 - 2^(-2 I)). Runs in ~12 min with 7 worker processes over the curve points
+($SNP_DEMO_JOBS; each holds ~1.6 GB at T = 40000, so the default stays inside a 16 GB allocation).
 """
 import argparse
 import os
@@ -34,7 +34,7 @@ import style                                                         # noqa: E40
 from jugaad import KNUTH_MAX, knuth_bins, lam_bits, loo_means, mi_bits   # noqa: E402
 
 NAME = "gaussian-array-lambda-rho"
-N, T = 500, 30000
+N, T = 500, 40000
 R, A = np.linspace(0, 1, 100), np.linspace(0, 1, 51)        # panel (a) r; panels (b, c) a
 R_M = 0.5                                                    # (b, c): the members' signal share
 P_NULL = 4
@@ -107,7 +107,7 @@ def point_o(args):
 
 
 def compute(seed):
-    jobs = int(os.environ.get("SNP_DEMO_JOBS", min(8, int(os.environ.get("SLURM_CPUS_ON_NODE", 1)))))
+    jobs = int(os.environ.get("SNP_DEMO_JOBS", min(7, int(os.environ.get("SLURM_CPUS_ON_NODE", 1)))))
     with get_context("fork").Pool(jobs) as pool:
         m = np.array(pool.map(point_m, [(r, [seed, 0, k]) for k, r in enumerate(R)])).T
         res = dict(r=R, a=A, seed=seed, **dict(zip(KEYS_M, m)))
@@ -146,8 +146,8 @@ def plot(d):
         ax.plot(a, lam(d, f"{g}_I_f"), color=LAM_O, lw=1.6, ls=DASH, label=r"$\lambda_o$, $I(f;o)$")
         ax.plot(a, np.abs(d[f"{g}_rho_s"]), color=RHO_O, lw=1.6, label=r"$\rho_o$, corr$(s,o)$")
         ax.plot(a, np.abs(d[f"{g}_rho_f"]), color=RHO_O, lw=1.6, ls=DASH, label=r"$\rho_o$, corr$(f,o)$")
-        ax.plot(a, lam(d, f"{g}_I_m"), color="black", lw=1.2, ls=DASH, label=r"$\lambda_m$")
-        ax.plot(a, d[f"{g}_rho_m_2"], color="0.55", lw=1.2, ls=DASH, label=r"$\rho_m$")
+        ax.plot(a, lam(d, f"{g}_I_m"), color="black", lw=1.2, label=r"$\lambda_m$")
+        ax.plot(a, d[f"{g}_rho_m_2"], color="0.55", lw=1.2, label=r"$\rho_m$")
         ax.set_xlabel("Signal fraction of var($o$), $a$")
         style.panel_label(ax, letter, TITLES[g], inside=True)
         finish(ax)
