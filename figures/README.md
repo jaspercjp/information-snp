@@ -15,7 +15,6 @@ Which folder a figure goes to is `scripts/style.py:MAIN_TEXT`; every script save
 |---|---|---|
 | `rpc_rho_lambda_oloo_decadal` | `scripts/plots.py` (`production("decadal", oloo=True)`) | `$SNP_OUT` point + boot (fd, lmloo, olmloo) for SLP s1961, PRECT s1978, TREFHT s1961 |
 | `gaussian-array-lambda-rho` | `scripts/gaussian_demo.py` | none (synthetic, seeded); curves in `data/gaussian-array-lambda-rho.npz` |
-| `fixed-ensemble-lambda-o` | `scripts/gaussian_demo.py` | none (synthetic, seeded); curves in `data/fixed-ensemble-lambda-o.npz` |
 | `flattened-histograms` | `scripts/flattened_hist.py` | `$SNP_DATA/cases/` for the three decadal rows above |
 | `rho-lam-histogram` | not yet here | |
 

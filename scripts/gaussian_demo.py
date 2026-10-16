@@ -1,33 +1,24 @@
-"""Main-text figures gaussian-array-lambda-rho and fixed-ensemble-lambda-o: lambda against rho.
+"""Main-text figure gaussian-array-lambda-rho: lambda against rho on synthetic ensembles.
 
     python scripts/gaussian_demo.py [--recompute] [--seed S]
-        -> figures/main-text/{png,pdf}/{gaussian-array-lambda-rho,fixed-ensemble-lambda-o},
-           curves in figures/data/*.npz
+        -> figures/main-text/{png,pdf}/gaussian-array-lambda-rho, curves in figures/data/*.npz
 
-gaussian-array-lambda-rho: one generative model for every panel. A predictable signal x ~ N(0, 1), T = 600 times; with
-g_hat = g(x) standardised, N = 500 members and the observations share the signal fraction a:
-    f_n = sqrt(a) g_hat(x) + sqrt(1 - a) z_n,    o = sqrt(a) g_hat(x) + sqrt(1 - a) eta,
-z_n, eta ~ N(0, 1) independent, s the member mean, s_-n the mean of the other N - 1. So any two
-members, and o with any member, correlate at a: the observations are one more member (a
-perfect model), and the RPC should be 1. Columns: g(x) = x (Gaussian) and g(x) = exp(x) (skewed).
-Top row, the ensemble: lambda_m from I(s_-n; f), pooled (the jugaad flattening with s_-n, as
-    the production oloo estimator), Knuth bins; rho_m^(1) = sqrt(var s / <var f_n>),
-    rho_m^(2) = <corr(f_n, s_-n)>.
-Bottom row, the observations: lambda_o from I(s; o) and from I(f; o) (o tiled against every
-    member); rho_o = corr(s, o) and the pooled corr(f, o).
+N = 500 members of T = 10000 standard-normal draws in every panel; z_0, z_n, x, eta ~ N(0, 1)
+independent, s the member mean, s_-n the mean of the other N - 1.
+(a) Gaussian members f_n = sqrt(r) z_0 + sqrt(1 - r) z_n, pairwise correlation r (the notebook's
+    multivariate draw, in distribution). lambda_m from I(s_-n; f), pooled (the jugaad flattening
+    with s_-n, as the production oloo estimator); rho_m^(1) = sqrt(var s / <var f_n>),
+    rho_m^(2) = <corr(f_n, s_-n)>. For Gaussian pairs lambda = |rho|, so lambda_m = rho_m^(2).
+(b, c) Skill. Members fixed, f_n = sqrt(R_M) x + sqrt(1 - R_M) z_n (R_M = 0.5, linear in x); only the
+    observations vary, o = sqrt(a) g_hat(x) + sqrt(1 - a) eta, g_hat = g standardised, for
+    (b) g(x) = x and (c) g(x) = exp(x), against a, the signal fraction of var(o).
+    lambda_o from I(s; o) and from I(f; o) (o tiled against every member); rho_o = corr(s, o) and
+    the pooled corr(f, o). A member is at most sqrt(R_M) correlated with x, so the (f; o) curves
+    stop near sqrt(0.5). The ensemble's own lambda_m and rho_m (= rho_m^(2)) are drawn for
+    reference, dashed black and grey; they do not depend on a.
 Bins: Knuth's rule, sized as in the production estimator (o and s_-n on their T values, the
 members on all N T). Every I is the plug-in MI minus the mean of P_NULL time-permutation nulls,
-lambda = sqrt(1 - 2^(-2 I)). For Gaussian pairs lambda = |rho|, so the left column checks the
-estimators.
-
-fixed-ensemble-lambda-o: the members do not change with a, f_n = sqrt(R_M) x + sqrt(1 - R_M) z_n
-(R_M = 0.5, linear in x), only the observations do, o = sqrt(a) g_hat(x) + sqrt(1 - a) eta, for
-g(x) = x and g(x) = exp(x). Same N, T, bins and estimators as the bottom row above. A member is at
-most sqrt(R_M) correlated with x, so the (f; o) curves stop near sqrt(0.5) at a = 1; with g = exp
-the observations are a nonlinear function of the members' signal, which lambda_o sees and
-rho_o, a linear measure, does not fully. The ensemble's own lambda_m and rho_m (= rho_m^(2), from
-s_-n like lambda_m) are drawn for reference, dashed black and grey; they do not depend on a.
-Both run in under a minute on 16 cores (multiprocessing over the curve points).
+lambda = sqrt(1 - 2^(-2 I)). Runs in ~3 min on 16 cores (multiprocessing over the curve points).
 """
 import argparse
 import os
@@ -41,17 +32,19 @@ import matplotlib.pyplot as plt                                      # noqa: E40
 import style                                                         # noqa: E402
 from jugaad import KNUTH_MAX, knuth_bins, lam_bits, loo_means, mi_bits   # noqa: E402
 
-NAME, NAME_FIXED = "gaussian-array-lambda-rho", "fixed-ensemble-lambda-o"
-N, T, A = 500, 600, np.linspace(0, 1, 51)
-R_M = 0.5                                                    # fixed-ensemble members' signal share
+NAME = "gaussian-array-lambda-rho"
+N, T = 500, 10000
+R, A = np.linspace(0, 1, 100), np.linspace(0, 1, 51)        # panel (a) r; panels (b, c) a
+R_M = 0.5                                                    # (b, c): the members' signal share
 P_NULL = 4
 G = {"linear": lambda x: x, "exp": np.exp}
 TITLES = {"linear": r"Signal $\mathbf{g(x) = x}$", "exp": r"Signal $\mathbf{g(x) = e^{x}}$"}
-LAM_M, RHO_M = style.SERIES[0], style.SERIES[1]             # top row: lambda_m, rho_m
-LAM_O, RHO_O = "tomato", "darkseagreen"                      # bottom row: lambda_o, rho_o
+LAM_M, RHO_M = style.SERIES[0], style.SERIES[1]             # (a): lambda_m, rho_m
+LAM_O, RHO_O = "tomato", "darkseagreen"                      # (b, c): lambda_o, rho_o
 DASH = (0, (4, 2.5))
-KEYS_O = ("I_s", "I_s_null", "I_f", "I_f_null", "rho_s", "rho_f")
-KEYS = ("I_m", "I_m_null", "rho_m_1", "rho_m_2") + KEYS_O
+KEYS_M = ("I_m", "I_m_null", "rho_m_1", "rho_m_2")
+KEYS = KEYS_M + ("I_s", "I_s_null", "I_f", "I_f_null", "rho_s", "rho_f")
+LEGEND = dict(fontsize=7, handlelength=2.0, borderpad=0.4, labelspacing=0.3, handletextpad=0.5)
 
 
 def knuth(v):
@@ -77,17 +70,6 @@ def corr(a, b):
     return np.sum(a * b) / np.sqrt(np.sum(a * a) * np.sum(b * b))
 
 
-def point(args):
-    """Both rows at one (g, a): the ensemble measures and the skill against o."""
-    g, a, seed = args
-    rng = np.random.default_rng(seed)
-    gx = G[g](rng.standard_normal(T))
-    gx = (gx - gx.mean()) / gx.std()
-    F = np.sqrt(a) * gx + np.sqrt(1 - a) * rng.standard_normal((N, T))
-    o = np.sqrt(a) * gx + np.sqrt(1 - a) * rng.standard_normal(T)
-    return ensemble(F, rng) + skill(F, F.mean(0), o, rng)
-
-
 def ensemble(F, rng):
     """lambda_m terms from I(s_-n; f) pooled, rho_m^(1) and rho_m^(2)."""
     s, L = F.mean(0), loo_means(F)
@@ -104,8 +86,16 @@ def skill(F, s, o, rng):
     return I_s, null_s, I_f, null_f, corr(s, o), corr(F.ravel(), np.tile(o, N))
 
 
-def point_fixed(args):
-    """The skill at one (g, a) with the members fixed at signal share R_M, linear in x."""
+def point_m(args):
+    """Panel (a) at one r."""
+    r, seed = args
+    rng = np.random.default_rng(seed)
+    F = np.sqrt(r) * rng.standard_normal(T) + np.sqrt(1 - r) * rng.standard_normal((N, T))
+    return ensemble(F, rng)
+
+
+def point_o(args):
+    """Panels (b, c) at one (g, a): the fixed ensemble and its skill against o."""
     g, a, seed = args
     rng = np.random.default_rng(seed)
     x = rng.standard_normal(T)
@@ -115,12 +105,13 @@ def point_fixed(args):
     return ensemble(F, rng) + skill(F, F.mean(0), o, rng)
 
 
-def compute(seed, fn, keys, tag):
-    res = dict(a=A, seed=seed)
+def compute(seed):
     with get_context("fork").Pool(int(os.environ.get("SLURM_CPUS_ON_NODE", 1))) as pool:
+        m = np.array(pool.map(point_m, [(r, [seed, 0, k]) for k, r in enumerate(R)])).T
+        res = dict(r=R, a=A, seed=seed, **dict(zip(KEYS_M, m)))
         for j, g in enumerate(G):
-            out = np.array(pool.map(fn, [(g, a, [seed, tag, j, k]) for k, a in enumerate(A)])).T
-            res.update({f"{g}_{k}": v for k, v in zip(keys, out)})
+            out = np.array(pool.map(point_o, [(g, a, [seed, j + 1, k]) for k, a in enumerate(A)])).T
+            res.update({f"{g}_{k}": v for k, v in zip(KEYS, out)})
     return res
 
 
@@ -129,61 +120,39 @@ def lam(d, k):
     return lam_bits(d[k] - d[k + "_null"])
 
 
-def skill_curves(ax, d, g):
-    a = d["a"]
-    ax.plot(a, lam(d, f"{g}_I_s"), color=LAM_O, lw=1.6, label=r"$\lambda_o$, $I(s;o)$")
-    ax.plot(a, lam(d, f"{g}_I_f"), color=LAM_O, lw=1.6, ls=DASH, label=r"$\lambda_o$, $I(f;o)$")
-    ax.plot(a, np.abs(d[f"{g}_rho_s"]), color=RHO_O, lw=1.6, label=r"$\rho_o$, corr$(s,o)$")
-    ax.plot(a, np.abs(d[f"{g}_rho_f"]), color=RHO_O, lw=1.6, ls=DASH, label=r"$\rho_o$, corr$(f,o)$")
-
-
-LEGEND = dict(fontsize=7, handlelength=2.0, borderpad=0.4, labelspacing=0.3, handletextpad=0.5)
-
-
-def finish(ax, n_low=None):
-    """Axes limits and style; the first n_low curves (all by default) in a lower-right legend,
-    the rest in a second one at the top left, beside the panel letter."""
+def finish(ax):
     style.tidy(ax)
     ax.set(xlim=(-0.015, 1.015), ylim=(0, 1.03), xticks=np.arange(0, 1.01, 0.25),
            yticks=np.arange(0, 1.01, 0.25))
     ax.set_aspect("equal")
-    h, lab = ax.get_legend_handles_labels()
-    low = ax.legend(h[:n_low], lab[:n_low], loc="lower right", **LEGEND)
-    if n_low is not None:
-        ax.add_artist(low)
-        ax.legend(h[n_low:], lab[n_low:], loc="upper left", bbox_to_anchor=(0.11, 1.0), **LEGEND)
 
 
 def plot(d):
-    fig, axs = plt.subplots(2, 2, figsize=(5.0, 5.0), layout="constrained", sharex=True, sharey=True)
-    a = d["a"]
-    for c, g in enumerate(G):
-        top, bot = axs[0, c], axs[1, c]
-        top.plot(a, lam(d, f"{g}_I_m"), color=LAM_M, lw=1.6, label=r"$\lambda_m$")
-        top.plot(a, d[f"{g}_rho_m_1"], color=RHO_M, lw=1.6, label=r"$\rho_m^{(1)}$")
-        top.plot(a, d[f"{g}_rho_m_2"], color=RHO_M, lw=1.6, ls=DASH, label=r"$\rho_m^{(2)}$")
-        skill_curves(bot, d, g)
-        style.panel_label(top, "ab"[c], TITLES[g], inside=True)
-        style.panel_label(bot, "cd"[c], inside=True)
-        bot.set_xlabel("Signal fraction of variance, $a$")
-    for ax in axs.flat:
-        finish(ax)
-    for ax in axs[:, 0]:
-        ax.set_ylabel("Predictable component")
-    style.save(fig, NAME)
-
-
-def plot_fixed(d):
-    fig, axs = plt.subplots(1, 2, figsize=(5.0, 2.75), layout="constrained", sharey=True)
-    for ax, letter, g in zip(axs, "ab", G):
-        skill_curves(ax, d, g)
-        ax.plot(d["a"], lam(d, f"{g}_I_m"), color="black", lw=1.2, ls=DASH, label=r"$\lambda_m$")
-        ax.plot(d["a"], d[f"{g}_rho_m_2"], color="0.55", lw=1.2, ls=DASH, label=r"$\rho_m$")
-        style.panel_label(ax, letter, TITLES[g], inside=True)
+    fig, axs = plt.subplots(1, 3, figsize=(7.2, 2.75), layout="constrained")
+    ax = axs[0]
+    ax.plot(d["r"], lam(d, "I_m"), color=LAM_M, lw=1.6, label=r"$\lambda_m$")
+    ax.plot(d["r"], d["rho_m_1"], color=RHO_M, lw=1.6, label=r"$\rho_m^{(1)}$")
+    ax.plot(d["r"], d["rho_m_2"], color=RHO_M, lw=1.6, ls=DASH, label=r"$\rho_m^{(2)}$")
+    ax.set_xlabel("Correlation between members, $r$")
+    ax.set_ylabel("Predictable component")
+    style.panel_label(ax, "a", "Gaussian Members", inside=True)
+    finish(ax)
+    ax.legend(loc="lower right", handlelength=2.2, borderpad=0.5, labelspacing=0.35)
+    for ax, letter, g in zip(axs[1:], "bc", G):
+        a = d["a"]
+        ax.plot(a, lam(d, f"{g}_I_s"), color=LAM_O, lw=1.6, label=r"$\lambda_o$, $I(s;o)$")
+        ax.plot(a, lam(d, f"{g}_I_f"), color=LAM_O, lw=1.6, ls=DASH, label=r"$\lambda_o$, $I(f;o)$")
+        ax.plot(a, np.abs(d[f"{g}_rho_s"]), color=RHO_O, lw=1.6, label=r"$\rho_o$, corr$(s,o)$")
+        ax.plot(a, np.abs(d[f"{g}_rho_f"]), color=RHO_O, lw=1.6, ls=DASH, label=r"$\rho_o$, corr$(f,o)$")
+        ax.plot(a, lam(d, f"{g}_I_m"), color="black", lw=1.2, ls=DASH, label=r"$\lambda_m$")
+        ax.plot(a, d[f"{g}_rho_m_2"], color="0.55", lw=1.2, ls=DASH, label=r"$\rho_m$")
         ax.set_xlabel("Signal fraction of var($o$), $a$")
-        finish(ax, n_low=4)
-    axs[0].set_ylabel("Predictable component")
-    style.save(fig, NAME_FIXED)
+        style.panel_label(ax, letter, TITLES[g], inside=True)
+        finish(ax)
+        h, lab = ax.get_legend_handles_labels()                    # skill lower right,
+        ax.add_artist(ax.legend(h[:4], lab[:4], loc="lower right", **LEGEND))
+        ax.legend(h[4:], lab[4:], loc="upper left", bbox_to_anchor=(0.11, 1.0), **LEGEND)
+    style.save(fig, NAME)
 
 
 def main():
@@ -191,12 +160,10 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--recompute", action="store_true", help="redo the arrays even if the npz exists")
     args = ap.parse_args()
-    for name, fn, keys, tag, draw in ((NAME, point, KEYS, 0, plot),
-                                      (NAME_FIXED, point_fixed, KEYS, 1, plot_fixed)):
-        npz = style.data_path(name + ".npz")
-        if args.recompute or not os.path.exists(npz):
-            np.savez(npz, **compute(args.seed, fn, keys, tag))
-        draw(dict(np.load(npz)))
+    npz = style.data_path(NAME + ".npz")
+    if args.recompute or not os.path.exists(npz):
+        np.savez(npz, **compute(args.seed))
+    plot(dict(np.load(npz)))
 
 
 if __name__ == "__main__":
