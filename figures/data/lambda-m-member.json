@@ -1,0 +1,314 @@
+{
+ "SLP 2-4": {
+  "N": 62,
+  "T": 51,
+  "members": [
+   0,
+   15,
+   30,
+   46,
+   61
+  ],
+  "area_lam_o_onebin": 0.14545030461068892,
+  "area_lam_m_onebin": 0.06701700889106206,
+  "area_lam_m_k_onebin": [
+   0.18032853275252553,
+   0.1924770415463502,
+   0.26259671825673003,
+   0.2024487531329425,
+   0.1705916256291743
+  ],
+  "all": {
+   "area_valid": 0.8942430344640355,
+   "area_rpc_gt1_production": 0.7610135670837137,
+   "area_rpc_gt1_member": [
+    0.43742815863860257,
+    0.5177141300631084,
+    0.509574951347049,
+    0.4431629267101366,
+    0.44767165022102057
+   ],
+   "area_rpc_gt1_member_mean": 0.6304849490034667,
+   "area_mean_lam_m_production": 0.4156348691666712,
+   "area_mean_lam_m_member_mean": 0.4669668632202209,
+   "area_mean_rpc_production": 1.3472102816887266,
+   "area_mean_rpc_member_mean": 1.2238233495429351
+  },
+  "defined": {
+   "area_valid": 0.8154741502174827,
+   "area_rpc_gt1_production": 0.8345219542713229,
+   "area_rpc_gt1_member": [
+    0.4805250049868113,
+    0.5663388468277485,
+    0.5549418086655884,
+    0.48651251009002605,
+    0.48655751862224783
+   ],
+   "area_rpc_gt1_member_mean": 0.525259199186411,
+   "area_mean_lam_m_production": 0.42000654672984944,
+   "area_mean_lam_m_member_mean": 0.554191280924863,
+   "area_mean_rpc_production": 1.477341016925158,
+   "area_mean_rpc_member_mean": 1.0353445644883827
+  }
+ },
+ "PRECT 2-4": {
+  "N": 62,
+  "T": 33,
+  "members": [
+   0,
+   15,
+   30,
+   46,
+   61
+  ],
+  "area_lam_o_onebin": 0.4088414091212357,
+  "area_lam_m_onebin": 0.25258046452088306,
+  "area_lam_m_k_onebin": [
+   0.4443909494679289,
+   0.4594714819743876,
+   0.4319274679329733,
+   0.45080846920593115,
+   0.4679369599761206
+  ],
+  "all": {
+   "area_valid": 0.645054987458457,
+   "area_rpc_gt1_production": 0.6520561700106364,
+   "area_rpc_gt1_member": [
+    0.39249984135384636,
+    0.4422828617096233,
+    0.45778135139870546,
+    0.4215988496229483,
+    0.40783603102415833
+   ],
+   "area_rpc_gt1_member_mean": 0.6132257410576588,
+   "area_mean_lam_m_production": 0.3948315638289943,
+   "area_mean_lam_m_member_mean": 0.37684575198926096,
+   "area_mean_rpc_production": 1.2409272728795844,
+   "area_mean_rpc_member_mean": 1.4493362885475867
+  },
+  "defined": {
+   "area_valid": 0.5055557019116068,
+   "area_rpc_gt1_production": 0.8327090372933936,
+   "area_rpc_gt1_member": [
+    0.4946198603336525,
+    0.5545283766352049,
+    0.5757770558542682,
+    0.5340409533741284,
+    0.5105665948419805
+   ],
+   "area_rpc_gt1_member_mean": 0.5558588884780234,
+   "area_mean_lam_m_production": 0.3949150890961368,
+   "area_mean_lam_m_member_mean": 0.5438725607494259,
+   "area_mean_rpc_production": 1.5848031037381412,
+   "area_mean_rpc_member_mean": 1.0990485225689677
+  }
+ },
+ "TREFHT 2-4": {
+  "N": 62,
+  "T": 52,
+  "members": [
+   0,
+   15,
+   30,
+   46,
+   61
+  ],
+  "area_lam_o_onebin": 0.20796536582638364,
+  "area_lam_m_onebin": 0.09686285169251119,
+  "area_lam_m_k_onebin": [
+   0.20261609676737732,
+   0.19397661374090383,
+   0.1952133559492185,
+   0.2210259935570088,
+   0.19138396798394355
+  ],
+  "all": {
+   "area_valid": 0.8919048173169475,
+   "area_rpc_gt1_production": 0.6984837924197155,
+   "area_rpc_gt1_member": [
+    0.42678892089409354,
+    0.45034840442469165,
+    0.4915731650463186,
+    0.39852456636244976,
+    0.49095994668279697
+   ],
+   "area_rpc_gt1_member_mean": 0.5933871801983174,
+   "area_mean_lam_m_production": 0.4768312364510819,
+   "area_mean_lam_m_member_mean": 0.5055596164354934,
+   "area_mean_rpc_production": 1.1518926786325379,
+   "area_mean_rpc_member_mean": 1.0989553314866978
+  },
+  "defined": {
+   "area_valid": 0.7799202356375056,
+   "area_rpc_gt1_production": 0.798775350107093,
+   "area_rpc_gt1_member": [
+    0.48814800304460154,
+    0.5159974833697528,
+    0.5561236350367215,
+    0.4557647502331504,
+    0.5616290328098081
+   ],
+   "area_rpc_gt1_member_mean": 0.5346664719705316,
+   "area_mean_lam_m_production": 0.47645227408006147,
+   "area_mean_lam_m_member_mean": 0.5780965746242797,
+   "area_mean_rpc_production": 1.3172867969821367,
+   "area_mean_rpc_member_mean": 1.0323053325202953
+  }
+ },
+ "SLP s1961": {
+  "N": 92,
+  "T": 120,
+  "members": [
+   0,
+   23,
+   46,
+   68,
+   91
+  ],
+  "area_lam_o_onebin": 0.21432926798311772,
+  "area_lam_m_onebin": 0.0990052088270971,
+  "area_lam_m_k_onebin": [
+   0.23710734991692886,
+   0.21515093179300548,
+   0.18065690778803567,
+   0.1750082989304764,
+   0.1698052896617432
+  ],
+  "all": {
+   "area_valid": 0.8817674205975157,
+   "area_rpc_gt1_production": 0.7606194957657367,
+   "area_rpc_gt1_member": [
+    0.5392972112348404,
+    0.592166477613973,
+    0.5792858885037567,
+    0.6029196072604202,
+    0.6213387083811902
+   ],
+   "area_rpc_gt1_member_mean": 0.665416008944678,
+   "area_mean_lam_m_production": 0.6871451196482983,
+   "area_mean_lam_m_member_mean": 0.645029768058827,
+   "area_mean_rpc_production": 1.0367154664730467,
+   "area_mean_rpc_member_mean": 1.0812384412248601
+  },
+  "defined": {
+   "area_valid": 0.7669243102067556,
+   "area_rpc_gt1_production": 0.8745184914750259,
+   "area_rpc_gt1_member": [
+    0.5927744030513005,
+    0.6412503092686967,
+    0.6466300428179462,
+    0.6737388463613315,
+    0.6991817054761221
+   ],
+   "area_rpc_gt1_member_mean": 0.7240544241856075,
+   "area_mean_lam_m_production": 0.6576857269002062,
+   "area_mean_lam_m_member_mean": 0.7208042522204878,
+   "area_mean_rpc_production": 1.191958463957212,
+   "area_mean_rpc_member_mean": 1.05404638812935
+  }
+ },
+ "PRECT s1978": {
+  "N": 112,
+  "T": 120,
+  "members": [
+   0,
+   28,
+   56,
+   83,
+   111
+  ],
+  "area_lam_o_onebin": 0.10793308350875146,
+  "area_lam_m_onebin": 0.09483159746508205,
+  "area_lam_m_k_onebin": [
+   0.10540347343606826,
+   0.10635645544106849,
+   0.1132281878168543,
+   0.11206606516845087,
+   0.10826432369650694
+  ],
+  "all": {
+   "area_valid": 0.8748250462774974,
+   "area_rpc_gt1_production": 0.6271600575195739,
+   "area_rpc_gt1_member": [
+    0.38619318786433043,
+    0.3725650363649918,
+    0.48217037475365476,
+    0.4565236973142031,
+    0.4972084747090742
+   ],
+   "area_rpc_gt1_member_mean": 0.5108360637693381,
+   "area_mean_lam_m_production": 0.6884657134284121,
+   "area_mean_lam_m_member_mean": 0.7118557735424125,
+   "area_mean_rpc_production": 1.0429298902356592,
+   "area_mean_rpc_member_mean": 1.0075375320226032
+  },
+  "defined": {
+   "area_valid": 0.8557083950239928,
+   "area_rpc_gt1_production": 0.6411709053381155,
+   "area_rpc_gt1_member": [
+    0.39439735788874125,
+    0.3804132543472512,
+    0.4917935875378896,
+    0.4658328037529118,
+    0.5069333739976369
+   ],
+   "area_rpc_gt1_member_mean": 0.474331428150965,
+   "area_mean_lam_m_production": 0.6857482219703664,
+   "area_mean_lam_m_member_mean": 0.7321472907519438,
+   "area_mean_rpc_production": 1.0662290971961472,
+   "area_mean_rpc_member_mean": 0.9813332169130068
+  }
+ },
+ "TREFHT s1961": {
+  "N": 112,
+  "T": 120,
+  "members": [
+   0,
+   28,
+   56,
+   83,
+   111
+  ],
+  "area_lam_o_onebin": 0.41926200981723033,
+  "area_lam_m_onebin": 0.074068099255603,
+  "area_lam_m_k_onebin": [
+   0.46749157966535115,
+   0.4352845281420201,
+   0.44324429442294855,
+   0.4942578608267442,
+   0.4112991747851351
+  ],
+  "all": {
+   "area_valid": 0.8161710908633989,
+   "area_rpc_gt1_production": 0.4053931185288854,
+   "area_rpc_gt1_member": [
+    0.3557875941514531,
+    0.3857831011927784,
+    0.34947576029705674,
+    0.3776755682372937,
+    0.44756501948481714
+   ],
+   "area_rpc_gt1_member_mean": 0.5211520973338853,
+   "area_mean_lam_m_production": 0.9030427206455095,
+   "area_mean_lam_m_member_mean": 0.5932845888957159,
+   "area_mean_rpc_production": 0.6734166995610444,
+   "area_mean_rpc_member_mean": 1.0799354810050172
+  },
+  "defined": {
+   "area_valid": 0.5457016123023155,
+   "area_rpc_gt1_production": 0.6063206270956286,
+   "area_rpc_gt1_member": [
+    0.45312969733739494,
+    0.4957696775618273,
+    0.4557702228045955,
+    0.4750661227539869,
+    0.5961660408889007
+   ],
+   "area_rpc_gt1_member_mean": 0.5413713899121934,
+   "area_mean_lam_m_production": 0.8840391169315562,
+   "area_mean_lam_m_member_mean": 0.8899272266870323,
+   "area_mean_rpc_production": 1.00718639984864,
+   "area_mean_rpc_member_mean": 0.9965438549048931
+  }
+ }
+}
