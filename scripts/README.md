@@ -13,6 +13,7 @@ Every figure in `figures/{main-text,supp-info}/` except the hand-saved `thesis-*
 | `style.py` | font (Helvetica Neue if present, else TeX Gyre Heros), bold panel titles, and `save`: main-text or supp-info, png + pdf | |
 | `gaussian_demo.py` | main-text `gaussian-array-lambda-rho`: (a) λ_m vs ρ_m on Gaussian members with correlation r; (b, c) λ_o vs ρ_o for a fixed ensemble against o = √a g(x) + noise, g = x and eˣ; and supp-info `gaussian-array-rm-sensitivity`, panel (b) at member signal shares R_M = 0.2, 0.4, 0.6, 0.8 | |
 | `member_lam_m.py` | supp-info `lambda-m-member-rpc` + `figures/data/lambda-m-member.json`: λ_m with one member as pseudo-observation (λ(I(s′₋ₙ; f_k)), the λ_o construction) against production λ_m, and the RPC > 1 area, for the six production cases; flags the one-bin (λ = 0) cells | |
+| `member_rho_m.py` | supp-info `rho-m-member-rpc-all[-lead2-4]` + `figures/data/rho-m-member-all.json`: the ρ counterpart, every member, unpooled as production: ρ_m^(k) = corr(s₋ₖ, f_k) (mean over k = production ρ_m), RPC_k = ρ_o / ρ_m^(k) | |
 | `run_member_lam_m.sh` | submits `member_lam_m.py --members all`: one Slurm array task per production case, then the summary (json + figures `lambda-m-member-rpc-all[-lead2-4]`) | |
 | `flattened_hist.py` | main-text `flattened-histograms`: pooled s, o, f of the decadal rows against Gaussians, log density | |
 | `run_all.sh` | submits the whole pipeline to Slurm: point (array) + boot (array) -> figures | |
