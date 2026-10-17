@@ -21,6 +21,13 @@ Every figure in `figures/{main-text,supp-info}/` except the hand-saved `thesis-*
 | `data-acquisition/` | raw downloads to the per-case input arrays (`$SNP_DATA/cases/`); see its README | |
 | `thesis-old/` | the original thesis code: `InfoTheoryMetrics.py`, `DataInventory.py`, `info_rpc_parallel.py`, a parallel `info_RPC` with bitwise-identical output, and `gaussian_array_metrics.py`, the thesis Gaussian-array figure (`supp-info/thesis-gaussian-array`) | |
 | `tests/test_jugaad.py` | `jugaad.maps` and `info_rpc_parallel.info_RPC` against the thesis `info_RPC`, bitwise | |
+| `rho_m_definitions.py` | supp-info `rho-m-definitions[-lead2-4]`: ρ_m^(1) = sd(s)/√⟨var f_n⟩ against ρ_m^(2) = ⟨corr(f_n, s₋ₙ)⟩ | |
+| `lam_m_definitions.py`, `run_lam_m_definitions.sh` | supp-info `lambda-m-definitions[-by-model][-lead2-4]`: bias-corrected per-member ⟨λ(s₋ₙ; f_n)⟩ against pooled λ(s₋ₙ~; f~), all members and each model alone (λ_o here is the tiled jugaad one) | |
+| `member_models.py` | `$SNP_OUT/member_models.json`: each member's model, checked bitwise against the case files | |
+| `lam_m_gap.py` | supp-info `lambda-m-gap-gaussian`: both λ_m estimators (and swapped-ingredient variants) against the known Gaussian answer | |
+| `exchangeability.py` | independent of `jugaad.py`: member exchangeability from fixed-edge binned (or pooled-rank copula) MI, I_cond, size-matched I_pool_T, Δ, I(M; X, Y), a within-time label-permutation null; `obs_mi` with g on its T samples only (never tiled) | |
+| `exchangeability_check.py` | its synthetic validation (size, bias, power) and runs on the DJF NAO (SLP 2-4) and the SLP 2-4 grid -> `figures/data/exchangeability-*.json` | |
+| `tests/test_exchangeability.py` | the construction rules of `exchangeability.py`: LOO, fixed edges, pairs kept under permutation, vectorised = loop, seeding, g never tiled | |
 
 The five analysis modules come to 498 lines (347 without docstrings, comments and blank lines).
 

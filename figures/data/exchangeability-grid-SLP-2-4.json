@@ -1,0 +1,15 @@
+{
+ "case": "SLP 2-4",
+ "shape": [
+  62,
+  51,
+  37,
+  72
+ ],
+ "n_perm": 200,
+ "runtime_s": 106.5060064792633,
+ "area_p_Delta_le_0.05": 0.09392535058472472,
+ "area_p_I_MXY_le_0.05": 0.13499887656445295,
+ "area_mean_Delta_corrected": -0.005705326938604798,
+ "area_mean_I_pool_minus_cond_raw": -0.14575899547482135
+}
