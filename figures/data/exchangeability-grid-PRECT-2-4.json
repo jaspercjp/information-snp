@@ -1,0 +1,31 @@
+{
+ "case": "PRECT 2-4",
+ "shape": [
+  62,
+  33,
+  72,
+  144
+ ],
+ "n_perm": 200,
+ "runtime_s": 318.7027940750122,
+ "area_p_Delta_le_0.05": 0.1048836863907112,
+ "area_p_I_MXY_le_0.05": 0.2643102071976347,
+ "area_mean_Delta_corrected": -0.002904446872412276,
+ "area_mean_I_pool_minus_cond_raw": -0.09970436820784075,
+ "field_significance": {
+  "Delta": {
+   "area_obs": 0.1048836863907112,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.05533357349103613,
+   "null_area_max": 0.05985452560900001,
+   "p_field": 0.004975124378109453
+  },
+  "I_MXY": {
+   "area_obs": 0.26431020719763465,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.05951539467142157,
+   "null_area_max": 0.06599901043666233,
+   "p_field": 0.004975124378109453
+  }
+ }
+}

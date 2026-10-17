@@ -6,8 +6,8 @@
         -> figures/data/exchangeability-synthetic-exchangeable-1000.json   (tighter size check)
     python scripts/exchangeability_check.py nao [--n-perm 1000]
         -> figures/data/exchangeability-nao.json   (all members and each model alone)
-    python scripts/exchangeability_check.py grid [--n-perm 200]
-        -> figures/data/exchangeability-grid-SLP-2-4.json   (every cell, with field significance)
+    python scripts/exchangeability_check.py grid [--case SLP:2-4] [--n-perm 200]
+        -> figures/data/exchangeability-grid-<VAR>-<case>.json   (every cell, field significance)
 
 Synthetic: x[r, t] = mu[r] + beta[r] s[t] + sig[r] z[r, t], s, z iid N(0, 1), with R, T as the
 real index (R = 62, T = 51, B = 4). Exchangeable: mu = 0, beta = 0.5, sig = 1. Heterogeneous
@@ -181,25 +181,26 @@ def field_test(res, stat, W):
             "p_field": float((1 + (Fk >= Fo).sum()) / (n + 1))}
 
 
-def grid(n_perm):
+def grid(n_perm, case="SLP:2-4"):
     from tables import wfrac
-    F, o, s, lats, lons = load("SLP", "2-4")
+    var, cs = case.split(":")
+    F, o, s, lats, lons = load(var, cs)
     t0 = time.time()
     res = E.exchangeability_test(F, n_perm=n_perm, seed=3, return_null=True)
     dt = time.time() - t0
     W = np.cos(np.deg2rad(lats))[:, None] * np.ones(lons.size)
     ok = np.isfinite(res["Delta"]["p"])
     field = {s: field_test(res, s, W) for s in ("Delta", "I_MXY")}
-    out = {"case": "SLP 2-4", "shape": list(F.shape), "n_perm": n_perm, "runtime_s": dt,
+    out = {"case": f"{var} {cs}", "shape": list(F.shape), "n_perm": n_perm, "runtime_s": dt,
            "area_p_Delta_le_0.05": wfrac(W, res["Delta"]["p"] <= ALPHA, ok),
            "area_p_I_MXY_le_0.05": wfrac(W, res["I_MXY"]["p"] <= ALPHA, ok),
            "area_mean_Delta_corrected": float((W * res["Delta"]["corrected"]).sum() / W.sum()),
            "area_mean_I_pool_minus_cond_raw": float((W * res["I_pool_minus_cond"]["obs"]).sum()
                                                     / W.sum()),
            "field_significance": field}
-    np.savez_compressed(os.path.join(OUT, "exchangeability_grid_SLP_2-4.npz"), lats=lats,
+    np.savez_compressed(os.path.join(OUT, f"exchangeability_grid_{var}_{cs}.npz"), lats=lats,
                         lons=lons, **{f"{k}_{q}": v for k in E.STATS for q, v in res[k].items()})
-    with open(style.data_path("exchangeability-grid-SLP-2-4.json"), "w") as fh:
+    with open(style.data_path(f"exchangeability-grid-{var}-{cs}.json"), "w") as fh:
         json.dump(out, fh, indent=1)
     print(json.dumps(out, indent=1))
 
@@ -210,10 +211,11 @@ def main():
     ap.add_argument("--draws", type=int, default=200)
     ap.add_argument("--n-perm", type=int, default=None)
     ap.add_argument("--exchangeable-only", action="store_true")
+    ap.add_argument("--case", default="SLP:2-4", help="VAR:case for grid")
     a = ap.parse_args()
     n = a.n_perm or (200 if a.what == "grid" else 1000)
     {"synthetic": lambda: synthetic(a.draws, n, a.exchangeable_only), "nao": lambda: nao(n),
-     "grid": lambda: grid(n)}[a.what]()
+     "grid": lambda: grid(n, a.case)}[a.what]()
 
 
 if __name__ == "__main__":
