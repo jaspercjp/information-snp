@@ -2,7 +2,9 @@
 # lam_m_definitions.py (lambda_m per-member vs pooled, bias corrected): one Slurm array task per case,
 # then a summary job (json + figures) after all six succeed. Returns at once.
 #
-#   SNP_DATA=<dir with cases/> bash scripts/run_lam_m_definitions.sh
+#   SNP_DATA=<dir with cases/> bash scripts/run_lam_m_definitions.sh            all members
+#   SNP_DATA=<dir with cases/> bash scripts/run_lam_m_definitions.sh --by-model each model alone
+# (--by-model needs $SNP_OUT/member_models.json from member_models.py)
 #
 set -euo pipefail
 
@@ -13,15 +15,16 @@ export SNP_OUT=${SNP_OUT:-$SCRATCH/snp_jugaad} MPLCONFIGDIR=${MPLCONFIGDIR:-$SCR
 CASES=(SLP:2-4 PRECT:2-4 TREFHT:2-4 SLP:s1961 PRECT:s1978 TREFHT:s1961)
 
 if [[ ${1:-} == task ]]; then                      # inside a job
+    BY=${3:-}
     export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
     case $2 in
-        member)  exec "$PY" "$HERE/lam_m_definitions.py" --case "${CASES[$SLURM_ARRAY_TASK_ID]}" ;;
-        summary) exec "$PY" "$HERE/lam_m_definitions.py" --summarize ;;
+        member)  exec "$PY" "$HERE/lam_m_definitions.py" --case "${CASES[$SLURM_ARRAY_TASK_ID]}" $BY ;;
+        summary) exec "$PY" "$HERE/lam_m_definitions.py" --summarize $BY ;;
     esac
 fi
 
 mkdir -p "$SNP_OUT/logs" "$MPLCONFIGDIR"
 JOB=(-p "${SNP_PARTITION:-serc}" -o "$SNP_OUT/logs/%x_%A_%a.out" --parsable)
-m=$(sbatch "${JOB[@]}" -J lam_m_def -c 16 --mem=32G -t 04:00:00 --array=0-$((${#CASES[@]} - 1)) "$0" task member)
-s=$(sbatch "${JOB[@]}" -J lam_m_def_summary -c 2 --mem=16G -t 00:30:00 -d "afterok:$m" "$0" task summary)
+m=$(sbatch "${JOB[@]}" -J lam_m_def -c 16 --mem=32G -t 04:00:00 --array=0-$((${#CASES[@]} - 1)) "$0" task member ${1:-})
+s=$(sbatch "${JOB[@]}" -J lam_m_def_summary -c 2 --mem=16G -t 00:30:00 -d "afterok:$m" "$0" task summary ${1:-})
 echo "submitted member=$m summary=$s; logs in $SNP_OUT/logs"
