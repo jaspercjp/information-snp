@@ -8,6 +8,9 @@
         -> figures/data/exchangeability-nao.json   (all members and each model alone)
     python scripts/exchangeability_check.py grid [--case SLP:2-4] [--n-perm 200]
         -> figures/data/exchangeability-grid-<VAR>-<case>.json   (every cell, field significance)
+           $SNP_OUT/exchangeability_grid_<VAR>_<case>.npz       (per-cell maps, null area shares)
+    python scripts/exchangeability_check.py figure      (after grid for SLP, PRECT, TREFHT 2-4)
+        -> figures/supp-info/{png,pdf}/exchangeability-lead2-4
 
 Synthetic: x[r, t] = mu[r] + beta[r] s[t] + sig[r] z[r, t], s, z iid N(0, 1), with R, T as the
 real index (R = 62, T = 51, B = 4). Exchangeable: mu = 0, beta = 0.5, sig = 1. Heterogeneous
@@ -178,7 +181,7 @@ def field_test(res, stat, W):
     Fo = float((w * (res[stat]["p"].ravel() <= ALPHA)).sum())
     return {"area_obs": Fo, "null_area_mean": float(Fk.mean()),
             "null_area_95pct": float(np.percentile(Fk, 95)), "null_area_max": float(Fk.max()),
-            "p_field": float((1 + (Fk >= Fo).sum()) / (n + 1))}
+            "p_field": float((1 + (Fk >= Fo).sum()) / (n + 1)), "null_area": Fk}
 
 
 def grid(n_perm, case="SLP:2-4"):
@@ -197,17 +200,97 @@ def grid(n_perm, case="SLP:2-4"):
            "area_mean_Delta_corrected": float((W * res["Delta"]["corrected"]).sum() / W.sum()),
            "area_mean_I_pool_minus_cond_raw": float((W * res["I_pool_minus_cond"]["obs"]).sum()
                                                     / W.sum()),
-           "field_significance": field}
+           "field_significance": {s: {k: v for k, v in f.items() if k != "null_area"}
+                                  for s, f in field.items()}}
     np.savez_compressed(os.path.join(OUT, f"exchangeability_grid_{var}_{cs}.npz"), lats=lats,
-                        lons=lons, **{f"{k}_{q}": v for k in E.STATS for q, v in res[k].items()})
+                        lons=lons, R=F.shape[0], T=F.shape[1],
+                        **{f"{k}_{q}": v for k in E.STATS for q, v in res[k].items()},
+                        **{f"field_null_area_{s}": f["null_area"] for s, f in field.items()})
     with open(style.data_path(f"exchangeability-grid-{var}-{cs}.json"), "w") as fh:
         json.dump(out, fh, indent=1)
     print(json.dumps(out, indent=1))
 
 
+FIG_CASES = (("SLP", "2-4"), ("PRECT", "2-4"), ("TREFHT", "2-4"))
+FIG_STATS = (("I_MXY", r"$I(M; X, Y)$", 0), ("Delta", r"$\Delta = I_{\mathrm{pool},T} - I_{\mathrm{cond}}$", 1))
+
+
+SHORT_LABEL = {"I_MXY": r"$I(M; X, Y)$", "Delta": r"$\Delta$"}
+
+
+def figure(cases=FIG_CASES, name="exchangeability-lead2-4"):
+    """Per field: maps of the bias-corrected I(M; X, Y) and Delta (observed - null mean, bits),
+    dotted where p <= ALPHA, and the permutation distribution of the area share with p <= ALPHA
+    (spatial correlation kept) against the observed share."""
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import Normalize
+    import plots as P                                                # map helpers, figure style
+    Z = {c: dict(np.load(os.path.join(OUT, f"exchangeability_grid_{c[0]}_{c[1]}.npz")))
+         for c in cases}
+    lim = {s: float(np.nanpercentile(np.abs(np.concatenate(
+        [Z[c][f"{s}_corrected"].ravel() for c in cases])), 98)) for s, _, _ in FIG_STATS}
+    fig = plt.figure(figsize=(15.0, 3.0 * len(cases) + 1.4), layout="constrained")
+    gs = fig.add_gridspec(len(cases), 3, width_ratios=(1, 1, 0.62))
+    maps = [[], []]
+    for i, c in enumerate(cases):
+        z = Z[c]
+        lats, lons = z["lats"], z["lons"]
+        W = np.cos(np.deg2rad(lats))[:, None] * np.ones(lons.size)
+        for s, label, k in FIG_STATS:
+            ax = fig.add_subplot(gs[i, k], projection=P.PROJ)
+            maps[k].append(ax)
+            P.show(ax, z[f"{s}_corrected"], lats, lons, cmap=P.DIV,
+                   norm=Normalize(-lim[s], lim[s]))
+            sig = z[f"{s}_p"] <= ALPHA
+            P.dots(ax, sig, lats, lons, P.stip_size(lats, lons), color=P.INK, lw=0, alpha=0.7)
+            ax.text(0.01, -0.03, f"p $\\leq$ {ALPHA} on {(W * sig).sum() / W.sum():.1%} of the area",
+                    transform=ax.transAxes, ha="left", va="top", fontsize=8, color=P.MUTED)
+            if i == 0:
+                ax.set_title(label)
+        P.row_labels(maps[0][-1], f"{c[0]} {c[1]}", f"R={int(z['R'])}, T={int(z['T'])}")
+        ax = fig.add_subplot(gs[i, 2])
+        area = {s: (W * (z[f"{s}_p"] <= ALPHA)).sum() / W.sum() for s, _, _ in FIG_STATS}
+        hi = max(max(z[f"field_null_area_{s}"].max(), area[s]) for s, _, _ in FIG_STATS)
+        bins = np.linspace(0, 1.08 * hi, 40)
+        top = 0
+        for s, label, k in FIG_STATS:
+            null = z[f"field_null_area_{s}"]
+            top = max(top, ax.hist(null, bins=bins, color=style.SERIES[k], alpha=0.45, lw=0)[0].max())
+        right = max(area.values())
+        for s, label, k in FIG_STATS:
+            null = z[f"field_null_area_{s}"]
+            pf = (1 + (null >= area[s]).sum()) / (null.size + 1)
+            ax.axvline(area[s], color=style.SERIES[k], lw=2)
+            ax.text(area[s], 0.97, f" {area[s]:.1%} \n field p {'≤' if pf <= 1 / null.size else '='} "
+                    f"{pf:.3f} ", transform=ax.get_xaxis_transform(), va="top", fontsize=8,
+                    ha="left" if area[s] == right else "right", color=style.SERIES[k])
+        ax.axvline(ALPHA, color="0.35", lw=0.8, ls=":")
+        ax.set_xlim(0, 1.45 * right)
+        ax.set_ylim(0, 1.7 * top)
+        ax.set_yticks([])
+        ax.set_xlabel(f"area share with p $\\leq$ {ALPHA}")
+        style.tidy(ax, grid=False)
+        if i == 0:
+            ax.set_title(f"rejecting area: {null.size} permutations vs observed")
+    from matplotlib.patches import Patch
+    from matplotlib.lines import Line2D
+    handles = [h for s, label, k in FIG_STATS for h in
+               (Patch(color=style.SERIES[k], alpha=0.45, label=SHORT_LABEL[s] + ": null"),
+                Line2D([], [], color=style.SERIES[k], lw=2, label="observed"))]
+    handles.append(Line2D([], [], color="0.35", lw=0.8, ls=":", label=f"nominal {ALPHA:.0%}"))
+    fig.legend(handles=handles, loc="lower right", ncol=1, frameon=False, fontsize=8)
+    for k, (s, label, _) in enumerate(FIG_STATS):
+        cb = fig.colorbar(plt.cm.ScalarMappable(norm=Normalize(-lim[s], lim[s]), cmap=P.DIV),
+                          ax=maps[k], orientation="horizontal", shrink=0.8, pad=0.02,
+                          label=f"{label}, observed $-$ null mean (bits)")
+        cb.solids.set_rasterized(True)
+    style.save(fig, name, dpi=200)
+    plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("what", choices=("synthetic", "nao", "grid"))
+    ap.add_argument("what", choices=("synthetic", "nao", "grid", "figure"))
     ap.add_argument("--draws", type=int, default=200)
     ap.add_argument("--n-perm", type=int, default=None)
     ap.add_argument("--exchangeable-only", action="store_true")
@@ -215,7 +298,7 @@ def main():
     a = ap.parse_args()
     n = a.n_perm or (200 if a.what == "grid" else 1000)
     {"synthetic": lambda: synthetic(a.draws, n, a.exchangeable_only), "nao": lambda: nao(n),
-     "grid": lambda: grid(n, a.case)}[a.what]()
+     "grid": lambda: grid(n, a.case), "figure": figure}[a.what]()
 
 
 if __name__ == "__main__":
