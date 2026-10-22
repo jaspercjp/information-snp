@@ -26,7 +26,7 @@ Every figure in `figures/{main-text,supp-info}/` except the hand-saved `thesis-*
 | `member_models.py` | `$SNP_OUT/member_models.json`: each member's model, checked bitwise against the case files | |
 | `lam_m_gap.py` | supp-info `lambda-m-gap-gaussian`: both λ_m estimators (and swapped-ingredient variants) against the known Gaussian answer | |
 | `exchangeability.py` | independent of `jugaad.py`: member exchangeability from fixed-edge binned (or pooled-rank copula) MI, I_cond, size-matched I_pool_T, Δ, I(M; X, Y), a within-time label-permutation null; `obs_mi` with g on its T samples only (never tiled) | |
-| `exchangeability_check.py` | its synthetic validation (size, bias, power) and runs on the DJF NAO (SLP 2-4) and the SLP 2-4 grid -> `figures/data/exchangeability-*.json` | |
+| `exchangeability_check.py` | its synthetic validation (size, bias, power) and runs on the DJF NAO (SLP 2-4) and the lead 2-4 grids -> `figures/data/exchangeability-*.json`; supp-info `exchangeability-lead2-4` and main-text `members-not-exchangeable` | |
 | `tests/test_exchangeability.py` | the construction rules of `exchangeability.py`: LOO, fixed edges, pairs kept under permutation, vectorised = loop, seeding, g never tiled | |
 
 The five analysis modules come to 498 lines (347 without docstrings, comments and blank lines).

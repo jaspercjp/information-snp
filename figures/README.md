@@ -17,6 +17,7 @@ Which folder a figure goes to is `scripts/style.py:MAIN_TEXT`; every script save
 | `gaussian-array-lambda-rho` | `scripts/gaussian_demo.py` | none (synthetic, seeded); curves in `data/gaussian-array-lambda-rho.npz` |
 | `flattened-histograms` | `scripts/flattened_hist.py` | `$SNP_DATA/cases/` for the three decadal rows above |
 | `rho-lam-histogram` | not yet here | |
+| `members-not-exchangeable` | `scripts/exchangeability_check.py figure-main` | `$SNP_OUT/exchangeability_grid_{SLP,PRECT,TREFHT}_2-4.npz` from `exchangeability_check.py grid --case VAR:2-4` (200 permutations) |
 
 ## Style
 

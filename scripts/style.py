@@ -15,7 +15,7 @@ from matplotlib import font_manager as fm
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIGROOT = os.path.join(REPO, "figures")
 MAIN_TEXT = {"rpc_rho_lambda_oloo_decadal", "gaussian-array-lambda-rho", "rho-lam-histogram",
-             "flattened-histograms"}
+             "flattened-histograms", "members-not-exchangeable"}
 GYRE = "/share/software/user/open/texlive/2019/texmf-dist/fonts/opentype/public/tex-gyre"
 INK, MUTED, GRID = "#0b0b0b", "#52514e", "#e6e5e1"
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]     # categorical slots 1-4, validated

@@ -11,6 +11,8 @@
            $SNP_OUT/exchangeability_grid_<VAR>_<case>.npz       (per-cell maps, null area shares)
     python scripts/exchangeability_check.py figure      (after grid for SLP, PRECT, TREFHT 2-4)
         -> figures/supp-info/{png,pdf}/exchangeability-lead2-4
+    python scripts/exchangeability_check.py figure-main (same inputs)
+        -> figures/main-text/{png,pdf}/members-not-exchangeable
 
 Synthetic: x[r, t] = mu[r] + beta[r] s[t] + sig[r] z[r, t], s, z iid N(0, 1), with R, T as the
 real index (R = 62, T = 51, B = 4). Exchangeable: mu = 0, beta = 0.5, sig = 1. Heterogeneous
@@ -288,9 +290,69 @@ def figure(cases=FIG_CASES, name="exchangeability-lead2-4"):
     plt.close(fig)
 
 
+def figure_main(cases=FIG_CASES, name="members-not-exchangeable"):
+    """Main text: (a-c) bias-corrected I(M; X, Y) where p <= ALPHA (other cells flat grey), one
+    map per field; (d) the share of area with p <= ALPHA, observed against the permutation null
+    (5-95% and full range), with the nominal ALPHA marked. Everything else is in the caption."""
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LinearSegmentedColormap, Normalize
+    import plots as P                                                # map helpers, figure style
+    Z = {c: dict(np.load(os.path.join(OUT, f"exchangeability_grid_{c[0]}_{c[1]}.npz")))
+         for c in cases}
+    sig = {c: Z[c]["I_MXY_p"] <= ALPHA for c in cases}
+    vals = np.concatenate([Z[c]["I_MXY_corrected"][sig[c]] for c in cases])
+    vmax = float(np.ceil(np.percentile(vals, 98) * 100) / 100)       # bits, rounded up to 0.01
+    cmap = LinearSegmentedColormap.from_list("seq_sig", P.SEQ(np.linspace(0.22, 1.0, 256)))
+    cmap.set_bad(style.GRID)                                         # not significant: flat grey
+    norm = Normalize(0.0, vmax)
+    fig = plt.figure(figsize=(7.2, 4.15), layout="constrained")
+    gs = fig.add_gridspec(2, 2, height_ratios=(1, 1))
+    letters = iter("abcd")
+    for i, c in enumerate(cases):
+        z = Z[c]
+        ax = fig.add_subplot(gs[i // 2, i % 2], projection=P.PROJ)
+        P.show(ax, np.where(sig[c], z["I_MXY_corrected"], np.nan), z["lats"], z["lons"],
+               cmap=cmap, norm=norm)
+        for sp in ax.spines.values():
+            sp.set(color=P.MUTED, lw=0.6)
+        style.panel_label(ax, next(letters), f"{c[0]}")
+        if i == 2:
+            cb = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
+                              orientation="horizontal", shrink=0.62, pad=0.025, aspect=38,
+                              extend="max", label="excess $I(M; X, Y)$ (bits)")
+            cb.outline.set(color=P.MUTED, lw=0.6)
+            cb.ax.tick_params(length=2.5, width=0.6, labelsize=8)
+            cb.solids.set_rasterized(True)
+    ax = fig.add_subplot(gs[1, 1])
+    y = np.arange(len(cases))[::-1]
+    area = {}
+    for yy, c in zip(y, cases):
+        z = Z[c]
+        W = np.cos(np.deg2rad(z["lats"]))[:, None] * np.ones(z["lons"].size)
+        null = 100 * z["field_null_area_I_MXY"]
+        area[c] = 100 * float((W * sig[c]).sum() / W.sum())
+        ax.hlines(yy, null.min(), null.max(), color="0.62", lw=1.0)
+        ax.hlines(yy, *np.percentile(null, [5, 95]), color="0.62", lw=4.0)
+        ax.plot(area[c], yy, "o", ms=6.5, color=style.INK, zorder=3)
+        ax.text(area[c], yy + 0.2, f"{area[c]:.1f}%", ha="center", va="bottom", fontsize=8,
+                color=style.INK)
+    ax.axvline(100 * ALPHA, color="0.45", lw=0.7, zorder=0)
+    ax.set_yticks(y, [c[0] for c in cases])
+    ax.set_ylim(-0.6, len(cases) - 0.3)
+    ax.set_xlim(0, 5 * np.ceil(1.12 * max(area.values()) / 5))
+    ax.set_xlabel("area with $p \\leq 0.05$ (%)")
+    style.tidy(ax, grid=False)
+    ax.tick_params(labelsize=8)
+    ax.tick_params(axis="y", length=0, labelsize=8.5)
+    ax.spines["left"].set_visible(False)
+    style.panel_label(ax, next(letters), "area rejecting exchangeability")
+    style.save(fig, name, dpi=300)
+    plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("what", choices=("synthetic", "nao", "grid", "figure"))
+    ap.add_argument("what", choices=("synthetic", "nao", "grid", "figure", "figure-main"))
     ap.add_argument("--draws", type=int, default=200)
     ap.add_argument("--n-perm", type=int, default=None)
     ap.add_argument("--exchangeable-only", action="store_true")
@@ -298,7 +360,8 @@ def main():
     a = ap.parse_args()
     n = a.n_perm or (200 if a.what == "grid" else 1000)
     {"synthetic": lambda: synthetic(a.draws, n, a.exchangeable_only), "nao": lambda: nao(n),
-     "grid": lambda: grid(n, a.case), "figure": figure}[a.what]()
+     "grid": lambda: grid(n, a.case), "figure": figure,
+     "figure-main": figure_main}[a.what]()
 
 
 if __name__ == "__main__":
