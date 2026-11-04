@@ -149,6 +149,62 @@ def test_rejects_nonfinite():
     raise AssertionError("NaN accepted")
 
 
+def test_ar1_noise():
+    import exchangeability_check as C
+    z = np.random.default_rng(0).standard_normal((3, 50))
+    assert np.array_equal(C.ar1(z, 0.0), z)                          # phi = 0: the iid draws
+    e = C.ar1(np.random.default_rng(1).standard_normal((200, 2000)), 0.7)
+    assert abs(e.var() - 1) < 0.02                                   # stationary, unit variance
+    assert abs(e[:, 0].var() - 1) < 0.25                             # from the first step on
+    r1 = (e[:, 1:] * e[:, :-1]).mean() / e.var()
+    assert abs(r1 - 0.7) < 0.01
+
+
+def test_model_selection():
+    import exchangeability_check as C
+    lab = {"model_of": ["A", "B", "A", "C", "A"], "matches_case_file": True}
+    assert C.model_mask(lab, "A", 5).tolist() == [True, False, True, False, True]
+    for bad, n in (({**lab, "matches_case_file": False}, 5), (lab, 6)):
+        try:
+            C.model_mask(bad, "A", n)
+        except ValueError:
+            continue
+        raise AssertionError("unchecked labels or wrong member count accepted")
+    try:
+        C.model_mask(lab, "Z", 5)
+    except ValueError:
+        return
+    raise AssertionError("unknown model accepted")
+
+
+def test_detrend_null():
+    import exchangeability_check as C
+    rng = np.random.default_rng(10)
+    v = E._detrend_t(rng.standard_normal((2, 3, 5, 36)))
+    t = np.arange(36) - 17.5
+    assert np.allclose(v.mean(-1), 0) and np.allclose((v * t).sum(-1), 0)
+    raw = ens(R=6, T=36, P=3, seed=10) + rng.standard_normal((6, 1, 3)) \
+        + rng.standard_normal((6, 1, 3)) * np.arange(36)[None, :, None] / 36   # member lines
+    xd = np.moveaxis(C.detrend(np.moveaxis(raw, 1, -1)), -1, 1)
+    plain = E.exchangeability_test(xd, n_sub=20, n_perm=30, block=6, seed=4)
+    redo = E.exchangeability_test(raw, n_sub=20, n_perm=30, block=6, seed=4, detrend=True)
+    small = E.exchangeability_test(raw, n_sub=20, n_perm=30, block=6, seed=4, detrend=True,
+                                   max_elems=1)
+    for s in E.STATS:
+        assert np.allclose(plain[s]["obs"], redo[s]["obs"])          # observed: detrend(raw)
+        for k in redo[s]:
+            assert np.allclose(small[s][k], redo[s][k]), (s, k)       # chunking invariant
+    assert not np.allclose(plain["I_MXY"]["null_mean"], redo["I_MXY"]["null_mean"])
+    one = E.exchangeability_test(raw[..., 1], n_sub=20, n_perm=30, block=6, seed=4, detrend=True)
+    assert np.allclose(one["I_MXY"]["p"], redo["I_MXY"]["p"][1])
+    # null by hand for one permutation: permute the RAW members, then detrend each pseudo-member
+    tab = E.perm_tables(np.random.default_rng(0), 1, 6, 36, 6)[0]   # (T, R)
+    pr = raw[tab.T, np.arange(36)[None, :]]                          # (R, T, P) pseudo-members
+    pd = np.moveaxis(C.detrend(np.moveaxis(pr, 1, -1)), -1, 1)
+    X, Xd = E.loo_mean(pd), E.loo_mean(xd)
+    assert np.allclose(np.moveaxis(E._detrend_t(np.moveaxis(E.loo_mean(pr), 1, -1)), -1, 1), X)
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

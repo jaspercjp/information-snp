@@ -6,9 +6,15 @@
         -> figures/data/exchangeability-synthetic-exchangeable-1000.json   (tighter size check)
     python scripts/exchangeability_check.py nao [--n-perm 1000]
         -> figures/data/exchangeability-nao.json   (all members and each model alone)
+    python scripts/exchangeability_check.py synthetic-ar [--draws 400] [--n-perm 1000]
+        -> figures/data/exchangeability-synthetic-ar1.json   (size of the block null, AR(1) members)
     python scripts/exchangeability_check.py grid [--case SLP:2-4] [--n-perm 200]
-        -> figures/data/exchangeability-grid-<VAR>-<case>.json   (every cell, field significance)
-           $SNP_OUT/exchangeability_grid_<VAR>_<case>.npz       (per-cell maps, null area shares)
+                                                 [--model CanESM5] [--block 12]
+        -> figures/data/exchangeability-grid-<VAR>-<case>[-<model>][-block<L>].json
+           $SNP_OUT/exchangeability_grid_<VAR>_<case>[_<model>][_block<L>].npz
+           (every cell, field significance; per-cell maps, null area shares)
+    python scripts/exchangeability_check.py figure-model [--model CanESM5] [--block 12]
+        -> figures/supp-info/{png,pdf}/members-exchangeable-<model>   (decadal cases)
     python scripts/exchangeability_check.py figure      (after grid for SLP, PRECT, TREFHT 2-4)
         -> figures/supp-info/{png,pdf}/exchangeability-lead2-4
     python scripts/exchangeability_check.py figure-main (same inputs)
@@ -20,6 +26,18 @@ real index (R = 62, T = 51, B = 4). Exchangeable: mu = 0, beta = 0.5, sig = 1. H
 the same signal fraction, different amplitude), spread in beta only (over [0, 1]), spread in mu
 only (over [-0.5, 0.5] sig). Rejection rate at alpha = 0.05 over independent draws, each with its
 own seed; Wilson 95% intervals.
+
+Synthetic AR(1) (`synthetic-ar`), for the decadal cases, where each member is ONE continuous run:
+the same model with z replaced by a stationary unit-variance AR(1) in time with lag-1 correlation
+phi, then a least-squares line removed per member (as `make_cases.thesis_detrend`), R = 20 or 40,
+T = 120 months, B = 5. Exchangeable members, phi over 0-0.9, permutation blocks of 1, 6, 12, 24
+steps; the same draws for every block (paired). Power: beta_prop_sig_half and beta_spread_half at
+phi = 0.5, R = 40. --redetrend: the per-member detrend inside the test (observed: detrend(x);
+null: detrend(block-permuted x)), plus exchangeable lognormal members (exp of the Gaussian ones).
+
+--model: only that model's members, chosen from $SNP_OUT/member_models.json (labels checked
+against the case file and the member count; a `moy` case uses its base case's labels after a check
+that the two differ by the same series for every selected member).
 
 NAO: Dunstone et al. (2016) boxes, cos-lat weighted means of the case SLP (DJF, global mean removed,
 Eade-smoothed): Azores 36-40N, 28-20W minus Iceland 63-70N, 25-16W, for the members and the
@@ -69,6 +87,76 @@ def draw(args):
     res = E.exchangeability_test(x, B=B, n_perm=n_perm, block=block, estimator=est,
                                  seed=int(rng.integers(2 ** 31)))
     return {f"{k}/{q}": float(res[k][q]) for k in E.STATS for q in res[k]} | {"B": res["meta"]["B"]}
+
+
+def ar1(z, phi):
+    """Stationary unit-variance AR(1) along the last axis from iid N(0, 1) innovations z; phi = 0
+    returns z itself."""
+    e = np.array(z, dtype=float)
+    a = np.sqrt(1 - phi * phi)
+    for t in range(1, e.shape[-1]):
+        e[..., t] = phi * e[..., t - 1] + a * e[..., t]
+    return e
+
+
+def detrend(x):
+    """Remove a least-squares line (intercept and slope) per member along the last axis."""
+    t = np.arange(x.shape[-1], dtype=float)
+    A = np.stack([np.ones_like(t), t - t.mean()], 1)
+    coef = np.linalg.lstsq(A, x.reshape(-1, t.size).T, rcond=None)[0]
+    return x - (A @ coef).T.reshape(x.shape)
+
+
+AR_T, AR_R, AR_PHI, AR_BLOCKS = 120, (20, 40), (0.0, 0.3, 0.5, 0.75, 0.9), (1, 6, 12, 24)
+AR_RUNS = [("exchangeable", R, phi, L) for R in AR_R for phi in AR_PHI for L in AR_BLOCKS] + \
+          [(c, 40, 0.5, L) for c in ("beta_prop_sig_half", "beta_spread_half") for L in (1, 12, 24)]
+AR_RUNS_REDETREND = [r for r in AR_RUNS if r[3] != 6] + \
+    [("exchangeable+lognormal", 40, phi, L) for phi in (0.0, 0.5) for L in (1, 12)]
+
+
+def draw_ar(args):
+    case, R, phi, block, d, n_perm, redetrend = args
+    base, *mods = case.split("+")                                    # "+lognormal": exp(x)
+    rng = np.random.default_rng([20261104, list(CASES).index(base), R, int(round(100 * phi)), d])
+    mu, beta, sig = members(base, R, rng)
+    s = rng.standard_normal(AR_T)
+    x = mu[:, None] + beta[:, None] * s + sig[:, None] * ar1(rng.standard_normal((R, AR_T)), phi)
+    if "lognormal" in mods:
+        x = np.exp(x)
+    # redetrend: the raw members, detrended inside the test (observed and every permutation);
+    # otherwise the detrended members, as in the case files
+    res = E.exchangeability_test(x if redetrend else detrend(x), n_perm=n_perm, block=block,
+                                 seed=int(rng.integers(2 ** 31)), detrend=redetrend)
+    return {f"{k}/{q}": float(res[k][q]) for k in ("Delta", "I_MXY") for q in res[k]}
+
+
+def synthetic_ar(draws, n_perm, redetrend=False):
+    t0 = time.time()
+    runs = AR_RUNS_REDETREND if redetrend else AR_RUNS
+    jobs = [(c, R, phi, L, d, n_perm, redetrend)
+            for c, R, phi, L in runs for d in range(draws if c == "exchangeable" else draws // 2)]
+    with get_context("fork").Pool(int(os.environ.get("SLURM_CPUS_ON_NODE", 1))) as pool:
+        out = pool.map(draw_ar, jobs, chunksize=8)
+    res, i = {}, 0
+    for c, R, phi, L in runs:
+        n = draws if c == "exchangeable" else draws // 2
+        rs, i = out[i:i + n], i + n
+        get = lambda k: np.array([r[k] for r in rs])                 # noqa: E731
+        name = f"{c} | R={R} | T={AR_T} | phi={phi} | block={L}"
+        e_ = res[name] = {"case": c, "R": R, "T": AR_T, "phi": phi, "block": L, "draws": n,
+                          "n_perm": n_perm, "redetrend": redetrend}
+        for s in ("Delta", "I_MXY"):
+            k = int((get(f"{s}/p") <= ALPHA).sum())
+            e_[f"reject_{s}"] = k / n
+            e_[f"reject_{s}_wilson95"] = wilson(k, n)
+            e_[f"{s}_corrected_mean"] = float(get(f"{s}/corrected").mean())
+        print(f"{name:58s} reject I_MXY {e_['reject_I_MXY']:.3f} [{e_['reject_I_MXY_wilson95'][0]:.3f}, "
+              f"{e_['reject_I_MXY_wilson95'][1]:.3f}] Delta {e_['reject_Delta']:.3f}", flush=True)
+    res["_runtime_s"] = time.time() - t0
+    name = "exchangeability-synthetic-ar1" + ("-redetrend" if redetrend else "")
+    with open(style.data_path(name + ".json"), "w") as fh:
+        json.dump(res, fh, indent=1)
+    print(f"runtime {res['_runtime_s']:.0f} s for {len(jobs)} draws x {n_perm} permutations")
 
 
 def wilson(k, n, z=1.96):
@@ -186,29 +274,111 @@ def field_test(res, stat, W):
             "p_field": float((1 + (Fk >= Fo).sum()) / (n + 1)), "null_area": Fk}
 
 
-def grid(n_perm, case="SLP:2-4"):
+def model_mask(lab, model, n):
+    """Members of `model` from one member_models.json entry, checked: labels verified against
+    the case file, one label per member (n), and the model present."""
+    if not lab["matches_case_file"]:
+        raise ValueError("member labels were not checked against the case file")
+    owner = np.array(lab["model_of"])
+    if owner.size != n:
+        raise ValueError(f"{owner.size} labels for {n} members")
+    if not (owner == model).any():
+        raise ValueError(f"no members of {model}")
+    return owner == model
+
+
+def model_members(var, cs, model, F):
+    """F restricted to `model`'s members (a copy). A `moy` case has no labels of its own: it takes
+    its base case's and checks that F_moy - F_base is one series shared by every selected member
+    (the per-model climatology), which holds only if the member order is the same."""
+    with open(os.path.join(OUT, "member_models.json")) as fh:
+        labels = json.load(fh)
+    base = cs[:-3] if cs.endswith("moy") else cs
+    sel = model_mask(labels[f"{var} {base}"], model, F.shape[0])
+    x = np.array(F[sel])
+    if base != cs:
+        d = x - load(var, base)[0][sel]
+        spread = np.abs(d - d[:1]).max()
+        if spread > 1e-6 * max(1.0, np.abs(x).max()):
+            raise ValueError(f"{var} {cs}: members do not line up with {base} ({spread:.3g})")
+    return x
+
+
+PHI_OK = 0.5     # lag-1 autocorrelation up to which the 12-month re-detrended null holds its size
+
+
+def lag1(F):
+    """Lag-1 autocorrelation in time of the member deviations from the ensemble mean, pooled
+    over members: (R, T, *space) -> (*space,)."""
+    d = F - F.mean(0)
+    return (d[:, 1:] * d[:, :-1]).sum((0, 1)) / (d * d).sum((0, 1))
+
+
+def raw_members(var, cs, model, x):
+    """`model`'s (None: every model's) members before make_cases.thesis_detrend (smoothed; `moy` anomalies for a moy
+    case), from dcpp_decadal_handles, checked against x, the same members from the case file:
+    thesis_detrend(raw) must reproduce x. Used for the exact null of a detrended decadal case."""
+    import sys
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "data-acquisition"))
+    import dcpp_decadal_handles as H
+    import make_cases as MC
+    c = H.get(int(cs[1:5]), var=var, models=[model] if model else None, verbose=False,
+              anom="moy" if cs.endswith("moy") else "none")
+    raw = np.asarray(c.F, float)
+    if raw.shape != x.shape:
+        raise ValueError(f"{var} {cs} {model}: raw {raw.shape} vs case file {x.shape}")
+    err = np.abs(MC.thesis_detrend(raw) - x).max()
+    if err > 1e-9 * np.abs(x).max():
+        raise ValueError(f"{var} {cs} {model}: detrended raw differs from the case file ({err:.3g})")
+    return raw
+
+
+def grid_tag(model, block, redetrend):
+    """File-name suffix: '' for all members, per-step null (the lead 2-4 runs)."""
+    return ((f"_{model}" if model else "") + (f"_block{block}" if block != 1 else "")
+            + ("_redetrend" if redetrend else ""))
+
+
+def grid(n_perm, case="SLP:2-4", model=None, block=1, redetrend=False):
     from tables import wfrac
     var, cs = case.split(":")
     F, o, s, lats, lons = load(var, cs)
+    if model:
+        F = model_members(var, cs, model, F)
+    tag = grid_tag(model, block, redetrend)
+    x = raw_members(var, cs, model, F) if redetrend else F           # exact null: from the raw
     t0 = time.time()
-    res = E.exchangeability_test(F, n_perm=n_perm, seed=3, return_null=True)
+    res = E.exchangeability_test(x, n_perm=n_perm, block=block, seed=3, return_null=True,
+                                 detrend=redetrend)
+    del x
     dt = time.time() - t0
     W = np.cos(np.deg2rad(lats))[:, None] * np.ones(lons.size)
     ok = np.isfinite(res["Delta"]["p"])
     field = {s: field_test(res, s, W) for s in ("Delta", "I_MXY")}
-    out = {"case": f"{var} {cs}", "shape": list(F.shape), "n_perm": n_perm, "runtime_s": dt,
+    phi1 = lag1(F)
+    okphi = phi1 <= PHI_OK
+    field_okphi = {s: field_test(res, s, W * okphi) for s in ("Delta", "I_MXY")}
+    out = {"case": f"{var} {cs}", "model": model or "all members", "block": block,
+           "redetrend": redetrend,
+           "shape": list(F.shape), "n_perm": n_perm, "runtime_s": dt,
            "area_p_Delta_le_0.05": wfrac(W, res["Delta"]["p"] <= ALPHA, ok),
            "area_p_I_MXY_le_0.05": wfrac(W, res["I_MXY"]["p"] <= ALPHA, ok),
            "area_mean_Delta_corrected": float((W * res["Delta"]["corrected"]).sum() / W.sum()),
            "area_mean_I_pool_minus_cond_raw": float((W * res["I_pool_minus_cond"]["obs"]).sum()
                                                     / W.sum()),
            "field_significance": {s: {k: v for k, v in f.items() if k != "null_area"}
-                                  for s, f in field.items()}}
-    np.savez_compressed(os.path.join(OUT, f"exchangeability_grid_{var}_{cs}.npz"), lats=lats,
+                                  for s, f in field.items()},
+           f"area_lag1_le_{PHI_OK}": wfrac(W, okphi, ok),
+           f"field_significance_lag1_le_{PHI_OK}": {
+               s: {k: v for k, v in f.items() if k != "null_area"} for s, f in field_okphi.items()}}
+    np.savez_compressed(os.path.join(OUT, f"exchangeability_grid_{var}_{cs}{tag}.npz"), lats=lats,
                         lons=lons, R=F.shape[0], T=F.shape[1],
                         **{f"{k}_{q}": v for k in E.STATS for q, v in res[k].items()},
-                        **{f"field_null_area_{s}": f["null_area"] for s, f in field.items()})
-    with open(style.data_path(f"exchangeability-grid-{var}-{cs}.json"), "w") as fh:
+                        **{f"field_null_area_{s}": f["null_area"] for s, f in field.items()},
+                        **{f"field_null_area_lag1ok_{s}": f["null_area"]
+                           for s, f in field_okphi.items()}, lag1=phi1)
+    with open(style.data_path(f"exchangeability-grid-{var}-{cs}{tag.replace('_', '-')}.json"),
+              "w") as fh:
         json.dump(out, fh, indent=1)
     print(json.dumps(out, indent=1))
 
@@ -290,18 +460,18 @@ def figure(cases=FIG_CASES, name="exchangeability-lead2-4"):
     plt.close(fig)
 
 
-def figure_main(cases=FIG_CASES, name="members-not-exchangeable"):
+def figure_main(cases=FIG_CASES, name="members-not-exchangeable", tag=""):
     """Main text: (a-c) bias-corrected I(M; X, Y) where p <= ALPHA (other cells flat grey), one
     map per field; (d) the share of area with p <= ALPHA, observed against the permutation null
     (5-95% and full range), with the nominal ALPHA marked. Everything else is in the caption."""
     import matplotlib.pyplot as plt
     from matplotlib.colors import LinearSegmentedColormap, Normalize
     import plots as P                                                # map helpers, figure style
-    Z = {c: dict(np.load(os.path.join(OUT, f"exchangeability_grid_{c[0]}_{c[1]}.npz")))
+    Z = {c: dict(np.load(os.path.join(OUT, f"exchangeability_grid_{c[0]}_{c[1]}{tag}.npz")))
          for c in cases}
     sig = {c: Z[c]["I_MXY_p"] <= ALPHA for c in cases}
     vals = np.concatenate([Z[c]["I_MXY_corrected"][sig[c]] for c in cases])
-    vmax = float(np.ceil(np.percentile(vals, 98) * 100) / 100)       # bits, rounded up to 0.01
+    vmax = float(np.ceil(np.percentile(vals, 98) * 100) / 100) if vals.size else 0.01  # bits
     cmap = LinearSegmentedColormap.from_list("seq_sig", P.SEQ(np.linspace(0.22, 1.0, 256)))
     cmap.set_bad(style.GRID)                                         # not significant: flat grey
     norm = Normalize(0.0, vmax)
@@ -315,7 +485,7 @@ def figure_main(cases=FIG_CASES, name="members-not-exchangeable"):
                cmap=cmap, norm=norm)
         for sp in ax.spines.values():
             sp.set(color=P.MUTED, lw=0.6)
-        style.panel_label(ax, next(letters), f"{c[0]}")
+        style.panel_label(ax, next(letters), f"{c[0]}" if c[1] == "2-4" else f"{c[0]} {c[1]}")
         if i == 2:
             cb = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
                               orientation="horizontal", shrink=0.62, pad=0.025, aspect=38,
@@ -337,9 +507,11 @@ def figure_main(cases=FIG_CASES, name="members-not-exchangeable"):
         ax.text(area[c], yy + 0.2, f"{area[c]:.1f}%", ha="center", va="bottom", fontsize=8,
                 color=style.INK)
     ax.axvline(100 * ALPHA, color="0.45", lw=0.7, zorder=0)
-    ax.set_yticks(y, [c[0] for c in cases])
+    ax.set_yticks(y, [c[0] if c[1] == "2-4" else f"{c[0]} {c[1]}" for c in cases])
     ax.set_ylim(-0.6, len(cases) - 0.3)
-    ax.set_xlim(0, 5 * np.ceil(1.12 * max(area.values()) / 5))
+    ax.set_xlim(0, 5 * np.ceil(1.12 * max(max(area.values()),
+                                        max(100 * Z[c]["field_null_area_I_MXY"].max()
+                                            for c in cases)) / 5))
     ax.set_xlabel("area with $p \\leq 0.05$ (%)")
     style.tidy(ax, grid=False)
     ax.tick_params(labelsize=8)
@@ -350,17 +522,34 @@ def figure_main(cases=FIG_CASES, name="members-not-exchangeable"):
     plt.close(fig)
 
 
+MODEL_CASES = (("SLP", "s1961"), ("PRECT", "s1978"), ("TREFHT", "s1961"))
+
+
+def figure_model(model="CanESM5", block=12, redetrend=True):
+    """The members-not-exchangeable figure for one model's members on the decadal cases, with
+    the label permutation in blocks of `block` months (the members are continuous runs)."""
+    figure_main(MODEL_CASES, f"members-exchangeable-{model}",
+                grid_tag(model, block, redetrend))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("what", choices=("synthetic", "nao", "grid", "figure", "figure-main"))
+    ap.add_argument("what", choices=("synthetic", "synthetic-ar", "nao", "grid", "figure",
+                                     "figure-main", "figure-model"))
     ap.add_argument("--draws", type=int, default=200)
     ap.add_argument("--n-perm", type=int, default=None)
     ap.add_argument("--exchangeable-only", action="store_true")
     ap.add_argument("--case", default="SLP:2-4", help="VAR:case for grid")
+    ap.add_argument("--model", default=None, help="only this model's members (grid)")
+    ap.add_argument("--block", type=int, default=1, help="permutation block length, time steps")
+    ap.add_argument("--redetrend", action="store_true",
+                    help="re-detrend every permuted pseudo-member (decadal cases)")
     a = ap.parse_args()
     n = a.n_perm or (200 if a.what == "grid" else 1000)
     {"synthetic": lambda: synthetic(a.draws, n, a.exchangeable_only), "nao": lambda: nao(n),
-     "grid": lambda: grid(n, a.case), "figure": figure,
+     "synthetic-ar": lambda: synthetic_ar(a.draws, n, a.redetrend),
+     "grid": lambda: grid(n, a.case, a.model, a.block, a.redetrend), "figure": figure,
+     "figure-model": lambda: figure_model(a.model or "CanESM5", a.block, a.redetrend),
      "figure-main": figure_main}[a.what]()
 
 

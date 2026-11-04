@@ -23,7 +23,16 @@ time step (or each block of `block` consecutive steps, one permutation per block
 pair with its label, and the whole pipeline is rerun on every permutation. The same permutation
 tables serve every grid point (spatial structure kept). For each statistic: observed, null mean and
 SD, corrected = observed - null mean, and p: two-sided about the null mean for Delta (and
-I_pool - I_cond), upper tail for I_MXY. (For I_cond and I_pool_T alone, observed - null mean is the
+I_pool - I_cond), upper tail for I_MXY.
+
+detrend=True (decadal cases, where each member is one continuous run detrended per member by
+make_cases.thesis_detrend): x holds the members BEFORE that detrend, and the per-member detrend
+(least-squares intercept and slope in time) is part of the statistic. Observed: pairs from
+detrend(x). Null: labels permuted on the raw x, then every pseudo-member detrended (X and Y), and
+coded with the SAME observed pooled edges. Without it, the observed members satisfy a constraint
+the permuted ones do not: the I_MXY null is conservative for Gaussian members and fails outright
+for skewed ones (one extreme month moves the member's whole fitted line). Passing already
+detrended members re-detrends them: an approximation, valid for Gaussian members only. (For I_cond and I_pool_T alone, observed - null mean is the
 departure from exchangeability, not the plug-in MI bias: the null keeps the X-Y dependence.)
 
 estimator="copula": Gaussian-copula MI, normal scores from ranks over the POOLED R T values per
@@ -177,6 +186,35 @@ def _permute(a, tab):
     return np.moveaxis(a[:, tab.transpose(0, 2, 1), np.arange(T)], 0, 1)
 
 
+def _detrend_t(v):
+    """Remove the least-squares line (intercept and slope) along the last axis."""
+    t = np.arange(v.shape[-1], dtype=float)
+    t -= t.mean()
+    return v - v.mean(-1, keepdims=True) - t * ((v @ t) / (t @ t))[..., None]
+
+
+def _detrend_members(x):
+    """(R, T, ...) with each member's least-squares line in time removed."""
+    x = np.asarray(x, dtype=float)
+    return np.moveaxis(_detrend_t(np.moveaxis(x, 1, -1)), -1, 1)
+
+
+def _prepare_detrend(x, B):
+    """Raw floats X, Y (P, R, T) and the fixed pooled edges (B - 1, P) of the DETRENDED pairs."""
+    xf, space = _flat(x)
+    xd = _detrend_members(xf)
+    return ([np.moveaxis(v, -1, 0) for v in (loo_mean(xf), xf)],
+            [pooled_edges(v, B) for v in (loo_mean(xd), xd)], space)
+
+
+def _codes_perm(v, edges):
+    """Codes of v (k, P, R, T) against per-point edges (B - 1, P) -> int32."""
+    c = np.zeros(v.shape, np.int32)
+    for e in edges:
+        c += v >= e[:, None, None]
+    return c
+
+
 def _prepare(x, B, estimator):
     """Pairs once: integer joint codes (bins) or pooled normal scores (copula), (P, R, T)."""
     xf, space = _flat(x)
@@ -191,14 +229,15 @@ def _prepare(x, B, estimator):
 
 
 def exchangeability_test(x, B=None, n_sub=200, n_perm=1000, block=1, estimator="bins", seed=0,
-                         max_elems=2 ** 24, return_null=False):
+                         max_elems=2 ** 24, return_null=False, detrend=False):
     """Pooled vs per-member MI and I(M; X, Y) with a member-label permutation null.
 
     x: (R, T, *space) members by time [by grid point], finite. B: bins per axis (default
     n_bins(T)); n_sub: size-matched pooled subsamples; n_perm: permutations (1000 for an index,
     200 for gridded fields); block: time-block length of the permutation; seed: one
     np.random.default_rng stream (subsample table first, then all permutation tables), so
-    results do not depend on max_elems (the chunk size, in array elements).
+    results do not depend on max_elems (the chunk size, in array elements). detrend: x is raw and
+    the per-member detrend is part of the statistic (bins only; see the module docstring).
     Returns {stat: {"obs", "null_mean", "null_sd", "corrected"[, "p"]} each (*space,) in bits}
     for stat in STATS, plus "meta" (and "null": {stat: (n_perm, *space)} if return_null).
     """
@@ -207,18 +246,31 @@ def exchangeability_test(x, B=None, n_sub=200, n_perm=1000, block=1, estimator="
     rng = np.random.default_rng(seed)
     picks = rng.integers(0, R, size=(n_sub, T))
     tabs = perm_tables(rng, n_perm, R, T, block)
-    arrays, space = _prepare(x, B, estimator)
+    arrays, space = _prepare(_detrend_members(x) if detrend else x, B, estimator)
     P = arrays[0].shape[0]
     run = (lambda a: _stats_bins(a[0], B, picks)) if estimator == "bins" else \
         (lambda a: _stats_copula(a[0], a[1], picks))
     obs = run(arrays)                                                # {stat: (P,)}
+    if detrend:
+        if estimator != "bins":
+            raise ValueError("detrend=True is for estimator='bins'")
+        (Xf, Yf), (eX, eY), _ = _prepare_detrend(x, B)
+
+        def perm_codes(tab):                                         # (k, P, R, T) -> (k P, R, T)
+            cx = _codes_perm(_detrend_t(_permute(Xf, tab)), eX)
+            cy = _codes_perm(_detrend_t(_permute(Yf, tab)), eY)
+            return (cx * B + cy).reshape(-1, R, T)
+    else:
+        def perm_codes(tab):
+            return _permute(arrays[0], tab).reshape(-1, R, T)
     null = {k: np.empty((n_perm, P)) for k in STATS}
     per = P * max(R, n_sub) * T
     step = max(1, int(max_elems // per))
     for i in range(0, n_perm, step):
         tab = tabs[i:i + step]
         k = len(tab)
-        out = run(tuple(_permute(a, tab).reshape(k * P, R, T) for a in arrays))
+        out = run((perm_codes(tab),)) if estimator == "bins" else \
+            run(tuple(_permute(a, tab).reshape(k * P, R, T) for a in arrays))
         for s in STATS:
             null[s][i:i + k] = out[s].reshape(k, P)
     res = {}
@@ -230,7 +282,7 @@ def exchangeability_test(x, B=None, n_sub=200, n_perm=1000, block=1, estimator="
         elif s in UPPER:
             e["p"] = (1 + (null[s] >= obs[s]).sum(0)) / (n_perm + 1)
         res[s] = {k: np.reshape(v, space) for k, v in e.items()}
-    res["meta"] = dict(R=R, T=T, B=B, n_sub=n_sub, n_perm=n_perm, block=block,
+    res["meta"] = dict(R=R, T=T, B=B, n_sub=n_sub, n_perm=n_perm, block=block, detrend=detrend,
                        estimator=estimator, seed=seed, units="bits")
     if return_null:
         res["null"] = {s: null[s].reshape((n_perm,) + space) for s in STATS}
