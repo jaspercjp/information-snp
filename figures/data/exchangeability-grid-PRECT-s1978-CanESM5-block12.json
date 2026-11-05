@@ -1,0 +1,33 @@
+{
+ "case": "PRECT s1978",
+ "model": "CanESM5",
+ "block": 12,
+ "shape": [
+  40,
+  120,
+  72,
+  144
+ ],
+ "n_perm": 200,
+ "runtime_s": 1363.0775310993195,
+ "area_p_Delta_le_0.05": 0.14304287153645703,
+ "area_p_I_MXY_le_0.05": 0.22816352189621242,
+ "area_mean_Delta_corrected": -0.002490396071672654,
+ "area_mean_I_pool_minus_cond_raw": -0.08951705204066578,
+ "field_significance": {
+  "Delta": {
+   "area_obs": 0.14304287153645706,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.05683386221021295,
+   "null_area_max": 0.06315657542160646,
+   "p_field": 0.004975124378109453
+  },
+  "I_MXY": {
+   "area_obs": 0.22816352189621242,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.06478600512656804,
+   "null_area_max": 0.09523820781064352,
+   "p_field": 0.004975124378109453
+  }
+ }
+}

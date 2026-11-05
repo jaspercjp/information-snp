@@ -23,7 +23,8 @@ time step (or each block of `block` consecutive steps, one permutation per block
 pair with its label, and the whole pipeline is rerun on every permutation. The same permutation
 tables serve every grid point (spatial structure kept). For each statistic: observed, null mean and
 SD, corrected = observed - null mean, and p: two-sided about the null mean for Delta (and
-I_pool - I_cond), upper tail for I_MXY.
+I_pool - I_cond), upper tail for I_MXY. (For I_cond and I_pool_T alone, observed - null mean is the
+departure from exchangeability, not the plug-in MI bias: the null keeps the X-Y dependence.)
 
 detrend=True (decadal cases, where each member is one continuous run detrended per member by
 make_cases.thesis_detrend): x holds the members BEFORE that detrend, and the per-member detrend
@@ -32,8 +33,7 @@ detrend(x). Null: labels permuted on the raw x, then every pseudo-member detrend
 coded with the SAME observed pooled edges. Without it, the observed members satisfy a constraint
 the permuted ones do not: the I_MXY null is conservative for Gaussian members and fails outright
 for skewed ones (one extreme month moves the member's whole fitted line). Passing already
-detrended members re-detrends them: an approximation, valid for Gaussian members only. (For I_cond and I_pool_T alone, observed - null mean is the
-departure from exchangeability, not the plug-in MI bias: the null keeps the X-Y dependence.)
+detrended members re-detrends them: an approximation, valid for Gaussian members only.
 
 estimator="copula": Gaussian-copula MI, normal scores from ranks over the POOLED R T values per
 grid point (computed once, like the edges), MI = -1/2 log2(1 - r^2), and I_MXY from Gaussian

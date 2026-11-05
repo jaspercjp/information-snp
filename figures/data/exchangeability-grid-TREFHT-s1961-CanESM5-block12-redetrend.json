@@ -1,0 +1,51 @@
+{
+ "case": "TREFHT s1961",
+ "model": "CanESM5",
+ "block": 12,
+ "redetrend": true,
+ "shape": [
+  40,
+  120,
+  94,
+  192
+ ],
+ "n_perm": 200,
+ "runtime_s": 3746.0703065395355,
+ "area_p_Delta_le_0.05": 0.06197509094230076,
+ "area_p_I_MXY_le_0.05": 0.06708789689857547,
+ "area_mean_Delta_corrected": -0.0007706691574983684,
+ "area_mean_I_pool_minus_cond_raw": -0.04450047692932141,
+ "field_significance": {
+  "Delta": {
+   "area_obs": 0.06197509094230076,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.05999255302896628,
+   "null_area_max": 0.06876016412894684,
+   "p_field": 0.03482587064676617
+  },
+  "I_MXY": {
+   "area_obs": 0.06708789689857547,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.06664088485105936,
+   "null_area_max": 0.08801724955271348,
+   "p_field": 0.05472636815920398
+  }
+ },
+ "area_lag1_le_0.5": 0.533624890142966,
+ "field_significance_lag1_le_0.5": {
+  "Delta": {
+   "area_obs": 0.058923708030285224,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.06504101912193243,
+   "null_area_max": 0.0763071752071371,
+   "p_field": 0.11940298507462686
+  },
+  "I_MXY": {
+   "area_obs": 0.060483864568620996,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.06583843860228875,
+   "null_area_max": 0.07686369100168085,
+   "p_field": 0.12935323383084577
+  }
+ }
+}

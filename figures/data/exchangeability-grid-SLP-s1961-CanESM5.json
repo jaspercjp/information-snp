@@ -1,0 +1,33 @@
+{
+ "case": "SLP s1961",
+ "model": "CanESM5",
+ "block": 1,
+ "shape": [
+  20,
+  120,
+  37,
+  72
+ ],
+ "n_perm": 200,
+ "runtime_s": 308.1682393550873,
+ "area_p_Delta_le_0.05": 0.057388824133656424,
+ "area_p_I_MXY_le_0.05": 0.03986310613653078,
+ "area_mean_Delta_corrected": -0.00010957362543814198,
+ "area_mean_I_pool_minus_cond_raw": -0.07683467511016674,
+ "field_significance": {
+  "Delta": {
+   "area_obs": 0.05738882413365643,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.06235308142706917,
+   "null_area_max": 0.07473732579354386,
+   "p_field": 0.14925373134328357
+  },
+  "I_MXY": {
+   "area_obs": 0.03986310613653078,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.06658119386664767,
+   "null_area_max": 0.08412975972192051,
+   "p_field": 0.8606965174129353
+  }
+ }
+}
