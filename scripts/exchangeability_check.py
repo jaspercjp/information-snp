@@ -346,7 +346,13 @@ def grid(n_perm, case="SLP:2-4", model=None, block=1, redetrend=False):
     if model:
         F = model_members(var, cs, model, F)
     tag = grid_tag(model, block, redetrend)
-    x = raw_members(var, cs, model, F) if redetrend else F           # exact null: from the raw
+    phi1 = lag1(F)
+    shape = F.shape
+    if redetrend:                                                    # exact null: from the raw
+        x = raw_members(var, cs, model, F)
+        del F                                                        # one copy of the members
+    else:
+        x = F
     t0 = time.time()
     res = E.exchangeability_test(x, n_perm=n_perm, block=block, seed=3, return_null=True,
                                  detrend=redetrend)
@@ -355,12 +361,11 @@ def grid(n_perm, case="SLP:2-4", model=None, block=1, redetrend=False):
     W = np.cos(np.deg2rad(lats))[:, None] * np.ones(lons.size)
     ok = np.isfinite(res["Delta"]["p"])
     field = {s: field_test(res, s, W) for s in ("Delta", "I_MXY")}
-    phi1 = lag1(F)
     okphi = phi1 <= PHI_OK
     field_okphi = {s: field_test(res, s, W * okphi) for s in ("Delta", "I_MXY")}
     out = {"case": f"{var} {cs}", "model": model or "all members", "block": block,
            "redetrend": redetrend,
-           "shape": list(F.shape), "n_perm": n_perm, "runtime_s": dt,
+           "shape": list(shape), "n_perm": n_perm, "runtime_s": dt,
            "area_p_Delta_le_0.05": wfrac(W, res["Delta"]["p"] <= ALPHA, ok),
            "area_p_I_MXY_le_0.05": wfrac(W, res["I_MXY"]["p"] <= ALPHA, ok),
            "area_mean_Delta_corrected": float((W * res["Delta"]["corrected"]).sum() / W.sum()),
@@ -372,7 +377,7 @@ def grid(n_perm, case="SLP:2-4", model=None, block=1, redetrend=False):
            f"field_significance_lag1_le_{PHI_OK}": {
                s: {k: v for k, v in f.items() if k != "null_area"} for s, f in field_okphi.items()}}
     np.savez_compressed(os.path.join(OUT, f"exchangeability_grid_{var}_{cs}{tag}.npz"), lats=lats,
-                        lons=lons, R=F.shape[0], T=F.shape[1],
+                        lons=lons, R=shape[0], T=shape[1],
                         **{f"{k}_{q}": v for k in E.STATS for q, v in res[k].items()},
                         **{f"field_null_area_{s}": f["null_area"] for s, f in field.items()},
                         **{f"field_null_area_lag1ok_{s}": f["null_area"]
