@@ -4,7 +4,7 @@ ToyModels: rho and lambda on synthetic data
 monotonic-lambda-rho   A monotonic non-linearity lowers Pearson rho but not lambda.
 estimator-toys         Which lambda estimator for N ~ 50, T ~ 30 (also in Manuscript/SuppInformation).
 
-Model, per draw of N = 1,000,000 pairs, 20 draws (seeded per draw):
+Model, one seeded draw of N = 1,000,000 pairs (enough that one sample suffices):
   x, z ~ N(0, 1) independent          x plays the predictable signal (ensemble mean)
   u = r x + sqrt(1 - r^2) z, r = 0.8  (x, u) bivariate Gaussian, correlation r
   y = g_a(u) = (exp(a u) - 1) / a     y plays the observations; g_0(u) = u; increasing, skewed
@@ -17,7 +17,7 @@ Every a reuses the same x and z of a draw (common random numbers).
 Panels
   (a) 100,000 samples of one draw at a = 0, 1, 2, one grey; each panel has its own y axis
       (0.1-99.9% range shown): the cloud goes from symmetric to strongly skewed as a grows.
-  (b) rho: exact curve and the sample value (median and interquartile range over the draws);
+  (b) rho: exact curve and the value from the one sample (the draw of panel a);
       lambda: exact (= r) and KSG on normal scores, the estimator the maps now use (0.800 at
       every a).
   (c) lambda estimators against the exact lambda:
@@ -36,7 +36,7 @@ Panels
       KSG on raw values   KSG, k = 4, without the rank transform (infomeasure): 0.80 at every a
                    at this N, but it drifts with the skew at small N
 
-Reading: the sample rho matches the exact curve (0.800, 0.611, 0.239 vs 0.80, 0.61, 0.22). It
+Reading: the sample rho matches the exact curve (0.800, 0.613, 0.240 vs 0.80, 0.61, 0.22). It
 needs this N: with a skewed y the correlation is set by rare extremes (at a = 2 the median sample
 rho is 0.30 at N = 1e4, 0.25 at 1e5). At N = 51 (the T of SLP lead 2-4; --n 51 --draws 500) the
 sample rho falls only to 0.52 at a = 2, KSG drifts to 0.68, and Knuth's rule picks a single bin
@@ -45,8 +45,8 @@ scores at N = 51 (300 draws): 0.726 at every a and never 0 (Knuth picks 4 bins o
 marginals), against the production 0.73 / 0.66 / 0.67 at a = 0 / 1 / 2 with 16-26% zeros.
 
 Regenerate (compute node, repository root):
-  python scripts/monotonic_demo.py [--recompute] [--draws 20] [--n 1000000] [--r 0.8]
-      (~8 min on 16 cores; KSG takes ~25 s per call at this N)
+  python scripts/monotonic_demo.py [--recompute] [--draws 1] [--n 1000000] [--r 0.8]
+      (~1 min on 16 cores for one draw; KSG takes ~25 s per call at this N)
   python scripts/figure_set.py Presentation refresh && ... verify
 Curves: figures/data/monotonic-lambda-rho.npz; tests: scripts/tests/test_monotonic_demo.py.
 

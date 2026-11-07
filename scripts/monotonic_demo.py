@@ -12,7 +12,7 @@ the exact lambda = sqrt(1 - exp(-2 I)) = r, flat in a. Pearson rho is not invari
     rho(x, y) = a r / sqrt(exp(a^2) - 1)     (r at a = 0; Stein's lemma)
 x plays the predictable signal (the leave-one-out ensemble mean), y the observations.
 
-Estimates on each draw of N pairs. N = 1,000,000 by default (20 draws): large enough that the
+Estimates on each draw of N pairs. N = 1,000,000 by default, one draw: large enough that the
 sample rho matches the exact curve even at a = 2, where y is lognormal with sigma = 2 and its
 correlation converges slowly (median 0.30 at N = 1e4, 0.25 at 1e5, 0.23 at 1e6 vs exact 0.22).
 --n 51 reproduces the small-sample version (the T of SLP lead 2-4), where Knuth's rule picks a
@@ -34,7 +34,8 @@ single bin for a variable in 14-28% of draws and lambda is then exactly 0.
                  the same on normal scores of x and y (ksg_lambda.ksg_lambda): the estimator the
                  maps now use (shown in panel b)
 No bias correction. Common random numbers: every a reuses the same x and z of a draw (seeded per
-draw, [seed, d]), so the curves move only with a. Points: medians over the draws; bands: 25-75%.
+draw, [seed, d]), so the curves move only with a. Points: draw 0 (the draw of panel a); with
+--draws > 1 the extra draws are saved but not drawn.
 Panel (a): 100,000 points of one draw per a, y on its own scale, clipped to its 0.1-99.9%
 range, one grey. Panel (b) uses lambda from KSG on normal scores (the maps' estimator); panel (c) compares the
 estimators. Equal-width (Knuth) bins are not invariant: as y skews, most of it falls in the
@@ -140,7 +141,7 @@ def figure(res, n, r, seed):
     rc = {"font.size": 13, "axes.titlesize": 14, "axes.labelsize": 13, "xtick.labelsize": 12,
           "ytick.labelsize": 12, "legend.fontsize": 11}
     blue, orange, green, yellow = style.SERIES
-    q = lambda k: np.percentile(res[k], [25, 50, 75], axis=0)          # noqa: E731
+    one = lambda k: res[k][0]                                          # noqa: E731  draw 0
     logging.getLogger("fontTools").setLevel(logging.WARNING)       # infomeasure turns on INFO
     with plt.rc_context(rc):
         fig = plt.figure(figsize=(13.33, 4.8), layout="constrained")
@@ -153,54 +154,48 @@ def figure(res, n, r, seed):
             ax.plot(x[:m], y, ",", color="0.3", alpha=0.25, rasterized=True)
             ax.set_ylim(*np.percentile(y, [0.1, 99.9]))
             ax.set_xlim(-4, 4)
-            ax.text(0.03, 0.9, f"$a$ = {a:g}", transform=ax.transAxes, va="top", fontsize=12,
+            ax.text(0.03, 0.9, f"a = {a:g}", transform=ax.transAxes, va="top", fontsize=12,
                     color=style.INK)
-            ax.set_ylabel("$y$", fontsize=12)
+            ax.set_ylabel("y", fontsize=12)
             ax.yaxis.set_major_locator(plt.MaxNLocator(3))
             ax.tick_params(axis="y", labelsize=10)
             style.tidy(ax)
             if i == 0:
-                style.panel_label(ax, "a", f"$y = g_a(u)$ against $x$, {m:,} samples")
+                style.panel_label(ax, "a", f"y = g$_\\mathregular{{a}}$(u) against x, {m:,} samples")
             if i < 2:
                 ax.set_xticklabels([])
             else:
-                ax.set_xlabel("$x$ (signal)")
+                ax.set_xlabel("x (signal)")
         axs = [None, fig.add_subplot(gs[:, 1]), fig.add_subplot(gs[:, 2])]
 
         ax = axs[1]
         aa = np.linspace(0, 2, 200)
         ax.plot(aa, rho_exact(aa, r), color=blue, lw=2, label="ρ, exact")
-        lo, md, hi = q("rho")
-        ax.fill_between(A, lo, hi, color=blue, alpha=0.18, lw=0)
-        ax.plot(A, md, "o", color=blue, ms=6, label=f"ρ, sample of $N$ = {n:,} (median, IQR)")
-        ax.axhline(r, color=green, lw=2, label="λ, exact = $r$")
-        lo, md, hi = q("lam_ksg_ns")
-        ax.fill_between(A, lo, hi, color=green, alpha=0.18, lw=0)
-        ax.plot(A, md, "D", color=green, ms=6, label="λ, KSG on normal scores (median, IQR)")
-        ax.set_xlabel("strength of the monotonic non-linearity $a$")
+        ax.plot(A, one("rho"), "o", color=blue, ms=6, label=f"ρ, one sample of N = {n:,}")
+        ax.axhline(r, color=green, lw=2, label="λ, exact = r")
+        ax.plot(A, one("lam_ksg_ns"), "D", color=green, ms=6, label="λ, KSG on normal scores")
+        ax.set_xlabel("strength of the monotonic non-linearity a")
         ax.set_ylabel("ρ or λ")
         ax.set_ylim(0, 1.05)
-        ax.legend(frameon=True, fancybox=False, loc="lower left")
+        ax.legend(frameon=True, fancybox=False, loc="lower left", fontsize=10)
         style.tidy(ax)
         style.panel_label(ax, "b", "ρ falls, λ should not")
 
         ax = axs[2]
-        ax.axhline(r, color=style.INK, lw=2, label="exact = $r$")
+        ax.axhline(r, color=style.INK, lw=2, label="exact = r")
         for k, c, m, ls, lab in (("lam_ksg_ns", green, "D", "-", "KSG on normal scores (maps)"),
                                  ("lam_knuth", orange, "s", "-", "Knuth bins (old production)"),
                                  ("lam_knuth_ns", yellow, "o", "-", "Knuth bins on normal scores"),
                                  ("lam_rank", blue, "v", ":", "rank (equal-count) bins"),
                                  ("lam_ksg", style.MUTED, "^", "--", "KSG on raw values")):
-            lo, md, hi = q(k)
-            ax.fill_between(A, lo, hi, color=c, alpha=0.18, lw=0)
-            ax.plot(A, md, m + ls, color=c, ms=6, lw=1.2, label=lab,
+            ax.plot(A, one(k), m + ls, color=c, ms=6, lw=1.2, label=lab,
                     mfc="none" if k in ("lam_knuth_ns", "lam_rank") else c, mew=1.4)
         zero = 100 * (res["lam_knuth"] <= 1e-9).mean(0)
         if zero.max() > 0:
             ax.text(0.98, 0.97, f"Knuth: λ = 0 in {zero.min():.0f}-{zero.max():.0f}% of "
                     "draws\n(one bin chosen for a variable)", transform=ax.transAxes, ha="right",
                     va="top", fontsize=10.5, color=style.MUTED)
-        ax.set_xlabel("strength of the monotonic non-linearity $a$")
+        ax.set_xlabel("strength of the monotonic non-linearity a")
         ax.set_ylabel("λ")
         ax.set_ylim(0, 1.05)
         ax.legend(frameon=True, fancybox=False, loc="lower left")
@@ -214,7 +209,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--recompute", action="store_true")
     ap.add_argument("--seed", type=int, default=20261107)
-    ap.add_argument("--draws", type=int, default=20)
+    ap.add_argument("--draws", type=int, default=1)
     ap.add_argument("--n", type=int, default=1_000_000)
     ap.add_argument("--r", type=float, default=0.8)
     a = ap.parse_args()
