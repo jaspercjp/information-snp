@@ -22,6 +22,8 @@ Estimators (all on the n pairs of one draw):
     ksg-scores       Kraskov-Stoegbauer-Grassberger, k = 4, on normal scores (infomeasure)
     ksg-raw          the same on the raw values
 Normal scores: Phi^-1((rank - 1/2)/n) (jugaad.normal_scores), no assumption on the distribution.
+Bottom row: the shape of each case, 20,000 samples (grey; y clipped to its 0.5-99.5% range) and
+one draw of n = 33 (black), the information a single map cell has.
 """
 import argparse
 import json
@@ -139,7 +141,10 @@ def figure(V, exact):
     import matplotlib.pyplot as plt
     logging.getLogger("fontTools").setLevel(logging.WARNING)
     cols = dict(zip(NS, style.SERIES[:3]))
-    fig, axs = plt.subplots(1, len(CASES), figsize=(13.33, 4.6), sharey=True, layout="constrained")
+    fig = plt.figure(figsize=(13.33, 7.6), layout="constrained")
+    gs = fig.add_gridspec(2, len(CASES), height_ratios=(1.55, 1))
+    axs = [fig.add_subplot(gs[0, 0])]
+    axs += [fig.add_subplot(gs[0, i], sharey=axs[0]) for i in range(1, len(CASES))]
     y0 = np.arange(len(ESTIMATORS))[::-1]
     for i, (c, ax) in enumerate(zip(CASES, axs)):
         for j, n in enumerate(NS):
@@ -155,6 +160,22 @@ def figure(V, exact):
         style.tidy(ax)
     axs[0].set_yticks(y0, ESTIMATORS)
     axs[0].tick_params(axis="y", length=0)
+    for ax in axs[1:]:
+        ax.tick_params(axis="y", labelleft=False, length=0)
+    for i, c in enumerate(CASES):                                   # the shape of each case
+        ax = fig.add_subplot(gs[1, i])
+        x, y = sample(c, 20_000, np.random.default_rng([7, i]))
+        ax.plot(x, y, ",", color="0.55", alpha=0.35, rasterized=True)
+        xs, ys = sample(c, 33, np.random.default_rng([8, i]))
+        ax.plot(xs, ys, "o", ms=3.5, color=style.INK, mec="white", mew=0.4, label="one draw, n = 33")
+        ax.set_xlim(-3.5, 3.5)
+        ax.set_ylim(*np.percentile(y, [0.5, 99.5]))
+        ax.set_xlabel("x")
+        if i == 0:
+            ax.set_ylabel("y")
+            ax.legend(loc="upper left", frameon=True, fancybox=False, fontsize=9, markerscale=1.3)
+        ax.set_title(f"{c}: 20,000 samples", fontsize=10, color=style.MUTED)
+        style.tidy(ax)
     axs[1].legend(loc="lower left", frameon=True, fancybox=False, fontsize=9)
     style.save(fig, NAME, dpi=200)
     plt.close(fig)

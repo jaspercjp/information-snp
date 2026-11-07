@@ -2,6 +2,7 @@ ToyModels: rho and lambda on synthetic data
 ===========================================
 
 monotonic-lambda-rho   A monotonic non-linearity lowers Pearson rho but not lambda.
+estimator-toys         Which lambda estimator for N ~ 50, T ~ 30 (also in Manuscript/SuppInformation).
 
 Model, per draw of N = 1,000,000 pairs, 20 draws (seeded per draw):
   x, z ~ N(0, 1) independent          x plays the predictable signal (ensemble mean)
@@ -44,3 +45,22 @@ Regenerate (compute node, repository root):
       (~5 min on 16 cores; KSG takes ~25 s per call at this N)
   python scripts/figure_set.py Presentation refresh && ... verify
 Curves: figures/data/monotonic-lambda-rho.npz; tests: scripts/tests/test_monotonic_demo.py.
+
+
+estimator-toys
+--------------
+Seven lambda estimators on four toy problems with a known exact lambda, n = 33, 51, 120 pairs
+(the map sample sizes), 500 seeded draws; top row median and 5-95% of each estimate, bottom row
+the shape of each case (20,000 samples in grey, one n = 33 draw in black).
+  independent    y = z                                      exact lambda 0
+  gaussian       y = 0.8 x + 0.6 z            (g_0(u) above) exact lambda 0.8
+  skewed         y = (exp(2u) - 1)/2          (g_2(u) above) exact lambda 0.8
+  non-monotonic  y = x^2 + 0.75 z, rho = 0                   exact lambda 0.825 (numerical)
+Estimators: production Knuth bins on raw values; Knuth on normal scores (>= 3 bins); equal-count
+rank bins; rank bins minus a 200-permutation null; Gaussian copula (|rank correlation|: monotonic
+only); KSG, k = 4, on normal scores; KSG on raw values.
+Reading: the production lambda is 0 in 55% of Gaussian draws at n = 33; the Gaussian copula misses
+the non-monotonic case (0.15); KSG on normal scores is closest in every dependent case (0.76,
+0.74, 0.65 at n = 33) with median 0 when independent.
+Regenerate: python scripts/estimator_toys.py [--recompute] (~1 min on 16 cores);
+numbers in figures/data/estimator-toys.json.

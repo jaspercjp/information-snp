@@ -118,6 +118,15 @@
       "workflow": "monotonic_demo"
     },
     {
+      "command": "python scripts/estimator_toys.py",
+      "dest": "Presentation/ToyModels/pdf/estimator-toys.pdf",
+      "note": "Seven lambda estimators on four toy problems with a known lambda, n = 33, 51, 120; second row the shape of each case. Same file as Manuscript/SuppInformation/estimator-toys. See ToyModels/README.txt.",
+      "section": "ToyModels",
+      "sha256": "00faa008ce2ab6c1a52470e345433c2a44decedefd7622119b7a274770ed82c4",
+      "source": "supp-info/pdf/estimator-toys.pdf",
+      "workflow": "estimator_toys"
+    },
+    {
       "command": "python scripts/monotonic_demo.py",
       "dest": "Presentation/ToyModels/pdf/monotonic-lambda-rho.pdf",
       "note": "rho vs lambda as a monotonic (exponential) non-linearity grows; exact lambda = r = 0.8 throughout. N = 51, 500 seeded draws; see ToyModels/README.txt.",
@@ -125,6 +134,15 @@
       "sha256": "bd675db5c427bc5482f9dbb697a3c68909a5c79fb3cacdb27a405272eb1d11be",
       "source": "slides/pdf/monotonic-lambda-rho.pdf",
       "workflow": "monotonic_demo"
+    },
+    {
+      "command": "python scripts/estimator_toys.py",
+      "dest": "Presentation/ToyModels/png/estimator-toys.png",
+      "note": "Seven lambda estimators on four toy problems with a known lambda, n = 33, 51, 120; second row the shape of each case. Same file as Manuscript/SuppInformation/estimator-toys. See ToyModels/README.txt.",
+      "section": "ToyModels",
+      "sha256": "d348abbcec9dc4ea69d635ddd93669e30ae1b70f88051dab4163338d76e783e2",
+      "source": "supp-info/png/estimator-toys.png",
+      "workflow": "estimator_toys"
     },
     {
       "command": "python scripts/monotonic_demo.py",
