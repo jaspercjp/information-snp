@@ -113,7 +113,7 @@
       "dest": "Presentation/ToyModels/README.txt",
       "note": "Setup, panels and reading of the ToyModels slides.",
       "section": "ToyModels",
-      "sha256": "7ecd4f9e90e04d34640f04c2d3a462ee736c7b729d04640629fb212c2d1f5463",
+      "sha256": "12cbfb6afb70813c1e1340c0ea48f276446bf5d8cb6e940bb63a3e229b7092af",
       "source": "slides/toy-models-README.txt",
       "workflow": "monotonic_demo"
     },
