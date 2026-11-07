@@ -22,7 +22,10 @@ load (Eade et al. 2014 bias-correct each model separately), then pooled.
 
 Lead 1 is the first output month, read from the manifest rather than reconstructed from
 the `sYYYY` label. All four default models begin YYYY-11, so lead 2-4 is DJF. Only
-models whose lead window matches the November reference are built.
+models whose lead window matches the November reference are built, unless --own-window:
+then the window is taken as given in the model's own lead months (CanESM5, January
+starts: `--models CanESM5 --leads 12-14 --own-window` is DJF one year after the start),
+for single-model analyses that do not pool with the November systems.
 
 Chunking varies by model (EC-Earth3 publishes 11 files per (start, member), the others
 1): only chunks overlapping the window are opened, and the month count is asserted.
@@ -232,6 +235,9 @@ def main():
     ap.add_argument("--raw", default=DCPP_RAW)
     ap.add_argument("--outdir", default=DCPP_CUBES)
     ap.add_argument("--manifest-path", default=DCPP_MANIFEST)
+    ap.add_argument("--own-window", action="store_true",
+                    help="build windows that do not match the November reference (single-"
+                         "model use only; never pool them with the November cubes)")
     ap.add_argument("--plan", action="store_true",
                     help="report init months, coverage and target alignment; build nothing")
     a = ap.parse_args()
@@ -263,11 +269,12 @@ def main():
             continue
         for lead in leads:
             lab = target_label(im, lead)
-            if lab != ref[lead] or off != 0:
+            if (lab != ref[lead] or off != 0) and not a.own_window:
                 print(f"  lead {lead[0]}-{lead[1]}: months {lab} != reference "
                       f"{ref[lead]}; skipping")
                 continue
-            print(f"  lead {lead[0]}-{lead[1]}: months {lab}  == reference")
+            print(f"  lead {lead[0]}-{lead[1]}: months {lab}  "
+                  + ("== reference" if lab == ref[lead] and off == 0 else "(own window)"))
             plans.append((model, l1, im, lead, starts, members))
 
     if a.plan:

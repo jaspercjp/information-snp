@@ -42,8 +42,14 @@ CUBE_DIRS = {m: DEPRESYS_CUBES if m == "HadGEM3-GC31-MM" else os.path.join(DCPP_
 REFERENCE_INIT = 11             # the convention pooled windows are defined against
 
 
+def _dir(model):
+    """A model's cube folder: the pinned pool, or data/dcpp_cubes/<model> for single-model
+    windows built with build_dcpp_cube.py --own-window (e.g. CanESM5 lead 12-14)."""
+    return CUBE_DIRS.get(model, os.path.join(DCPP_CUBES, model))
+
+
 def _path(model, var, lead):
-    return os.path.join(CUBE_DIRS[model], f"{canon(var)}_lead{lead}.npz")
+    return os.path.join(_dir(model), f"{canon(var)}_lead{lead}.npz")
 
 
 def _meta(model, var, lead):
@@ -83,7 +89,7 @@ class Pooled:
         parts, names, owner = [], [], []
         ref_obs = first = None
         for m in models:
-            c = Cube(var, lead, MONTH_ABBR[inits[m]], cubes=CUBE_DIRS[m], years=common,
+            c = Cube(var, lead, MONTH_ABBR[inits[m]], cubes=_dir(m), years=common,
                      require_obs=require_obs, detrend_data=detrend_data,
                      smooth=smooth, remove_gm=remove_gm)
             if first is None:

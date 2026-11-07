@@ -4,7 +4,9 @@ Text is Helvetica Neue when its font files are found (.otf/.ttf in $SNP_FONT_DIR
 or ~/.fonts), else TeX Gyre Heros, the Helvetica clone that ships with TeX Live (`ml system texlive`
 not needed, the files are read directly). Regular weight everywhere, bold for panel titles
 (`ax.set_title`, and `panel_label`). `save` writes figures/<section>/{png,pdf}/<name>, section
-main-text for the names in MAIN_TEXT, supp-info otherwise; `data_path` is figures/data/<name>.
+main-text for the names in MAIN_TEXT, supp-info otherwise (or the folder passed, e.g. slides), and
+copies each file into the figure sets that list it (figure_sets.py); `data_path` is
+figures/data/<name>.
 """
 import glob
 import os
@@ -57,13 +59,25 @@ def section(name):
     return "main-text" if name in MAIN_TEXT else "supp-info"
 
 
-def save(fig, name, dpi=300):
-    """-> figures/<section>/png/<name>.png and pdf/<name>.pdf."""
-    sec = os.path.join(FIGROOT, section(name))
+def save(fig, name, dpi=300, folder=None):
+    """-> figures/<folder>/png/<name>.png and pdf/<name>.pdf, the canonical renders.
+
+    folder: section(name) by default (main-text or supp-info); "slides" for talk figures. The pdf
+    carries no creation date, so re-rendering the same figure gives the same bytes (a stable
+    sha256 in the figure-set manifests). Each file is then copied into every figure set
+    (figures/Manuscript, figures/Presentation; see figure_sets.py) whose manifest lists it.
+    """
+    import figure_sets
+    folder = folder or section(name)
+    root = figure_sets.figures_root()
     for ext in ("png", "pdf"):
-        os.makedirs(os.path.join(sec, ext), exist_ok=True)
-        fig.savefig(os.path.join(sec, ext, f"{name}.{ext}"), dpi=dpi, bbox_inches="tight")
-    print(f"-> {section(name)}/{{png,pdf}}/{name}", flush=True)
+        os.makedirs(os.path.join(root, folder, ext), exist_ok=True)
+        path = os.path.join(root, folder, ext, f"{name}.{ext}")
+        fig.savefig(path, dpi=dpi, bbox_inches="tight",
+                    metadata={"CreationDate": None} if ext == "pdf" else None)
+        for copy in figure_sets.export_everywhere(path):
+            print(f"   copied to {os.path.relpath(copy, root)}", flush=True)
+    print(f"-> {folder}/{{png,pdf}}/{name}", flush=True)
 
 
 def data_path(name):

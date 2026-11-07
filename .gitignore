@@ -53,3 +53,11 @@ __pycache__/
 
 .ipynb_checkpoints/
 /.claude/
+
+# figure sets (scripts/figure_sets.py): the copies are regenerable with
+# `python scripts/figure_set.py <Set> export`; only the manifests are tracked
+/figures/Manuscript/**
+!/figures/Manuscript/manifest.json
+/figures/Presentation/**
+!/figures/Presentation/manifest.json
+*.lock

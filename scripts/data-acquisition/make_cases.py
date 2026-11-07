@@ -21,6 +21,9 @@ Cases:
     2-4        DJF means, one per start date, pooled over five November models
                (`dcpp_handles`, Eade smoothing, detrended per model over the common
                start dates; SLP also has the area-weighted global mean removed)
+    MODEL_a-b  the same for one model alone at its own lead months a-b (a cube built with
+               build_dcpp_cube.py --own-window): CanESM5_12-14 is CanESM5's DJF one year
+               after its January starts, the single-model counterpart of 2-4
 """
 import os
 import sys
@@ -70,7 +73,9 @@ def load(var, case):
         o = thesis_detrend(np.asarray(G, float)[None])[0]
         return F, o, np.nanmean(F, axis=0), lats, lons
     import dcpp_handles
-    c = dcpp_handles.get(lead=case, var=var, remove_gm=var.upper() == "SLP")
+    model, _, lead = case.rpartition("_")
+    c = dcpp_handles.get(lead=lead, var=var, models=[model] if model else None,
+                         remove_gm=var.upper() == "SLP")
     F, o = np.asarray(c.F, float), np.asarray(c.G, float)
     return F, o, np.nanmean(F, axis=0), np.asarray(c.lats), np.asarray(c.lons)
 

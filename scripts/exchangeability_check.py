@@ -13,6 +13,10 @@
         -> figures/data/exchangeability-grid-<VAR>-<case>[-<model>][-block<L>].json
            $SNP_OUT/exchangeability_grid_<VAR>_<case>[_<model>][_block<L>].npz
            (every cell, field significance; per-cell maps, null area shares)
+    python scripts/exchangeability_check.py figure-slides   (after the exact-null grids below)
+        -> figures/slides/{png,pdf}/exchangeability-{all-models,canesm5}, copied by the manifest
+           into figures/Presentation/ExchangeabilityMaps/: all members and CanESM5 alone, SLP,
+           PRECT, TREFHT, DJF per start date (2-4; CanESM5 12-14) and the moy decade
     python scripts/exchangeability_check.py figure-model [--model CanESM5] [--block 12]
         -> figures/supp-info/{png,pdf}/members-exchangeable-<model>   (decadal cases)
     python scripts/exchangeability_check.py figure      (after grid for SLP, PRECT, TREFHT 2-4)
@@ -315,19 +319,33 @@ def lag1(F):
 
 
 def raw_members(var, cs, model, x):
-    """`model`'s (None: every model's) members before make_cases.thesis_detrend (smoothed; `moy` anomalies for a moy
-    case), from dcpp_decadal_handles, checked against x, the same members from the case file:
-    thesis_detrend(raw) must reproduce x. Used for the exact null of a detrended decadal case."""
+    """`model`'s (None: every model's) members before their per-member detrend, checked
+    against x, the same members from the case file: detrending raw must reproduce x. Decadal
+    (sYYYY[moy]): dcpp_decadal_handles, smoothed (`moy` anomalies for a moy case), then
+    make_cases.thesis_detrend over the 120 months. Lead window (2-4, MODEL_a-b): dcpp_handles
+    with detrend_data=False (global mean removed for SLP, smoothed), then a line per member
+    over the start dates (as _cube_io.detrend). Used for the exact null of a detrended case."""
     import sys
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "data-acquisition"))
-    import dcpp_decadal_handles as H
-    import make_cases as MC
-    c = H.get(int(cs[1:5]), var=var, models=[model] if model else None, verbose=False,
-              anom="moy" if cs.endswith("moy") else "none")
-    raw = np.asarray(c.F, float)
+    if cs.startswith("s"):                                           # decadal: sYYYY[moy]
+        import dcpp_decadal_handles as H
+        import make_cases as MC
+        c = H.get(int(cs[1:5]), var=var, models=[model] if model else None, verbose=False,
+                  anom="moy" if cs.endswith("moy") else "none")
+        raw = np.asarray(c.F, float)
+        detrended = MC.thesis_detrend
+    else:                                                            # lead window: one value
+        import dcpp_handles as H                                     # per start date
+        owner, _, lead = cs.rpartition("_")
+        c = H.get(lead=lead, var=var, models=[owner] if owner else None,
+                  remove_gm=var.upper() == "SLP", detrend_data=False)
+        raw = np.asarray(c.F, float)
+        if model and not owner:
+            raw = raw[np.asarray(c.model_of) == model]
+        detrended = E._detrend_members
     if raw.shape != x.shape:
         raise ValueError(f"{var} {cs} {model}: raw {raw.shape} vs case file {x.shape}")
-    err = np.abs(MC.thesis_detrend(raw) - x).max()
+    err = np.abs(detrended(raw) - x).max()
     if err > 1e-9 * np.abs(x).max():
         raise ValueError(f"{var} {cs} {model}: detrended raw differs from the case file ({err:.3g})")
     return raw
@@ -537,10 +555,123 @@ def figure_model(model="CanESM5", block=12, redetrend=True):
                 grid_tag(model, block, redetrend))
 
 
+SLIDE_ROWS = {
+    "all-models": (("2-4", "_redetrend", "DJF, one value per start date\n(lead months 2-4)"),
+                   ("moy", "_block12_redetrend", "Monthly decade,\nseasonal cycle removed")),
+    "canesm5": (("CanESM5_12-14", "_redetrend", "DJF, one value per start date\n(lead months 12-14)"),
+                ("moy", "_CanESM5_block12_redetrend", "Monthly decade,\nseasonal cycle removed")),
+}
+SLIDE_TITLE = {"all-models": "All models pooled: members are not exchangeable",
+               "canesm5": "CanESM5 alone: its members compared with each other"}
+DECADAL_MOY = {"SLP": "s1961moy", "PRECT": "s1978moy", "TREFHT": "s1961moy"}
+SLIDE_VARS = ("SLP", "PRECT", "TREFHT")
+
+
+def _slide_grids(which):
+    """{(row, var): npz dict} for one slide; row 0 the start-date rows, row 1 the moy decade."""
+    out = {}
+    for i, (case, tag, _) in enumerate(SLIDE_ROWS[which]):
+        for v in SLIDE_VARS:
+            cs = DECADAL_MOY[v] if case == "moy" else case
+            out[i, v] = dict(np.load(os.path.join(OUT, f"exchangeability_grid_{v}_{cs}{tag}.npz")))
+            out[i, v]["case"] = cs
+    return out
+
+
+def figure_slides(which=("all-models", "canesm5")):
+    """Talk slides (16:9 width, room left for a slide title), one per member set: excess I(M; X, Y) where p <= ALPHA (flat grey
+    elsewhere) for SLP, PRECT, TREFHT in two designs (rows), and the share of area with
+    p <= ALPHA against its permutation null (5-95% bar, full range line). Colour scale and area
+    axis are shared by every slide, so the slides compare directly. Exact nulls only: per start
+    date for the DJF rows, 12-month blocks for the decade, the per-member detrend inside the test.
+    -> figures/slides/{png,pdf}/exchangeability-<which>, copied into Presentation/ by the
+    manifest."""
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LinearSegmentedColormap, Normalize
+    import plots as P
+    Z = {w: _slide_grids(w) for w in ("all-models", "canesm5")}
+    sig_vals = np.concatenate([z["I_MXY_corrected"][z["I_MXY_p"] <= ALPHA]
+                               for zz in Z.values() for z in zz.values()])
+    vmax = float(np.ceil(np.percentile(sig_vals, 98) * 100) / 100)
+    area = {(w, k): 100 * _area(z) for w, zz in Z.items() for k, z in zz.items()}
+    nulls = {(w, k): 100 * z["field_null_area_I_MXY"] for w, zz in Z.items() for k, z in zz.items()}
+    xmax = 10 * np.ceil(1.08 * max(max(area.values()), max(n.max() for n in nulls.values())) / 10)
+    cmap = LinearSegmentedColormap.from_list("seq_sig", P.SEQ(np.linspace(0.22, 1.0, 256)))
+    cmap.set_bad(style.GRID)
+    norm = Normalize(0.0, vmax)
+    rc = {"font.size": 13, "axes.titlesize": 15, "axes.labelsize": 13, "xtick.labelsize": 12,
+          "ytick.labelsize": 12}
+    for w in ([which] if isinstance(which, str) else which):
+        with plt.rc_context(rc):
+            fig = plt.figure(figsize=(13.33, 6.2), layout="constrained")     # slide width
+            gs = fig.add_gridspec(2, 4, width_ratios=(1, 1, 1, 0.8))
+            maps = []
+            for (i, v), z in Z[w].items():
+                ax = fig.add_subplot(gs[i, SLIDE_VARS.index(v)], projection=P.PROJ)
+                ax.set_anchor("S" if i == 0 else "N")                 # rows hug each other
+                maps.append(ax)
+                sig = z["I_MXY_p"] <= ALPHA
+                P.show(ax, np.where(sig, z["I_MXY_corrected"], np.nan), z["lats"], z["lons"],
+                       cmap=cmap, norm=norm)
+                for sp in ax.spines.values():
+                    sp.set(color=P.MUTED, lw=0.6)
+                if i == 0:
+                    ax.set_title(v)
+                ax.text(0.5, -0.04, f"{area[w, (i, v)]:.0f}% of area   (R={int(z['R'])}, "
+                        f"T={int(z['T'])})", transform=ax.transAxes, ha="center", va="top",
+                        fontsize=11, color=P.MUTED)
+                if SLIDE_VARS.index(v) == 0:
+                    ax.text(-0.06, 0.5, SLIDE_ROWS[w][i][2], transform=ax.transAxes, ha="right",
+                            va="center", rotation=90, fontsize=12, color=style.INK)
+            cb = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), ax=maps,
+                              orientation="horizontal", shrink=0.5, pad=0.03, aspect=40,
+                              extend="max", label="excess $I(M; X, Y)$ where $p \\leq 0.05$ (bits)")
+            cb.outline.set(color=P.MUTED, lw=0.6)
+            cb.solids.set_rasterized(True)
+            ax = fig.add_subplot(gs[:, 3])
+            rows = [(i, v) for i in (0, 1) for v in SLIDE_VARS]
+            y = np.array([6.6 - k - (0.6 if k >= 3 else 0) for k in range(6)])
+            for yy, k in zip(y, rows):
+                n = nulls[w, k]
+                ax.hlines(yy, n.min(), n.max(), color="0.62", lw=1.2)
+                ax.hlines(yy, *np.percentile(n, [5, 95]), color="0.62", lw=6)
+                ax.plot(area[w, k], yy, "o", ms=9, color=style.INK, zorder=3)
+                ax.text(area[w, k] + 0.012 * xmax, yy + 0.18, f"{area[w, k]:.0f}%", fontsize=12,
+                        va="bottom", ha="left", color=style.INK)
+            ax.axvline(100 * ALPHA, color="0.45", lw=0.8, zorder=0)
+            ax.set_yticks(y, [v for _, v in rows])
+            for yy, lab in ((y[:3].mean(), "DJF"), (y[3:].mean(), "decade")):
+                ax.text(-0.30, yy, lab, transform=ax.get_yaxis_transform(), rotation=90,
+                        ha="center", va="center", fontsize=12, color=P.MUTED)
+            ax.set_ylim(y.min() - 0.7, y.max() + 0.7)
+            ax.set_xlim(0, xmax)
+            ax.set_xlabel("area with $p \\leq 0.05$ (%)")
+            ax.set_title("Area rejecting exchangeability", loc="left")
+            ax.text(100 * ALPHA, y.min() - 0.62, " 5% expected", fontsize=10, color="0.35",
+                    va="bottom")
+            from matplotlib.lines import Line2D
+            ax.legend(handles=[Line2D([], [], color="0.62", lw=6, label="null, 5-95%"),
+                               Line2D([], [], color=style.INK, marker="o", ms=8, lw=0,
+                                      label="observed")],
+                      loc="lower right", frameon=False, fontsize=11, handlelength=1.4)
+            style.tidy(ax, grid=False)
+            ax.spines["left"].set_visible(False)
+            ax.tick_params(axis="y", length=0)
+            fig.suptitle(SLIDE_TITLE[w], x=0.01, ha="left", fontsize=17, fontweight="bold")
+            style.save(fig, f"exchangeability-{w}", dpi=200, folder="slides")
+            plt.close(fig)
+
+
+def _area(z):
+    """Area share (cos-lat weighted) with p <= ALPHA for I_MXY."""
+    W = np.cos(np.deg2rad(z["lats"]))[:, None] * np.ones(z["lons"].size)
+    return float((W * (z["I_MXY_p"] <= ALPHA)).sum() / W.sum())
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("what", choices=("synthetic", "synthetic-ar", "nao", "grid", "figure",
-                                     "figure-main", "figure-model"))
+                                     "figure-main", "figure-model", "figure-slides"))
     ap.add_argument("--draws", type=int, default=200)
     ap.add_argument("--n-perm", type=int, default=None)
     ap.add_argument("--exchangeable-only", action="store_true")
@@ -555,6 +686,7 @@ def main():
      "synthetic-ar": lambda: synthetic_ar(a.draws, n, a.redetrend),
      "grid": lambda: grid(n, a.case, a.model, a.block, a.redetrend), "figure": figure,
      "figure-model": lambda: figure_model(a.model or "CanESM5", a.block, a.redetrend),
+     "figure-slides": figure_slides,
      "figure-main": figure_main}[a.what]()
 
 
