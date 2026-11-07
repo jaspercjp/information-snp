@@ -1,5 +1,42 @@
 {
-  "entries": [],
+  "entries": [
+    {
+      "command": "python scripts/exchangeability_check.py figure-slides",
+      "dest": "Presentation/ExchangeabilityMaps/pdf/exchangeability-all-models.pdf",
+      "note": "All members pooled (5 November models for DJF lead 2-4; 6 models for the decade). Rows: DJF lead months 2-4, one value per start date; the s1961/s1978 decade with each model's month-of-year climatology removed. Excess I(M; X, Y) where p <= 0.05, exact nulls (per-member detrend inside the test; per start date / 12-month blocks), 200 permutations. Inputs: $SNP_OUT/exchangeability_grid_{VAR}_2-4_redetrend.npz, _{VAR}_{s1961,s1978}moy_block12_redetrend.npz.",
+      "section": "ExchangeabilityMaps",
+      "sha256": "a315233543485c99935f465db91c85db60de52d6c02ee02958fdc4c1bc3e15da",
+      "source": "slides/pdf/exchangeability-all-models.pdf",
+      "workflow": "exchangeability_check"
+    },
+    {
+      "command": "python scripts/exchangeability_check.py figure-slides",
+      "dest": "Presentation/ExchangeabilityMaps/pdf/exchangeability-canesm5.pdf",
+      "note": "CanESM5 alone. Rows: DJF lead months 12-14 (CanESM5 starts in January, so its first full DJF is a year after the start), one value per start date; the s1961/s1978 decade, month-of-year climatology removed. Same statistic, nulls, colour scale and area axis as exchangeability-all-models. Inputs: $SNP_OUT/exchangeability_grid_{VAR}_CanESM5_12-14_redetrend.npz, _{VAR}_{s1961,s1978}moy_CanESM5_block12_redetrend.npz.",
+      "section": "ExchangeabilityMaps",
+      "sha256": "89b03aff8db3d0bff27860dbe48892d38d3e33e588b3e51e4bf0ef092269c8b5",
+      "source": "slides/pdf/exchangeability-canesm5.pdf",
+      "workflow": "exchangeability_check"
+    },
+    {
+      "command": "python scripts/exchangeability_check.py figure-slides",
+      "dest": "Presentation/ExchangeabilityMaps/png/exchangeability-all-models.png",
+      "note": "All members pooled (5 November models for DJF lead 2-4; 6 models for the decade). Rows: DJF lead months 2-4, one value per start date; the s1961/s1978 decade with each model's month-of-year climatology removed. Excess I(M; X, Y) where p <= 0.05, exact nulls (per-member detrend inside the test; per start date / 12-month blocks), 200 permutations. Inputs: $SNP_OUT/exchangeability_grid_{VAR}_2-4_redetrend.npz, _{VAR}_{s1961,s1978}moy_block12_redetrend.npz.",
+      "section": "ExchangeabilityMaps",
+      "sha256": "bf1915f215d728b0ae94cbd97d301c978158d92d9c31b257eaae5803f47a05a2",
+      "source": "slides/png/exchangeability-all-models.png",
+      "workflow": "exchangeability_check"
+    },
+    {
+      "command": "python scripts/exchangeability_check.py figure-slides",
+      "dest": "Presentation/ExchangeabilityMaps/png/exchangeability-canesm5.png",
+      "note": "CanESM5 alone. Rows: DJF lead months 12-14 (CanESM5 starts in January, so its first full DJF is a year after the start), one value per start date; the s1961/s1978 decade, month-of-year climatology removed. Same statistic, nulls, colour scale and area axis as exchangeability-all-models. Inputs: $SNP_OUT/exchangeability_grid_{VAR}_CanESM5_12-14_redetrend.npz, _{VAR}_{s1961,s1978}moy_CanESM5_block12_redetrend.npz.",
+      "section": "ExchangeabilityMaps",
+      "sha256": "3dee5c651b4eb8183e7700493f876ef0046354270f62cefc2a44e3df6e0835e4",
+      "source": "slides/png/exchangeability-canesm5.png",
+      "workflow": "exchangeability_check"
+    }
+  ],
   "generated_by": "scripts/figure_sets.py",
   "schema": 1
 }

@@ -1,0 +1,51 @@
+{
+ "case": "SLP CanESM5_12-14",
+ "model": "all members",
+ "block": 1,
+ "redetrend": true,
+ "shape": [
+  20,
+  58,
+  37,
+  72
+ ],
+ "n_perm": 200,
+ "runtime_s": 162.98274302482605,
+ "area_p_Delta_le_0.05": 0.054682392611240124,
+ "area_p_I_MXY_le_0.05": 0.04037973804130121,
+ "area_mean_Delta_corrected": 0.001394929765605337,
+ "area_mean_I_pool_minus_cond_raw": -0.11280644369639739,
+ "field_significance": {
+  "Delta": {
+   "area_obs": 0.05468239261124013,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.06220018187911021,
+   "null_area_max": 0.07658015152644598,
+   "p_field": 0.25870646766169153
+  },
+  "I_MXY": {
+   "area_obs": 0.04037973804130121,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.06509889849350269,
+   "null_area_max": 0.08142665508477713,
+   "p_field": 0.8606965174129353
+  }
+ },
+ "area_lag1_le_0.5": 1.0,
+ "field_significance_lag1_le_0.5": {
+  "Delta": {
+   "area_obs": 0.05468239261124013,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.06220018187911021,
+   "null_area_max": 0.07658015152644598,
+   "p_field": 0.25870646766169153
+  },
+  "I_MXY": {
+   "area_obs": 0.04037973804130121,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.06509889849350269,
+   "null_area_max": 0.08142665508477713,
+   "p_field": 0.8606965174129353
+  }
+ }
+}

@@ -653,7 +653,7 @@ def figure_slides(which=("all-models", "canesm5")):
             ax.legend(handles=[Line2D([], [], color="0.62", lw=6, label="null, 5-95%"),
                                Line2D([], [], color=style.INK, marker="o", ms=8, lw=0,
                                       label="observed")],
-                      loc="lower right", frameon=False, fontsize=11, handlelength=1.4)
+                      loc="upper right", frameon=False, fontsize=11, handlelength=1.4)
             style.tidy(ax, grid=False)
             ax.spines["left"].set_visible(False)
             ax.tick_params(axis="y", length=0)
