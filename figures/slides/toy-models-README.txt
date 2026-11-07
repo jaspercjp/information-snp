@@ -17,9 +17,9 @@ Every a reuses the same x and z of a draw (common random numbers).
 Panels
   (a) 100,000 samples of one draw at a = 0, 1, 2, one grey; each panel has its own y axis
       (0.1-99.9% range shown): the cloud goes from symmetric to strongly skewed as a grows.
-  (b) rho: exact curve and the value from the one sample (the draw of panel a);
-      lambda: exact (= r) and KSG on normal scores, the estimator the maps now use (0.800 at
-      every a).
+  (b) rho (Pearson) and lambda (KSG on normal scores, the estimator the maps now use) from the
+      one sample (the draw of panel a), as curves: rho 0.800 -> 0.613 -> 0.240 at a = 0, 1, 2
+      (the exact curve, not drawn: 0.80, 0.61, 0.22); lambda 0.800 at every a (exact: r = 0.8).
   (c) lambda estimators against the exact lambda:
       KSG on normal scores   KSG, k = 4, after the rank transform of x and y (the maps): 0.800
                    at every a

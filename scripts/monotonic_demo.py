@@ -169,11 +169,8 @@ def figure(res, n, r, seed):
         axs = [None, fig.add_subplot(gs[:, 1]), fig.add_subplot(gs[:, 2])]
 
         ax = axs[1]
-        aa = np.linspace(0, 2, 200)
-        ax.plot(aa, rho_exact(aa, r), color=blue, lw=2, label="ρ, exact")
-        ax.plot(A, one("rho"), "o", color=blue, ms=6, label=f"ρ, one sample of N = {n:,}")
-        ax.axhline(r, color=green, lw=2, label="λ, exact = r")
-        ax.plot(A, one("lam_ksg_ns"), "D", color=green, ms=6, label="λ, KSG on normal scores")
+        ax.plot(A, one("rho"), "o-", color=blue, ms=6, lw=2, label="ρ (Pearson)")
+        ax.plot(A, one("lam_ksg_ns"), "D-", color=green, ms=6, lw=2, label="λ (KSG on normal scores)")
         ax.set_xlabel("strength of the monotonic non-linearity a")
         ax.set_ylabel("ρ or λ")
         ax.set_ylim(0, 1.05)
