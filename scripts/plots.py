@@ -1,6 +1,9 @@
 """Every map and binning figure, from the outputs of run.py and boot.py.
 
     python scripts/plots.py     -> figures/{main-text,supp-info}/{png,pdf}/, json in figures/data/
+    python scripts/plots.py slides [lead2-4] [moy]
+                                -> figures/slides/{png,pdf}/rho-lambda-<name>, copied into
+                                   figures/Presentation/RhoLambdaMaps/ (needs boot fd + olmloo)
 
 rpc_rho_lambda_oloo_decadal goes to main-text, the rest to supp-info (style.MAIN_TEXT).
 
@@ -356,7 +359,91 @@ def production(name, oloo=False):
     save(fig, res, f"rpc_rho_lambda_{'oloo_' if oloo else ''}{name}", dpi=300)
 
 
+SLIDE_CASES = {"lead2-4": [("SLP", "2-4"), ("PRECT", "2-4"), ("TREFHT", "2-4")],
+               "moy": [("SLP", "s1961moy"), ("PRECT", "s1978moy"), ("TREFHT", "s1961moy")]}
+SLIDE_TITLE = {"lead2-4": "Signal-to-noise, DJF lead months 2-4  ·  one value per start date, "
+                          "five November models pooled",
+               "moy": "Signal-to-noise, decade with the seasonal cycle removed  ·  monthly, s1961 "
+                      "(PRECT s1978), six models pooled"}
+
+
+def production_slides(name):
+    """Talk slide (16:9 width): rho RPC (top) and Knuth lambda RPC with lambda_m and lambda_o from
+    s_-n (bottom) for SLP, PRECT, TREFHT. Dots: the 5-95% interval of 1000 Eade bootstrap draws
+    contains 1 -- rho from boot fd, lambda from its own boot olmloo (full-data bins kept); green
+    rings on lambda dots, |lambda(1.5x bins) - lambda(0.5x bins)| > lambda(1x bins); grey, rho_o <= 0
+    or lambda undefined. -> figures/slides/{png,pdf}/rho-lambda-<name> (+ json in figures/data),
+    copied into Presentation/ by its manifest."""
+    from matplotlib.lines import Line2D
+    rc = {"font.size": 13, "axes.titlesize": 15, "axes.labelsize": 13}
+    res = {"figure": f"rho-lambda-{name}", "cells": {}}
+    with plt.rc_context(rc):
+        fig = plt.figure(figsize=(13.33, 6.6), layout="constrained")
+        gs = fig.add_gridspec(3, 3, height_ratios=(1, 1, 0.16))
+        axs = []
+        for k, (var, case) in enumerate(SLIDE_CASES[name]):
+            bt = np.load(out("boot_fd", var, case))
+            kl = np.load(out("boot_olmloo", var, case))
+            lats, lons, N, T = bt["lats"], bt["lons"], int(bt["N"]), int(bt["T"])
+            W = np.cos(np.deg2rad(lats))[:, None] * np.ones(lons.size)
+            w = np.sqrt(np.median(np.abs(np.diff(lats))) * np.median(np.abs(np.diff(lons))))
+            s = (np.sqrt(1.6) * np.sqrt(w / 1.875)) ** 2             # as production()
+            keep = bt["rho_o"] > 0
+            band = ratio(kl["lam_o"], kl["lam_m"])
+            rows = (("rho", bt["rpc_rho"], bt["B_rho"], None),
+                    ("lambda", band[1], kl["B_lam"], np.abs(band[2] - band[0]) > band[1]))
+            for i, (key, r, B, ring) in enumerate(rows):
+                ax = fig.add_subplot(gs[i, k], projection=PROJ)
+                axs.append(ax)
+                lo, hi = q(B, 5), q(B, 95)
+                ns, rg, valid = rpc_panel(ax, r, lats, lons, lo, hi, keep, ring, GREEN, s)
+                a = {"not_sig": wfrac(W, ns, valid), "sig_gt1": wfrac(W, valid & (lo > 1), valid),
+                     "sig_lt1": wfrac(W, valid & (hi < 1), valid), "ring": wfrac(W, rg, valid),
+                     "grey": 1 - float((W * valid).sum() / W.sum()), "N": N, "T": T}
+                res["cells"][f"{key} {var} {case}"] = a
+                ax.text(0.5, -0.04, f"not significant {100 * a['not_sig']:.0f}%   "
+                        f"> 1: {100 * a['sig_gt1']:.0f}%   < 1: {100 * a['sig_lt1']:.0f}%",
+                        transform=ax.transAxes, ha="center", va="top", fontsize=11, color=MUTED)
+                if i == 0:
+                    ax.set_title(f"{var}   (N={N}, T={T})" if k == 0 else f"{var}   (T={T})")
+                if k == 0:
+                    ax.text(-0.05, 0.5, ("$\\rho$ RPC\n(Pearson)", "$\\lambda$ RPC\n"
+                            "($\\lambda_o$ from $\\tilde{s}_{-n}$)")[i], transform=ax.transAxes,
+                            rotation=90, ha="right", va="center", fontsize=13, color=INK)
+        cax = fig.add_subplot(gs[2, :2]).inset_axes([0.15, 0.55, 0.7, 0.3])
+        cb = fig.colorbar(plt.cm.ScalarMappable(norm=RPC_NORM, cmap=DIV), cax=cax,
+                          orientation="horizontal", label="RPC")
+        cb.set_ticks((0, 0.5, 1, 1.5, 2))
+        cb.set_ticklabels(("0", "0.5", "1", "1.5", "≥2"))
+        cb.solids.set_rasterized(True)
+        holder = [a for a in fig.axes if a is not cax and a.get_subplotspec() is not None
+                  and a.get_subplotspec().rowspan.start == 2]
+        for a in holder:
+            a.set_axis_off()
+        leg_ax = fig.add_subplot(gs[2, 2])
+        leg_ax.set_axis_off()
+        leg_ax.legend(handles=[
+            Line2D([], [], color=INK, marker="o", ms=5, lw=0,
+                   label="not significant: bootstrap 5-95% interval contains 1"),
+            Line2D([], [], marker="o", ms=8, lw=0, mfc="none", mec=GREEN, mew=1.2,
+                   label="λ changes by more than itself from 0.5× to 1.5× bins"),
+            Line2D([], [], marker="s", ms=8, lw=0, color=BED,
+                   label="$\\rho_o \\leq 0$ or $\\lambda$ undefined")],
+            loc="center left", bbox_to_anchor=(-0.02, 0.5), frameon=False, fontsize=10,
+            ncol=1).set_in_layout(False)
+        fig.suptitle(SLIDE_TITLE[name], x=0.01, ha="left", fontsize=15, fontweight="bold")
+        sty.save(fig, f"rho-lambda-{name}", dpi=200, folder="slides")
+        plt.close(fig)
+    with open(sty.data_path(f"rho-lambda-{name}.json"), "w") as fh:
+        json.dump(res, fh, indent=1)
+
+
 def main():
+    import sys
+    if sys.argv[1:2] == ["slides"]:
+        for name in sys.argv[2:] or SLIDE_CASES:
+            production_slides(name)
+        return
     ds = [load_case(*c) for c in CASES]
     for case in dict.fromkeys(d["case"] for d in ds):
         lam_maps(case, ds)
