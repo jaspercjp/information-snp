@@ -445,6 +445,102 @@ def production_slides(name):
         json.dump(res, fh, indent=1)
 
 
+KSG_ROW = ("λ RPC, Knuth bins (old)", "λ RPC, KSG on normal scores (new)")
+
+
+def _lam_classes(r, B, keep, W):
+    """Point RPC r, bootstrap draws B, valid mask -> classes (0 not sig, 1 > 1, -1 < 1, nan grey)
+    and the area shares."""
+    lo, hi = q(B, 5), q(B, 95)
+    valid = np.isfinite(r) & keep
+    cls = np.where(~valid, np.nan, np.where(lo > 1, 1.0, np.where(hi < 1, -1.0, 0.0)))
+    share = {"not_sig": wfrac(W, cls == 0, valid), "sig_gt1": wfrac(W, cls == 1, valid),
+             "sig_lt1": wfrac(W, cls == -1, valid), "grey": 1 - float((W * valid).sum() / W.sum())}
+    return cls, lo, hi, valid, share
+
+
+def ksg_comparison():
+    """Old (Knuth bins on raw values, boot olmloo) against new (KSG on normal scores, ksg_lambda)
+    lambda RPC for every case of SLIDE_CASES: one slide per case set, old row above the new, same
+    marks as production_slides (dots: bootstrap 5-95% interval contains 1; grey: rho_o <= 0 or
+    lambda_m ~ 0), and figures/data/lambda-ksg-comparison.json with each case's area shares,
+    the share of cells in the same class, the rank correlation of the RPCs, and the share of cells
+    with lambda_o = 0. -> figures/slides/{png,pdf}/lambda-ksg-vs-knuth-<set>."""
+    from scipy.stats import spearmanr
+    from matplotlib.lines import Line2D
+    summary = {}
+    rc = {"font.size": 13, "axes.titlesize": 15, "axes.labelsize": 13}
+    for name, cases in SLIDE_CASES.items():
+        with plt.rc_context(rc):
+            fig = plt.figure(figsize=(13.33, 6.6), layout="constrained")
+            gs = fig.add_gridspec(3, 3, height_ratios=(1, 1, 0.16))
+            axs = []
+            for k, (var, case) in enumerate(cases):
+                bt = np.load(out("boot_fd", var, case))
+                old = np.load(out("boot_olmloo", var, case))
+                new = np.load(out("boot_ksg", var, case))
+                lats, lons, N, T = bt["lats"], bt["lons"], int(bt["N"]), int(bt["T"])
+                W = np.cos(np.deg2rad(lats))[:, None] * np.ones(lons.size)
+                w = np.sqrt(np.median(np.abs(np.diff(lats))) * np.median(np.abs(np.diff(lons))))
+                s = (np.sqrt(1.6) * np.sqrt(w / 1.875)) ** 2
+                keep = bt["rho_o"] > 0
+                rows = (("old", ratio(old["lam_o"], old["lam_m"])[1], old["B_lam"],
+                         float(np.mean(old["lam_o"][1] <= 1e-9))),
+                        ("new", new["rpc"], new["B_lam"], float(np.mean(new["lam_o"] <= 1e-9))))
+                e = summary[f"{var} {case}"] = {"N": N, "T": T}
+                cls = {}
+                for i, (key, r, B, zero) in enumerate(rows):
+                    ax = fig.add_subplot(gs[i, k], projection=PROJ)
+                    axs.append(ax)
+                    c, lo, hi, valid, share = _lam_classes(r, B, keep, W)
+                    rpc_panel(ax, r, lats, lons, lo, hi, keep, None, GREEN, s)
+                    cls[key] = (c, r)
+                    e[key] = dict(share, median_rpc=float(np.nanmedian(np.where(valid, r, np.nan))),
+                                  share_lambda_o_zero=zero, n_boot=int(B.shape[0]))
+                    ax.text(0.5, -0.04, f"not significant {100 * share['not_sig']:.0f}%   "
+                            f"> 1: {100 * share['sig_gt1']:.0f}%   < 1: {100 * share['sig_lt1']:.0f}%",
+                            transform=ax.transAxes, ha="center", va="top", fontsize=11, color=MUTED)
+                    if i == 0:
+                        ax.set_title(f"{var}   (N={N}, T={T})")
+                    if k == 0:
+                        ax.text(-0.04, 0.5, KSG_ROW[i].replace(", ", "\n"), transform=ax.transAxes,
+                                rotation=90, ha="right", va="center", fontsize=12, color=INK)
+                both = np.isfinite(cls["old"][0]) & np.isfinite(cls["new"][0])
+                e["same_class"] = wfrac(W, both & (cls["old"][0] == cls["new"][0]), both)
+                e["spearman_rpc"] = float(spearmanr(cls["old"][1][both], cls["new"][1][both])[0]) \
+                    if both.sum() > 2 else float("nan")
+            cax = fig.add_subplot(gs[2, :2]).inset_axes([0.15, 0.55, 0.7, 0.3])
+            for a_ in fig.axes:
+                if a_ is not cax and a_.get_subplotspec() is not None and \
+                        a_.get_subplotspec().rowspan.start == 2:
+                    a_.set_axis_off()
+            cb = fig.colorbar(plt.cm.ScalarMappable(norm=RPC_NORM, cmap=DIV), cax=cax,
+                              orientation="horizontal", label="λ RPC")
+            cb.set_ticks((0, 0.5, 1, 1.5, 2))
+            cb.set_ticklabels(("0", "0.5", "1", "1.5", "≥2"))
+            cb.solids.set_rasterized(True)
+            leg_ax = fig.add_subplot(gs[2, 2])
+            leg_ax.set_axis_off()
+            leg_ax.legend(handles=[
+                Line2D([], [], color=INK, marker="o", ms=5, lw=0,
+                       label="not significant: bootstrap 5-95% interval contains 1"),
+                Line2D([], [], marker="s", ms=8, lw=0, color=BED,
+                       label="ρ$_\\mathregular{o}$ ≤ 0 or λ$_\\mathregular{m}$ ≈ 0")],
+                loc="center left", bbox_to_anchor=(-0.02, 0.5), frameon=True, fancybox=False,
+                edgecolor=MUTED, borderpad=0.6, fontsize=10).set_in_layout(False)
+            sty.save(fig, f"lambda-ksg-vs-knuth-{name}", dpi=200, folder="slides")
+            plt.close(fig)
+    with open(sty.data_path("lambda-ksg-comparison.json"), "w") as fh:
+        json.dump(summary, fh, indent=1)
+    for k, e in summary.items():
+        print(f"{k:22s} old not-sig/>1/<1/grey " + " ".join(f"{100 * e['old'][q_]:.0f}" for q_ in
+              ("not_sig", "sig_gt1", "sig_lt1", "grey")) + " | new " + " ".join(
+              f"{100 * e['new'][q_]:.0f}" for q_ in ("not_sig", "sig_gt1", "sig_lt1", "grey"))
+              + f" | same class {100 * e['same_class']:.0f}% | spearman {e['spearman_rpc']:.2f}"
+              + f" | lambda_o = 0: {100 * e['old']['share_lambda_o_zero']:.0f}% -> "
+              f"{100 * e['new']['share_lambda_o_zero']:.0f}%")
+
+
 def main():
     import sys
     if sys.argv[1:2] == ["slides"]:
