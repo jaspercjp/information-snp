@@ -113,7 +113,7 @@
       "dest": "Presentation/ToyModels/README.txt",
       "note": "Setup, panels and reading of the ToyModels slides.",
       "section": "ToyModels",
-      "sha256": "12cbfb6afb70813c1e1340c0ea48f276446bf5d8cb6e940bb63a3e229b7092af",
+      "sha256": "3c08fbf9c61abd7b83e1aa0bc53e7a3ddfa1a8855f16cf3056962d36bf248e04",
       "source": "slides/toy-models-README.txt",
       "workflow": "monotonic_demo"
     },
@@ -131,7 +131,7 @@
       "dest": "Presentation/ToyModels/pdf/monotonic-lambda-rho.pdf",
       "note": "rho vs lambda as a monotonic (exponential) non-linearity grows; exact lambda = r = 0.8 throughout. N = 51, 500 seeded draws; see ToyModels/README.txt.",
       "section": "ToyModels",
-      "sha256": "bd675db5c427bc5482f9dbb697a3c68909a5c79fb3cacdb27a405272eb1d11be",
+      "sha256": "2ff18a59f3a3086fdb6a620b59c8b049408c39cff2d76df8c6cfd1580afdfe86",
       "source": "slides/pdf/monotonic-lambda-rho.pdf",
       "workflow": "monotonic_demo"
     },
@@ -149,7 +149,7 @@
       "dest": "Presentation/ToyModels/png/monotonic-lambda-rho.png",
       "note": "rho vs lambda as a monotonic (exponential) non-linearity grows; exact lambda = r = 0.8 throughout. N = 51, 500 seeded draws; see ToyModels/README.txt.",
       "section": "ToyModels",
-      "sha256": "cf50c2b5e2287064d58aa241a577ddf35e75cb693773f5039aa5f0e25d768a9b",
+      "sha256": "26176ebf8be03630009126ae7db0c3baad6c3703414d6299260939aa28bd8b7b",
       "source": "slides/png/monotonic-lambda-rho.png",
       "workflow": "monotonic_demo"
     }

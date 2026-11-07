@@ -15,11 +15,14 @@ rho(x, y) = a r / sqrt(exp(a^2) - 1) falls (0.80, 0.61, 0.22 at a = 0, 1, 2).
 Every a reuses the same x and z of a draw (common random numbers).
 
 Panels
-  (a) 100,000 samples of one draw at a = 0, 1, 2; y on its own scale (0.1-99.9% range shown):
-      the cloud goes from symmetric to strongly skewed as a grows.
+  (a) 100,000 samples of one draw at a = 0, 1, 2, one grey; y on its own scale (0.1-99.9% range
+      shown): the cloud goes from symmetric to strongly skewed as a grows.
   (b) rho: exact curve and the sample value (median and interquartile range over the draws);
-      lambda: exact (= r) and the rank-bin estimate.
-  (c) three lambda estimators against the exact lambda:
+      lambda: exact (= r) and KSG on normal scores, the estimator the maps now use (0.800 at
+      every a).
+  (c) lambda estimators against the exact lambda:
+      KSG on normal scores   KSG, k = 4, after the rank transform of x and y (the maps): 0.800
+                   at every a
       rank bins    plug-in MI on 100 x 100 equal-count bins; sees only ranks, which g_a keeps,
                    so it is exactly flat: 0.801 at every a
       Knuth bins   the production estimator (equal-width bins, Knuth's count per variable, cap

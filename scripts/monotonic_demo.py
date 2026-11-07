@@ -30,10 +30,13 @@ single bin for a variable in 14-28% of draws and lambda is then exactly 0.
                  (Knuth on the plain ranks fails: a uniform histogram is best fitted by ONE bin, so
                  lambda = 0 in every draw.)
     lambda KSG   infomeasure's Kraskov-Stoegbauer-Grassberger estimator, k = 4 (nats)
+    lambda KSG, normal scores
+                 the same on normal scores of x and y (ksg_lambda.ksg_lambda): the estimator the
+                 maps now use (shown in panel b)
 No bias correction. Common random numbers: every a reuses the same x and z of a draw (seeded per
 draw, [seed, d]), so the curves move only with a. Points: medians over the draws; bands: 25-75%.
 Panel (a): 100,000 points of one draw per a, y on its own scale, clipped to its 0.1-99.9%
-range. Panel (b) uses the rank lambda (invariant by construction); panel (c) compares the three
+range, one grey. Panel (b) uses lambda from KSG on normal scores (the maps' estimator); panel (c) compares the
 estimators. Equal-width (Knuth) bins are not invariant: as y skews, most of it falls in the
 lowest bins and the production lambda collapses (0.24 at a = 2, N = 1e6, vs the exact 0.8).
 The (draw, a) jobs run on $SLURM_CPUS_ON_NODE processes (KSG takes ~25 s per call at N = 1e6).
@@ -92,13 +95,19 @@ def lam_knuth_ns(x, y):
     return lam_knuth(xs, ys, J.knuth_bins(xs, min(J.KNUTH_MAX, x.size)))
 
 
+def lam_ksg_ns(x, y, a=0.0):
+    """KSG (k = 4) on normal scores of x and y, as the maps (ksg_lambda.ksg_lambda)."""
+    import ksg_lambda
+    return ksg_lambda.ksg_lambda(x, y, np.random.default_rng([11, int(round(100 * a))]))
+
+
 def lam_ksg(x, y):
     import infomeasure as im
     I = im.mutual_information(x, y, approach="metric", k=4)          # nats
     return float(np.sqrt(1 - np.exp(-2 * max(I, 0.0))))
 
 
-KEYS = ("rho", "lam_rank", "lam_knuth", "lam_knuth_ns", "lam_ksg")
+KEYS = ("rho", "lam_rank", "lam_knuth", "lam_knuth_ns", "lam_ksg", "lam_ksg_ns")
 
 
 def draw_xu(n, r, seed, d):
@@ -114,7 +123,8 @@ def one(args):
     x, u = draw_xu(n, r, seed, d)
     y = g(u, a)
     return (np.corrcoef(x, y)[0, 1], lam_rank(x, y, E.n_bins(n)),
-            lam_knuth(x, y, J.knuth_bins(x, min(J.KNUTH_MAX, n))), lam_knuth_ns(x, y), lam_ksg(x, y))
+            lam_knuth(x, y, J.knuth_bins(x, min(J.KNUTH_MAX, n))), lam_knuth_ns(x, y), lam_ksg(x, y),
+            lam_ksg_ns(x, y, a))
 
 
 def compute(draws, n, r, seed):
@@ -137,15 +147,17 @@ def figure(res, n, r, seed):
         gs = fig.add_gridspec(3, 3, width_ratios=(1, 1.15, 1.15))
         x, u = draw_xu(n, r, seed, 0)                              # one draw, three values of a
         m = min(n, 100_000)
-        for i, (a, c) in enumerate(((0.0, blue), (1.0, orange), (2.0, green))):
+        for i, a in enumerate((0.0, 1.0, 2.0)):
             ax = fig.add_subplot(gs[i, 0])
             y = g(u[:m], a)
-            ax.plot(x[:m], y, ",", color=c, alpha=0.25, rasterized=True)
+            ax.plot(x[:m], y, ",", color="0.3", alpha=0.25, rasterized=True)
             ax.set_ylim(*np.percentile(y, [0.1, 99.9]))
             ax.set_xlim(-4, 4)
             ax.text(0.03, 0.9, f"$a$ = {a:g}", transform=ax.transAxes, va="top", fontsize=12,
                     color=style.INK)
-            ax.set_yticks([])
+            ax.set_ylabel("$y$", fontsize=12)
+            ax.yaxis.set_major_locator(plt.MaxNLocator(3))
+            ax.tick_params(axis="y", labelsize=10)
             style.tidy(ax)
             if i == 0:
                 style.panel_label(ax, "a", f"$y = g_a(u)$ against $x$, {m:,} samples")
@@ -162,9 +174,9 @@ def figure(res, n, r, seed):
         ax.fill_between(A, lo, hi, color=blue, alpha=0.18, lw=0)
         ax.plot(A, md, "o", color=blue, ms=6, label=f"ρ, sample of $N$ = {n:,} (median, IQR)")
         ax.axhline(r, color=green, lw=2, label="λ, exact = $r$")
-        lo, md, hi = q("lam_rank")
+        lo, md, hi = q("lam_ksg_ns")
         ax.fill_between(A, lo, hi, color=green, alpha=0.18, lw=0)
-        ax.plot(A, md, "D", color=green, ms=6, label="λ, rank bins (median, IQR)")
+        ax.plot(A, md, "D", color=green, ms=6, label="λ, KSG on normal scores (median, IQR)")
         ax.set_xlabel("strength of the monotonic non-linearity $a$")
         ax.set_ylabel("ρ or λ")
         ax.set_ylim(0, 1.05)
@@ -174,15 +186,15 @@ def figure(res, n, r, seed):
 
         ax = axs[2]
         ax.axhline(r, color=style.INK, lw=2, label="exact = $r$")
-        for k, c, m, ls, lab in (("lam_rank", green, "D", "-", "rank (equal-count) bins"),
-                                 ("lam_knuth", orange, "s", "-", "Knuth bins (production)"),
-                                 ("lam_knuth_ns", yellow, "o", "-",
-                                  "Knuth bins on normal scores (fix)"),
-                                 ("lam_ksg", style.MUTED, "^", "--", "KSG, $k$ = 4")):
+        for k, c, m, ls, lab in (("lam_ksg_ns", green, "D", "-", "KSG on normal scores (maps)"),
+                                 ("lam_knuth", orange, "s", "-", "Knuth bins (old production)"),
+                                 ("lam_knuth_ns", yellow, "o", "-", "Knuth bins on normal scores"),
+                                 ("lam_rank", blue, "v", ":", "rank (equal-count) bins"),
+                                 ("lam_ksg", style.MUTED, "^", "--", "KSG on raw values")):
             lo, md, hi = q(k)
             ax.fill_between(A, lo, hi, color=c, alpha=0.18, lw=0)
-            ax.plot(A, md, m + ls, color=c, ms=6, lw=1.2, label=lab, mfc=c if k != "lam_knuth_ns"
-                    else "none", mew=1.4)
+            ax.plot(A, md, m + ls, color=c, ms=6, lw=1.2, label=lab,
+                    mfc="none" if k in ("lam_knuth_ns", "lam_rank") else c, mew=1.4)
         zero = 100 * (res["lam_knuth"] <= 1e-9).mean(0)
         if zero.max() > 0:
             ax.text(0.98, 0.97, f"Knuth: λ = 0 in {zero.min():.0f}-{zero.max():.0f}% of "
