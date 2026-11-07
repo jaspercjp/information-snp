@@ -36,8 +36,8 @@ single bin for a variable in 14-28% of draws and lambda is then exactly 0.
 No bias correction. Common random numbers: every a reuses the same x and z of a draw (seeded per
 draw, [seed, d]), so the curves move only with a. Points: draw 0 (the draw of panel a); with
 --draws > 1 the extra draws are saved but not drawn.
-Panel (a): 100,000 points of one draw per a, y on its own scale, clipped to its 0.1-99.9%
-range, one grey. Panel (b) uses lambda from KSG on normal scores (the maps' estimator); panel (c) compares the
+Panels (a)-(c): 100,000 points of one draw, one panel per a, y on its own scale, clipped to its 0.1-99.9%
+range, one grey. Panel (d): rho and lambda from KSG on normal scores (the maps' estimator); panel (e) compares the
 estimators. Equal-width (Knuth) bins are not invariant: as y skews, most of it falls in the
 lowest bins and the production lambda collapses (0.24 at a = 2, N = 1e6, vs the exact 0.8).
 The (draw, a) jobs run on $SLURM_CPUS_ON_NODE processes (KSG takes ~25 s per call at N = 1e6).
@@ -154,14 +154,13 @@ def figure(res, n, r, seed):
             ax.plot(x[:m], y, ",", color="0.3", alpha=0.25, rasterized=True)
             ax.set_ylim(*np.percentile(y, [0.1, 99.9]))
             ax.set_xlim(-4, 4)
-            ax.text(0.03, 0.9, f"a = {a:g}", transform=ax.transAxes, va="top", fontsize=12,
-                    color=style.INK)
+            style.panel_label(ax, "abc"[i], inside=True)              # bold (a)-(c), upper left
+            ax.text(0.115, 0.975, f"a = {a:g}", transform=ax.transAxes, ha="left", va="top",
+                    fontsize=12, color=style.INK, zorder=20)
             ax.set_ylabel("y", fontsize=12)
             ax.yaxis.set_major_locator(plt.MaxNLocator(3))
             ax.tick_params(axis="y", labelsize=10)
             style.tidy(ax)
-            if i == 0:
-                style.panel_label(ax, "a", f"y = g$_\\mathregular{{a}}$(u) against x, {m:,} samples")
             if i < 2:
                 ax.set_xticklabels([])
             else:
@@ -176,7 +175,7 @@ def figure(res, n, r, seed):
         ax.set_ylim(0, 1.05)
         ax.legend(frameon=True, fancybox=False, loc="lower left", fontsize=10)
         style.tidy(ax)
-        style.panel_label(ax, "b", "ρ falls, λ should not")
+        style.panel_label(ax, "d", "ρ falls, λ should not")
 
         ax = axs[2]
         ax.axhline(r, color=style.INK, lw=2, label="exact = r")
@@ -197,7 +196,7 @@ def figure(res, n, r, seed):
         ax.set_ylim(0, 1.05)
         ax.legend(frameon=True, fancybox=False, loc="lower left")
         style.tidy(ax)
-        style.panel_label(ax, "c", "λ estimators")
+        style.panel_label(ax, "e", "λ estimators")
         style.save(fig, NAME, dpi=200, folder="slides")
         plt.close(fig)
 
