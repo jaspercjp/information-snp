@@ -1,0 +1,63 @@
+notes.txt 
+/references 
+/.vscode
+/data/ensembles
+/data/models
+/archive
+slides.pptx
+/data/ksg_rpc_cache.npz
+/data/infomeasure_rpc_cache.npz
+__pycache__/
+/data/ensemble_moments_cache.npz
+/data/granger_lin_cache.npz
+/data/granger_lin_obs_cache.npz
+/data/gamma_info_cache.npz
+/data/granger_lin_chain_terms_cache.npz
+/data/djf_cube.npz
+/data/djf_lambda_cache.npz
+
+# SMYLE: 48 GB of raw hindcast files (code removed in the cleanup; see git history)
+/data/smyle/
+# the (var, lead) cubes reduced from them
+/data/smyle_cubes/
+# rho and lambda fields
+/data/smyle_rpc_cache.npz
+# observations, by scripts/data-acquisition/fetch_{hadslp2r,obs}.py
+/data/obs/
+
+# DePreSys4 (CMIP6 DCPP HadGEM3-GC31-MM), by scripts/data-acquisition/{fetch,build}_depresys4*.py
+/data/depresys4/
+/data/depresys4_files.json
+/data/depresys4_cubes/
+/data/_cubes_n48_backup/
+
+# DCPP decadal, by scripts/data-acquisition/fetch_dcpp.py, build_dcpp_cube.py, build_dcpp_monthly_cache.py
+/data/dcpp_monthly_cache/
+/data/dcpp_cubes/
+/data/dcpp_files.json
+# per-case input arrays, by scripts/data-acquisition/make_cases.py
+/data/cases/
+# common-grid cubes (code removed in the cleanup)
+/data/common_grid/
+# pairwise MI fields (code removed in the cleanup)
+/data/pairwise_MI/
+/data/MI_F_pairwise_dcpp_SLP_13-60.npy
+
+# cubes and caches from the infomeasure-updates side (code removed in the cleanup)
+/data/annual25_cube.npz
+/data/smyle_cube.npz
+/data/hindcast_mi.npz
+/data/granger_lin_cache_nats.npz
+/data/granger_lin_chain_terms_cache_nats.npz
+/data/granger_lin_obs_cache_nats.npz
+
+.ipynb_checkpoints/
+/.claude/
+
+# figure sets (scripts/figure_sets.py): the copies are regenerable with
+# `python scripts/figure_set.py <Set> export`; only the manifests are tracked
+/figures/Manuscript/**
+!/figures/Manuscript/manifest.json
+/figures/Presentation/**
+!/figures/Presentation/manifest.json
+*.lock

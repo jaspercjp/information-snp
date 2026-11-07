@@ -1,0 +1,872 @@
+{
+ "SLP 2-4": {
+  "all models": {
+   "N": 62,
+   "T": 51,
+   "area_lam_o_undefined": 0.1574583518324371,
+   "area_lam_m_pool_undefined": 0.06701700889106206,
+   "area_mean_share_members_onebin": 0.19840389387153834,
+   "area_mean_lam_m_avg": 0.2894876081798198,
+   "area_mean_lam_m_pool": 0.3704444474822434,
+   "area_mean_avg_minus_pool": -0.08095683930242362,
+   "share_avg_gt_pool": 0.08742933416566588,
+   "rpc_gt1_avg": {
+    "area": 0.5807507926209979,
+    "mean": 1.5461828945645502,
+    "median": 1.4536221707882713
+   },
+   "rpc_gt1_pool": {
+    "area": 0.3820630766116316,
+    "mean": 1.4664336056162395,
+    "median": 1.275677139757501
+   },
+   "area_B_s_ge_half_T": null
+  },
+  "HadGEM3-GC31-MM": {
+   "N": 10,
+   "T": 51,
+   "area_lam_o_undefined": 0.1590237743423167,
+   "area_lam_m_pool_undefined": 0.06444650809261177,
+   "area_mean_share_members_onebin": 0.18546426449311787,
+   "area_mean_lam_m_avg": 0.3311499707663885,
+   "area_mean_lam_m_pool": 0.42279650304998384,
+   "area_mean_avg_minus_pool": -0.09164653228359532,
+   "share_avg_gt_pool": 0.10505271140715565,
+   "rpc_gt1_avg": {
+    "area": 0.3816337083940232,
+    "mean": 1.5853891088530112,
+    "median": 1.3641272025436084
+   },
+   "rpc_gt1_pool": {
+    "area": 0.17454398257829976,
+    "mean": 1.379081018613924,
+    "median": 1.197219028392193
+   },
+   "area_B_s_ge_half_T": 0.03846930616123947
+  },
+  "EC-Earth3": {
+   "N": 16,
+   "T": 51,
+   "area_lam_o_undefined": 0.18020488500933188,
+   "area_lam_m_pool_undefined": 0.09141033417391235,
+   "area_mean_share_members_onebin": 0.21400470716164566,
+   "area_mean_lam_m_avg": 0.2771040985389913,
+   "area_mean_lam_m_pool": 0.37052222293482995,
+   "area_mean_avg_minus_pool": -0.09341812439583871,
+   "share_avg_gt_pool": 0.12416112951207162,
+   "rpc_gt1_avg": {
+    "area": 0.5814141376274533,
+    "mean": 1.7223828183319922,
+    "median": 1.491616540551123
+   },
+   "rpc_gt1_pool": {
+    "area": 0.3682308662496224,
+    "mean": 1.5021402900868106,
+    "median": 1.2677986663823742
+   },
+   "area_B_s_ge_half_T": 0.052723060311469984
+  },
+  "MIROC6": {
+   "N": 10,
+   "T": 51,
+   "area_lam_o_undefined": 0.14923883931651197,
+   "area_lam_m_pool_undefined": 0.056045007938251554,
+   "area_mean_share_members_onebin": 0.172000658392371,
+   "area_mean_lam_m_avg": 0.27346613922976243,
+   "area_mean_lam_m_pool": 0.369014905000605,
+   "area_mean_avg_minus_pool": -0.0955487657708426,
+   "share_avg_gt_pool": 0.1406377766553411,
+   "rpc_gt1_avg": {
+    "area": 0.5132732339397912,
+    "mean": 1.8577642756000192,
+    "median": 1.5797369273991804
+   },
+   "rpc_gt1_pool": {
+    "area": 0.28260806677862266,
+    "mean": 1.494409643659319,
+    "median": 1.2773693243400173
+   },
+   "area_B_s_ge_half_T": 0.04440121322379836
+  },
+  "MPI-ESM1-2-LR": {
+   "N": 16,
+   "T": 51,
+   "area_lam_o_undefined": 0.23624488410412078,
+   "area_lam_m_pool_undefined": 0.14757432512660565,
+   "area_mean_share_members_onebin": 0.27154170018330276,
+   "area_mean_lam_m_avg": 0.365547353779946,
+   "area_mean_lam_m_pool": 0.46702048685141456,
+   "area_mean_avg_minus_pool": -0.10147313307146853,
+   "share_avg_gt_pool": 0.04579573476316828,
+   "rpc_gt1_avg": {
+    "area": 0.29949731515435213,
+    "mean": 1.4496017019896634,
+    "median": 1.3090174392166416
+   },
+   "rpc_gt1_pool": {
+    "area": 0.12763389877878026,
+    "mean": 1.296786642487209,
+    "median": 1.1912426537828613
+   },
+   "area_B_s_ge_half_T": 0.05041314726404909
+  },
+  "MRI-ESM2-0": {
+   "N": 10,
+   "T": 51,
+   "area_lam_o_undefined": 0.1895595928055196,
+   "area_lam_m_pool_undefined": 0.10537834427746216,
+   "area_mean_share_members_onebin": 0.2243231758787365,
+   "area_mean_lam_m_avg": 0.313036253666863,
+   "area_mean_lam_m_pool": 0.4045915091621932,
+   "area_mean_avg_minus_pool": -0.09155525549533026,
+   "share_avg_gt_pool": 0.12937000939355067,
+   "rpc_gt1_avg": {
+    "area": 0.4056419164862987,
+    "mean": 1.793495535553095,
+    "median": 1.441721192930531
+   },
+   "rpc_gt1_pool": {
+    "area": 0.20681092786533456,
+    "mean": 1.5470653877965035,
+    "median": 1.2749926158075442
+   },
+   "area_B_s_ge_half_T": 0.049857798015916575
+  }
+ },
+ "PRECT 2-4": {
+  "all models": {
+   "N": 62,
+   "T": 33,
+   "area_lam_o_undefined": 0.42960742978016686,
+   "area_lam_m_pool_undefined": 0.25691492894046464,
+   "area_mean_share_members_onebin": 0.46841252730757277,
+   "area_mean_lam_m_avg": 0.2319755370916856,
+   "area_mean_lam_m_pool": 0.3323420208020387,
+   "area_mean_avg_minus_pool": -0.1003664837103531,
+   "share_avg_gt_pool": 0.1493464798393694,
+   "rpc_gt1_avg": {
+    "area": 0.5650331128000852,
+    "mean": 1.8263214181875933,
+    "median": 1.7192956072305396
+   },
+   "rpc_gt1_pool": {
+    "area": 0.4107578041960297,
+    "mean": 1.6258922328623073,
+    "median": 1.4384235200810922
+   },
+   "area_B_s_ge_half_T": null
+  },
+  "HadGEM3-GC31-MM": {
+   "N": 10,
+   "T": 33,
+   "area_lam_o_undefined": 0.4264557718602152,
+   "area_lam_m_pool_undefined": 0.259016933435102,
+   "area_mean_share_members_onebin": 0.4607209945414423,
+   "area_mean_lam_m_avg": 0.27537201373909287,
+   "area_mean_lam_m_pool": 0.4007655899119173,
+   "area_mean_avg_minus_pool": -0.12539357617282443,
+   "share_avg_gt_pool": 0.15502654673979313,
+   "rpc_gt1_avg": {
+    "area": 0.42125045182030646,
+    "mean": 2.0028893503988674,
+    "median": 1.5370841201123855
+   },
+   "rpc_gt1_pool": {
+    "area": 0.21740711952909608,
+    "mean": 1.570329989682144,
+    "median": 1.297239472353373
+   },
+   "area_B_s_ge_half_T": 0.10211404348819744
+  },
+  "EC-Earth3": {
+   "N": 16,
+   "T": 33,
+   "area_lam_o_undefined": 0.434965230708263,
+   "area_lam_m_pool_undefined": 0.25963295008920845,
+   "area_mean_share_members_onebin": 0.47150453748084814,
+   "area_mean_lam_m_avg": 0.24131463658674487,
+   "area_mean_lam_m_pool": 0.3588692394497004,
+   "area_mean_avg_minus_pool": -0.11755460286295552,
+   "share_avg_gt_pool": 0.1890981536103052,
+   "rpc_gt1_avg": {
+    "area": 0.49410791688956346,
+    "mean": 2.0147618809962458,
+    "median": 1.6649008146705717
+   },
+   "rpc_gt1_pool": {
+    "area": 0.3095387080276136,
+    "mean": 1.7418872645023176,
+    "median": 1.379607661906709
+   },
+   "area_B_s_ge_half_T": 0.11359388876825356
+  },
+  "MIROC6": {
+   "N": 10,
+   "T": 33,
+   "area_lam_o_undefined": 0.43710441190017063,
+   "area_lam_m_pool_undefined": 0.26424365845334435,
+   "area_mean_share_members_onebin": 0.46576027520908636,
+   "area_mean_lam_m_avg": 0.23330487077444856,
+   "area_mean_lam_m_pool": 0.3602612575585158,
+   "area_mean_avg_minus_pool": -0.12695638678406723,
+   "share_avg_gt_pool": 0.17454591726618096,
+   "rpc_gt1_avg": {
+    "area": 0.4471633744140585,
+    "mean": 2.184790175007412,
+    "median": 1.6716888413918003
+   },
+   "rpc_gt1_pool": {
+    "area": 0.2512718767246888,
+    "mean": 1.6475876468799273,
+    "median": 1.3681448648590893
+   },
+   "area_B_s_ge_half_T": 0.10241524566262798
+  },
+  "MPI-ESM1-2-LR": {
+   "N": 16,
+   "T": 33,
+   "area_lam_o_undefined": 0.46002759212596134,
+   "area_lam_m_pool_undefined": 0.2957193077182842,
+   "area_mean_share_members_onebin": 0.49619422625668774,
+   "area_mean_lam_m_avg": 0.26378755789403263,
+   "area_mean_lam_m_pool": 0.3994956628229605,
+   "area_mean_avg_minus_pool": -0.13570810492892788,
+   "share_avg_gt_pool": 0.12813397844796692,
+   "rpc_gt1_avg": {
+    "area": 0.3988666377533393,
+    "mean": 1.9780003833124415,
+    "median": 1.6503580742289592
+   },
+   "rpc_gt1_pool": {
+    "area": 0.1958837321306663,
+    "mean": 1.6750184115692388,
+    "median": 1.4170293146119548
+   },
+   "area_B_s_ge_half_T": 0.11092045797016967
+  },
+  "MRI-ESM2-0": {
+   "N": 10,
+   "T": 33,
+   "area_lam_o_undefined": 0.42883575817245223,
+   "area_lam_m_pool_undefined": 0.26855203654253407,
+   "area_mean_share_members_onebin": 0.47479449136735885,
+   "area_mean_lam_m_avg": 0.2664817032058618,
+   "area_mean_lam_m_pool": 0.38906630268990394,
+   "area_mean_avg_minus_pool": -0.1225845994840421,
+   "share_avg_gt_pool": 0.1695382822834953,
+   "rpc_gt1_avg": {
+    "area": 0.39906805629310255,
+    "mean": 2.1017062043857324,
+    "median": 1.6744352365118274
+   },
+   "rpc_gt1_pool": {
+    "area": 0.21167501558212198,
+    "mean": 1.6449448194847112,
+    "median": 1.3329881918662323
+   },
+   "area_B_s_ge_half_T": 0.10689283468238814
+  }
+ },
+ "TREFHT 2-4": {
+  "all models": {
+   "N": 62,
+   "T": 52,
+   "area_lam_o_undefined": 0.21989606340186768,
+   "area_lam_m_pool_undefined": 0.09852593464472693,
+   "area_mean_share_members_onebin": 0.22868448437309497,
+   "area_mean_lam_m_avg": 0.34392042407345624,
+   "area_mean_lam_m_pool": 0.43486716600028885,
+   "area_mean_avg_minus_pool": -0.09094674192683261,
+   "share_avg_gt_pool": 0.02309579627758734,
+   "rpc_gt1_avg": {
+    "area": 0.5960360355295934,
+    "mean": 1.446507092261463,
+    "median": 1.3599214429305455
+   },
+   "rpc_gt1_pool": {
+    "area": 0.35920474444875633,
+    "mean": 1.2808094882611267,
+    "median": 1.2103356680536028
+   },
+   "area_B_s_ge_half_T": null
+  },
+  "HadGEM3-GC31-MM": {
+   "N": 10,
+   "T": 52,
+   "area_lam_o_undefined": 0.23435267630431764,
+   "area_lam_m_pool_undefined": 0.11087243837994439,
+   "area_mean_share_members_onebin": 0.2327999656229087,
+   "area_mean_lam_m_avg": 0.4131186870041218,
+   "area_mean_lam_m_pool": 0.5109955381119706,
+   "area_mean_avg_minus_pool": -0.0978768511078488,
+   "share_avg_gt_pool": 0.07013234449561821,
+   "rpc_gt1_avg": {
+    "area": 0.32398117892136946,
+    "mean": 1.4732046717836784,
+    "median": 1.2838818168652661
+   },
+   "rpc_gt1_pool": {
+    "area": 0.11697834082818245,
+    "mean": 1.303326892251688,
+    "median": 1.1951205263261824
+   },
+   "area_B_s_ge_half_T": 0.050203626366522876
+  },
+  "EC-Earth3": {
+   "N": 16,
+   "T": 52,
+   "area_lam_o_undefined": 0.24637185311364365,
+   "area_lam_m_pool_undefined": 0.13328895388247533,
+   "area_mean_share_members_onebin": 0.26569124798362653,
+   "area_mean_lam_m_avg": 0.37117418363307636,
+   "area_mean_lam_m_pool": 0.4745523655516862,
+   "area_mean_avg_minus_pool": -0.1033781819186099,
+   "share_avg_gt_pool": 0.05117644230666034,
+   "rpc_gt1_avg": {
+    "area": 0.4476897873008797,
+    "mean": 1.483180840201631,
+    "median": 1.2881390371478756
+   },
+   "rpc_gt1_pool": {
+    "area": 0.21555387617465588,
+    "mean": 1.3162879229150581,
+    "median": 1.1694864857426965
+   },
+   "area_B_s_ge_half_T": 0.05326062530308698
+  },
+  "MIROC6": {
+   "N": 10,
+   "T": 52,
+   "area_lam_o_undefined": 0.2054773861157901,
+   "area_lam_m_pool_undefined": 0.08405266384526067,
+   "area_mean_share_members_onebin": 0.19806244724670163,
+   "area_mean_lam_m_avg": 0.3474361099464994,
+   "area_mean_lam_m_pool": 0.4472949150989842,
+   "area_mean_avg_minus_pool": -0.09985880515248485,
+   "share_avg_gt_pool": 0.09159830325741189,
+   "rpc_gt1_avg": {
+    "area": 0.3922921246298176,
+    "mean": 1.6170626272407518,
+    "median": 1.3849993258147422
+   },
+   "rpc_gt1_pool": {
+    "area": 0.1684138195598746,
+    "mean": 1.4368028789097513,
+    "median": 1.256418947488265
+   },
+   "area_B_s_ge_half_T": 0.042270530016990195
+  },
+  "MPI-ESM1-2-LR": {
+   "N": 16,
+   "T": 52,
+   "area_lam_o_undefined": 0.2548874599081482,
+   "area_lam_m_pool_undefined": 0.1485800385256903,
+   "area_mean_share_members_onebin": 0.26386855087390976,
+   "area_mean_lam_m_avg": 0.4712147413534026,
+   "area_mean_lam_m_pool": 0.5708455991814964,
+   "area_mean_avg_minus_pool": -0.09963085782809379,
+   "share_avg_gt_pool": 0.02800023816304837,
+   "rpc_gt1_avg": {
+    "area": 0.1372883881600923,
+    "mean": 1.4580012193492478,
+    "median": 1.2563910607182218
+   },
+   "rpc_gt1_pool": {
+    "area": 0.04220490144919327,
+    "mean": 1.412073839248945,
+    "median": 1.1729861193439968
+   },
+   "area_B_s_ge_half_T": 0.05073839112652101
+  },
+  "MRI-ESM2-0": {
+   "N": 10,
+   "T": 52,
+   "area_lam_o_undefined": 0.24818326416360728,
+   "area_lam_m_pool_undefined": 0.1347605319787476,
+   "area_mean_share_members_onebin": 0.25502788198320064,
+   "area_mean_lam_m_avg": 0.33024609528180676,
+   "area_mean_lam_m_pool": 0.4284863773125301,
+   "area_mean_avg_minus_pool": -0.09824028203072341,
+   "share_avg_gt_pool": 0.10259570507878091,
+   "rpc_gt1_avg": {
+    "area": 0.4902809731624667,
+    "mean": 1.753614648086425,
+    "median": 1.4948944841463652
+   },
+   "rpc_gt1_pool": {
+    "area": 0.27014366931633976,
+    "mean": 1.4177482475610683,
+    "median": 1.25651179138525
+   },
+   "area_B_s_ge_half_T": 0.05182400288845706
+  }
+ },
+ "SLP s1961": {
+  "all models": {
+   "N": 92,
+   "T": 120,
+   "area_lam_o_undefined": 0.2200027413089753,
+   "area_lam_m_pool_undefined": 0.1007086747793181,
+   "area_mean_share_members_onebin": 0.20524077334817856,
+   "area_mean_lam_m_avg": 0.6042418632727362,
+   "area_mean_lam_m_pool": 0.6571338809433647,
+   "area_mean_avg_minus_pool": -0.05289201767062854,
+   "share_avg_gt_pool": 0.014928660125390765,
+   "rpc_gt1_avg": {
+    "area": 0.7672062551332397,
+    "mean": 1.2202869689809441,
+    "median": 1.2046970455303554
+   },
+   "rpc_gt1_pool": {
+    "area": 0.5769529399157147,
+    "mean": 1.1630300784326773,
+    "median": 1.1665690032287586
+   },
+   "area_B_s_ge_half_T": null
+  },
+  "CanESM5": {
+   "N": 20,
+   "T": 120,
+   "area_lam_o_undefined": 0.21707806853018782,
+   "area_lam_m_pool_undefined": 0.10081339003940366,
+   "area_mean_share_members_onebin": 0.23228789129081176,
+   "area_mean_lam_m_avg": 0.6413660659694586,
+   "area_mean_lam_m_pool": 0.6938939240599709,
+   "area_mean_avg_minus_pool": -0.05252785809051226,
+   "share_avg_gt_pool": 0.017497356856077933,
+   "rpc_gt1_avg": {
+    "area": 0.46547396813610337,
+    "mean": 1.1845302526992645,
+    "median": 1.1507486367186366
+   },
+   "rpc_gt1_pool": {
+    "area": 0.22864775823718436,
+    "mean": 1.1595643102409836,
+    "median": 1.129110275861593
+   },
+   "area_B_s_ge_half_T": 0.01611157286362243
+  },
+  "EC-Earth3": {
+   "N": 16,
+   "T": 120,
+   "area_lam_o_undefined": 0.27874215787222145,
+   "area_lam_m_pool_undefined": 0.18383709724081318,
+   "area_mean_share_members_onebin": 0.2699965218391209,
+   "area_mean_lam_m_avg": 0.6112417311649443,
+   "area_mean_lam_m_pool": 0.6599323413988273,
+   "area_mean_avg_minus_pool": -0.04869061023388303,
+   "share_avg_gt_pool": 0.03718560911364395,
+   "rpc_gt1_avg": {
+    "area": 0.5669362217770041,
+    "mean": 1.1637416748426277,
+    "median": 1.1289446782459998
+   },
+   "rpc_gt1_pool": {
+    "area": 0.337417577240278,
+    "mean": 1.1176280591870944,
+    "median": 1.0846667341033784
+   },
+   "area_B_s_ge_half_T": 0.012471612167546706
+  },
+  "HadGEM3-GC31-MM": {
+   "N": 10,
+   "T": 120,
+   "area_lam_o_undefined": 0.22873497457045477,
+   "area_lam_m_pool_undefined": 0.1263544976628125,
+   "area_mean_share_members_onebin": 0.21329756981581538,
+   "area_mean_lam_m_avg": 0.6092971251516976,
+   "area_mean_lam_m_pool": 0.6561306568111216,
+   "area_mean_avg_minus_pool": -0.046833531659423985,
+   "share_avg_gt_pool": 0.04394007040960817,
+   "rpc_gt1_avg": {
+    "area": 0.6152030910255956,
+    "mean": 1.1647713059859004,
+    "median": 1.138492948972488
+   },
+   "rpc_gt1_pool": {
+    "area": 0.36784348569485387,
+    "mean": 1.117620831424798,
+    "median": 1.1052157876207604
+   },
+   "area_B_s_ge_half_T": 0.004198694875037835
+  },
+  "MIROC6": {
+   "N": 10,
+   "T": 120,
+   "area_lam_o_undefined": 0.2337993200275157,
+   "area_lam_m_pool_undefined": 0.13356095511631505,
+   "area_mean_share_members_onebin": 0.21463542841385183,
+   "area_mean_lam_m_avg": 0.597341327206899,
+   "area_mean_lam_m_pool": 0.6428165809258475,
+   "area_mean_avg_minus_pool": -0.04547525371894834,
+   "share_avg_gt_pool": 0.06166749857609578,
+   "rpc_gt1_avg": {
+    "area": 0.5754004113525165,
+    "mean": 1.1753836701475369,
+    "median": 1.1072190019851065
+   },
+   "rpc_gt1_pool": {
+    "area": 0.35644668326228174,
+    "mean": 1.1227359365555438,
+    "median": 1.0807037861762119
+   },
+   "area_B_s_ge_half_T": 0.003837661693443972
+  },
+  "MPI-ESM1-2-LR": {
+   "N": 16,
+   "T": 120,
+   "area_lam_o_undefined": 0.2095035860781129,
+   "area_lam_m_pool_undefined": 0.09935820521023626,
+   "area_mean_share_members_onebin": 0.19072099545915172,
+   "area_mean_lam_m_avg": 0.6136972847101033,
+   "area_mean_lam_m_pool": 0.6603175946330173,
+   "area_mean_avg_minus_pool": -0.046620309922913966,
+   "share_avg_gt_pool": 0.030305608722897334,
+   "rpc_gt1_avg": {
+    "area": 0.6084887744272652,
+    "mean": 1.1744874967611165,
+    "median": 1.1607710500695725
+   },
+   "rpc_gt1_pool": {
+    "area": 0.38454444085674067,
+    "mean": 1.1300083918691384,
+    "median": 1.1296232767751988
+   },
+   "area_B_s_ge_half_T": 0.006791099490151407
+  },
+  "NorCPM1": {
+   "N": 20,
+   "T": 120,
+   "area_lam_o_undefined": 0.2510895782733683,
+   "area_lam_m_pool_undefined": 0.14778301918438574,
+   "area_mean_share_members_onebin": 0.2357663687189961,
+   "area_mean_lam_m_avg": 0.59207603105991,
+   "area_mean_lam_m_pool": 0.6439976756199459,
+   "area_mean_avg_minus_pool": -0.051921644560035826,
+   "share_avg_gt_pool": 0.02070852560719688,
+   "rpc_gt1_avg": {
+    "area": 0.5909428967261464,
+    "mean": 1.2360507647476213,
+    "median": 1.1742305383730103
+   },
+   "rpc_gt1_pool": {
+    "area": 0.4029182693614185,
+    "mean": 1.1797394416542364,
+    "median": 1.1426515472467575
+   },
+   "area_B_s_ge_half_T": 0.014171478142724746
+  }
+ },
+ "PRECT s1978": {
+  "all models": {
+   "N": 112,
+   "T": 120,
+   "area_lam_o_undefined": 0.11502733976537224,
+   "area_lam_m_pool_undefined": 0.0949398365735956,
+   "area_mean_share_members_onebin": 0.11315290426628503,
+   "area_mean_lam_m_avg": 0.6086154468858752,
+   "area_mean_lam_m_pool": 0.6571079138665922,
+   "area_mean_avg_minus_pool": -0.048492466980716936,
+   "share_avg_gt_pool": 0.04753556093239855,
+   "rpc_gt1_avg": {
+    "area": 0.4576685360291877,
+    "mean": 1.1800273826215801,
+    "median": 1.1325705188148
+   },
+   "rpc_gt1_pool": {
+    "area": 0.28532684386329776,
+    "mean": 1.1454185073919603,
+    "median": 1.0924780253706394
+   },
+   "area_B_s_ge_half_T": null
+  },
+  "CanESM5": {
+   "N": 40,
+   "T": 120,
+   "area_lam_o_undefined": 0.12405806298934742,
+   "area_lam_m_pool_undefined": 0.10557205071622966,
+   "area_mean_share_members_onebin": 0.12331431884907823,
+   "area_mean_lam_m_avg": 0.649745176760763,
+   "area_mean_lam_m_pool": 0.7062396502658417,
+   "area_mean_avg_minus_pool": -0.05649447350507872,
+   "share_avg_gt_pool": 0.016212471433950208,
+   "rpc_gt1_avg": {
+    "area": 0.2799425187650028,
+    "mean": 1.1785307166489287,
+    "median": 1.1337818789662564
+   },
+   "rpc_gt1_pool": {
+    "area": 0.1396403100762364,
+    "mean": 1.1408391725576976,
+    "median": 1.1001019311121512
+   },
+   "area_B_s_ge_half_T": 0.011412823724917988
+  },
+  "EC-Earth3": {
+   "N": 16,
+   "T": 120,
+   "area_lam_o_undefined": 0.1534239004917929,
+   "area_lam_m_pool_undefined": 0.1371619171691429,
+   "area_mean_share_members_onebin": 0.1504743900459162,
+   "area_mean_lam_m_avg": 0.6135604566528391,
+   "area_mean_lam_m_pool": 0.6649089511904084,
+   "area_mean_avg_minus_pool": -0.05134849453756921,
+   "share_avg_gt_pool": 0.03900089864390724,
+   "rpc_gt1_avg": {
+    "area": 0.3144168694237109,
+    "mean": 1.163851315468623,
+    "median": 1.110440600086143
+   },
+   "rpc_gt1_pool": {
+    "area": 0.1584796155267347,
+    "mean": 1.1288784804473198,
+    "median": 1.0924406739727954
+   },
+   "area_B_s_ge_half_T": 0.014623936123703506
+  },
+  "HadGEM3-GC31-MM": {
+   "N": 10,
+   "T": 120,
+   "area_lam_o_undefined": 0.12732162370870612,
+   "area_lam_m_pool_undefined": 0.1110068130866887,
+   "area_mean_share_members_onebin": 0.12242958795866966,
+   "area_mean_lam_m_avg": 0.585901099023352,
+   "area_mean_lam_m_pool": 0.6377332122025646,
+   "area_mean_avg_minus_pool": -0.05183211317921275,
+   "share_avg_gt_pool": 0.05933080184027926,
+   "rpc_gt1_avg": {
+    "area": 0.38415211447974795,
+    "mean": 1.2381395157756454,
+    "median": 1.1426295035187504
+   },
+   "rpc_gt1_pool": {
+    "area": 0.21518401143714364,
+    "mean": 1.183952473517516,
+    "median": 1.1325222780516115
+   },
+   "area_B_s_ge_half_T": 0.007036644267839183
+  },
+  "MIROC6": {
+   "N": 10,
+   "T": 120,
+   "area_lam_o_undefined": 0.13028244272023792,
+   "area_lam_m_pool_undefined": 0.11404366384621016,
+   "area_mean_share_members_onebin": 0.12302283120098213,
+   "area_mean_lam_m_avg": 0.5954100790539248,
+   "area_mean_lam_m_pool": 0.6462575512266396,
+   "area_mean_avg_minus_pool": -0.050847472172714785,
+   "share_avg_gt_pool": 0.0573783840839146,
+   "rpc_gt1_avg": {
+    "area": 0.32320012377140805,
+    "mean": 1.1556831415842301,
+    "median": 1.104879451589656
+   },
+   "rpc_gt1_pool": {
+    "area": 0.1540222030693898,
+    "mean": 1.1202847128985858,
+    "median": 1.085255021179398
+   },
+   "area_B_s_ge_half_T": 0.010452946969466104
+  },
+  "MPI-ESM1-2-LR": {
+   "N": 16,
+   "T": 120,
+   "area_lam_o_undefined": 0.11551770897566378,
+   "area_lam_m_pool_undefined": 0.09868288035082848,
+   "area_mean_share_members_onebin": 0.10998740282157994,
+   "area_mean_lam_m_avg": 0.6121319285127065,
+   "area_mean_lam_m_pool": 0.6615057953678316,
+   "area_mean_avg_minus_pool": -0.049373866855125244,
+   "share_avg_gt_pool": 0.05627759035766046,
+   "rpc_gt1_avg": {
+    "area": 0.3335907014868202,
+    "mean": 1.1896032873175473,
+    "median": 1.1296677258268026
+   },
+   "rpc_gt1_pool": {
+    "area": 0.18353175714509,
+    "mean": 1.1516061163390285,
+    "median": 1.1238839814490669
+   },
+   "area_B_s_ge_half_T": 0.009832140482429837
+  },
+  "NorCPM1": {
+   "N": 20,
+   "T": 120,
+   "area_lam_o_undefined": 0.16277246598217765,
+   "area_lam_m_pool_undefined": 0.14391783471248987,
+   "area_mean_share_members_onebin": 0.16121474880297246,
+   "area_mean_lam_m_avg": 0.6163600829670653,
+   "area_mean_lam_m_pool": 0.6737590046781369,
+   "area_mean_avg_minus_pool": -0.057398921711071485,
+   "share_avg_gt_pool": 0.02713633893363688,
+   "rpc_gt1_avg": {
+    "area": 0.3413033391729893,
+    "mean": 1.1858888855413912,
+    "median": 1.1674764453321103
+   },
+   "rpc_gt1_pool": {
+    "area": 0.17815946714036945,
+    "mean": 1.143687737587034,
+    "median": 1.1209345538547046
+   },
+   "area_B_s_ge_half_T": 0.010681831600826286
+  }
+ },
+ "TREFHT s1961": {
+  "all models": {
+   "N": 112,
+   "T": 120,
+   "area_lam_o_undefined": 0.422754139051125,
+   "area_lam_m_pool_undefined": 0.07424142129117411,
+   "area_mean_share_members_onebin": 0.4566712114781536,
+   "area_mean_lam_m_avg": 0.8270404951557282,
+   "area_mean_lam_m_pool": 0.877718371338922,
+   "area_mean_avg_minus_pool": -0.0506778761831936,
+   "share_avg_gt_pool": 0.01149175290033665,
+   "rpc_gt1_avg": {
+    "area": 0.5701968021502202,
+    "mean": 1.0453759080003255,
+    "median": 1.0353465111106415
+   },
+   "rpc_gt1_pool": {
+    "area": 0.14708914478383042,
+    "mean": 1.031570284724582,
+    "median": 1.0146841446973418
+   },
+   "area_B_s_ge_half_T": null
+  },
+  "CanESM5": {
+   "N": 40,
+   "T": 120,
+   "area_lam_o_undefined": 0.4377256584917276,
+   "area_lam_m_pool_undefined": 0.11616638997188071,
+   "area_mean_share_members_onebin": 0.47270675409105695,
+   "area_mean_lam_m_avg": 0.8552504809577793,
+   "area_mean_lam_m_pool": 0.910759985912876,
+   "area_mean_avg_minus_pool": -0.055509504955096566,
+   "share_avg_gt_pool": 0.005320467089422237,
+   "rpc_gt1_avg": {
+    "area": 0.38570393852104823,
+    "mean": 1.0369725479197682,
+    "median": 1.0271253461558163
+   },
+   "rpc_gt1_pool": {
+    "area": 0.02198244614958202,
+    "mean": 1.0098111111283845,
+    "median": 1.0054004170939117
+   },
+   "area_B_s_ge_half_T": 0.024930015239023367
+  },
+  "EC-Earth3": {
+   "N": 16,
+   "T": 120,
+   "area_lam_o_undefined": 0.48162272829519215,
+   "area_lam_m_pool_undefined": 0.17526807713498063,
+   "area_mean_share_members_onebin": 0.5106426091713994,
+   "area_mean_lam_m_avg": 0.8449278908699539,
+   "area_mean_lam_m_pool": 0.894988353389245,
+   "area_mean_avg_minus_pool": -0.05006046251929115,
+   "share_avg_gt_pool": 0.024486042894417803,
+   "rpc_gt1_avg": {
+    "area": 0.48263922053409003,
+    "mean": 1.0421784131649747,
+    "median": 1.0320646312821102
+   },
+   "rpc_gt1_pool": {
+    "area": 0.055198026953291256,
+    "mean": 1.015095614706154,
+    "median": 1.0081327666291477
+   },
+   "area_B_s_ge_half_T": 0.017273475775643962
+  },
+  "HadGEM3-GC31-MM": {
+   "N": 10,
+   "T": 120,
+   "area_lam_o_undefined": 0.4935864741581955,
+   "area_lam_m_pool_undefined": 0.2597182529454078,
+   "area_mean_share_members_onebin": 0.527780104068518,
+   "area_mean_lam_m_avg": 0.846218777551314,
+   "area_mean_lam_m_pool": 0.896571638206837,
+   "area_mean_avg_minus_pool": -0.05035286065552304,
+   "share_avg_gt_pool": 0.02817134118014855,
+   "rpc_gt1_avg": {
+    "area": 0.4517725911093205,
+    "mean": 1.0438925543796027,
+    "median": 1.0293376706177133
+   },
+   "rpc_gt1_pool": {
+    "area": 0.06466147027489733,
+    "mean": 1.0150895032054923,
+    "median": 1.0088999862043466
+   },
+   "area_B_s_ge_half_T": 0.019992610246610226
+  },
+  "MIROC6": {
+   "N": 10,
+   "T": 120,
+   "area_lam_o_undefined": 0.47790446631639166,
+   "area_lam_m_pool_undefined": 0.2124105537174264,
+   "area_mean_share_members_onebin": 0.4959598794249351,
+   "area_mean_lam_m_avg": 0.8290007365197268,
+   "area_mean_lam_m_pool": 0.8742869354871541,
+   "area_mean_avg_minus_pool": -0.0452861989674271,
+   "share_avg_gt_pool": 0.04946501964964281,
+   "rpc_gt1_avg": {
+    "area": 0.5418031964674082,
+    "mean": 1.05316321578344,
+    "median": 1.0271202656073566
+   },
+   "rpc_gt1_pool": {
+    "area": 0.1339613689566368,
+    "mean": 1.09291768831085,
+    "median": 1.01480815247216
+   },
+   "area_B_s_ge_half_T": 0.012499801364326631
+  },
+  "MPI-ESM1-2-LR": {
+   "N": 16,
+   "T": 120,
+   "area_lam_o_undefined": 0.48453880813684397,
+   "area_lam_m_pool_undefined": 0.20765169705657868,
+   "area_mean_share_members_onebin": 0.5359056975159303,
+   "area_mean_lam_m_avg": 0.8464794349586675,
+   "area_mean_lam_m_pool": 0.8980906848734851,
+   "area_mean_avg_minus_pool": -0.05161124991481766,
+   "share_avg_gt_pool": 0.014056733800088251,
+   "rpc_gt1_avg": {
+    "area": 0.4012701098528277,
+    "mean": 1.0384398124901653,
+    "median": 1.0284367027481307
+   },
+   "rpc_gt1_pool": {
+    "area": 0.01592328571484649,
+    "mean": 1.0167837712736467,
+    "median": 1.005737362130128
+   },
+   "area_B_s_ge_half_T": 0.015803794820620658
+  },
+  "NorCPM1": {
+   "N": 20,
+   "T": 120,
+   "area_lam_o_undefined": 0.4581611914131975,
+   "area_lam_m_pool_undefined": 0.13397465887061846,
+   "area_mean_share_members_onebin": 0.46030820786777177,
+   "area_mean_lam_m_avg": 0.8391885636879138,
+   "area_mean_lam_m_pool": 0.8945163998745079,
+   "area_mean_avg_minus_pool": -0.05532783618659395,
+   "share_avg_gt_pool": 0.011605736969790786,
+   "rpc_gt1_avg": {
+    "area": 0.518895162082728,
+    "mean": 1.0593899001193439,
+    "median": 1.0368188273527605
+   },
+   "rpc_gt1_pool": {
+    "area": 0.11071441635927819,
+    "mean": 1.0488528601988074,
+    "median": 1.0109747011010126
+   },
+   "area_B_s_ge_half_T": 0.02067165575598937
+  }
+ }
+}

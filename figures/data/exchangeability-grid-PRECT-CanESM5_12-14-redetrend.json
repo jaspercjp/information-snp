@@ -1,0 +1,51 @@
+{
+ "case": "PRECT CanESM5_12-14",
+ "model": "all members",
+ "block": 1,
+ "redetrend": true,
+ "shape": [
+  40,
+  42,
+  72,
+  144
+ ],
+ "n_perm": 200,
+ "runtime_s": 666.3967189788818,
+ "area_p_Delta_le_0.05": 0.046739331051602294,
+ "area_p_I_MXY_le_0.05": 0.040702749422386324,
+ "area_mean_Delta_corrected": 0.00030548765949540394,
+ "area_mean_I_pool_minus_cond_raw": -0.0700516140341412,
+ "field_significance": {
+  "Delta": {
+   "area_obs": 0.0467393310516023,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.05664637097421653,
+   "null_area_max": 0.06441602692445063,
+   "p_field": 0.7860696517412935
+  },
+  "I_MXY": {
+   "area_obs": 0.040702749422386324,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.05734022684570668,
+   "null_area_max": 0.06086892113971275,
+   "p_field": 0.9800995024875622
+  }
+ },
+ "area_lag1_le_0.5": 1.0,
+ "field_significance_lag1_le_0.5": {
+  "Delta": {
+   "area_obs": 0.0467393310516023,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.05664637097421653,
+   "null_area_max": 0.06441602692445063,
+   "p_field": 0.7860696517412935
+  },
+  "I_MXY": {
+   "area_obs": 0.040702749422386324,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.05734022684570668,
+   "null_area_max": 0.06086892113971275,
+   "p_field": 0.9800995024875622
+  }
+ }
+}

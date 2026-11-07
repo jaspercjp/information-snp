@@ -1,0 +1,51 @@
+{
+    "CanCM4": {
+        "project":"CMIP5", 
+        "model":"CanCM4", 
+        "experiment":"decadal1961",
+        "time_frequency":"mon", 
+        "realm":"atmos", 
+        "latest":true, 
+        "data_node":"crd-esgf-drc.ec.gc.ca"
+    },
+
+    "MIROC5": {
+        "project":"CMIP5", 
+        "model":"MIROC5", 
+        "experiment":"decadal1961",
+        "time_frequency":"mon", 
+        "realm":"atmos", 
+        "latest":true, 
+        "data_node":"aims3.llnl.gov"
+    },
+
+    "HadCM3": {
+        "project":"CMIP5", 
+        "model":"HadCM3", 
+        "experiment":"decadal1961",
+        "time_frequency":"mon", 
+        "realm":"atmos", 
+        "latest":true, 
+        "data_node":"esgf.ceda.ac.uk"
+    },
+
+    "MPI-ESM-LR": {
+        "project":"CMIP5", 
+        "model":"MPI-ESM-LR", 
+        "experiment":"decadal1961",
+        "time_frequency":"mon", 
+        "realm":"atmos", 
+        "latest":true,
+        "data_node": "aims3.llnl.gov"
+    },
+    
+    "GFDL-CM2.1": {
+        "project":"CMIP5", 
+        "model":"GFDL-CM2.1", 
+        "experiment":"decadal1961",
+        "time_frequency":"mon", 
+        "realm":"atmos", 
+        "latest":true, 
+        "data_node":"esgf.ceda.ac.uk"
+    }
+}

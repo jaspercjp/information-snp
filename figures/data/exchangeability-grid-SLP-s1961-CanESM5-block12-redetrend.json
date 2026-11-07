@@ -1,0 +1,51 @@
+{
+ "case": "SLP s1961",
+ "model": "CanESM5",
+ "block": 12,
+ "redetrend": true,
+ "shape": [
+  20,
+  120,
+  37,
+  72
+ ],
+ "n_perm": 200,
+ "runtime_s": 365.5585985183716,
+ "area_p_Delta_le_0.05": 0.049061864235925415,
+ "area_p_I_MXY_le_0.05": 0.0537744063922609,
+ "area_mean_Delta_corrected": -0.0005054616571592513,
+ "area_mean_I_pool_minus_cond_raw": -0.07683467511016674,
+ "field_significance": {
+  "Delta": {
+   "area_obs": 0.049061864235925415,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.061657738048893525,
+   "null_area_max": 0.07087634854058192,
+   "p_field": 0.582089552238806
+  },
+  "I_MXY": {
+   "area_obs": 0.053774406392260894,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.0662914858117645,
+   "null_area_max": 0.08653294085003187,
+   "p_field": 0.31840796019900497
+  }
+ },
+ "area_lag1_le_0.5": 0.9506296266238587,
+ "field_significance_lag1_le_0.5": {
+  "Delta": {
+   "area_obs": 0.04906556414626605,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.06191919766681641,
+   "null_area_max": 0.07153144536960579,
+   "p_field": 0.572139303482587
+  },
+  "I_MXY": {
+   "area_obs": 0.04768503462194246,
+   "null_area_mean": 0.04999999999999999,
+   "null_area_95pct": 0.06662374117963671,
+   "null_area_max": 0.08538270230096892,
+   "p_field": 0.5621890547263682
+  }
+ }
+}

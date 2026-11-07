@@ -1,0 +1,68 @@
+{
+ "SLP 2-4": {
+  "N": 62,
+  "T": 51,
+  "area_mean_rho_m_1": 0.4342457136383448,
+  "area_mean_rho_m_2": 0.3938055298948513,
+  "area_mean_rho_m_1_minus_2": 0.04044018374349358,
+  "area_mean_sd_ratio_minus_rho_m_1": 0.00435836778109496,
+  "share_rho_m_1_gt_rho_m_2": 1.0,
+  "area_rpc_gt1_def1": 0.5079650321233896,
+  "area_rpc_gt1_def2": 0.6351956217958906
+ },
+ "PRECT 2-4": {
+  "N": 62,
+  "T": 33,
+  "area_mean_rho_m_1": 0.3642039589814469,
+  "area_mean_rho_m_2": 0.31907465248370753,
+  "area_mean_rho_m_1_minus_2": 0.04512930649773942,
+  "area_mean_sd_ratio_minus_rho_m_1": 0.013588864716000258,
+  "share_rho_m_1_gt_rho_m_2": 0.9542501075729121,
+  "area_rpc_gt1_def1": 0.5741810601736088,
+  "area_rpc_gt1_def2": 0.686579491669372
+ },
+ "TREFHT 2-4": {
+  "N": 62,
+  "T": 52,
+  "area_mean_rho_m_1": 0.5088107499725932,
+  "area_mean_rho_m_2": 0.48128799085030227,
+  "area_mean_rho_m_1_minus_2": 0.027522759122290984,
+  "area_mean_sd_ratio_minus_rho_m_1": 0.007802417681577066,
+  "share_rho_m_1_gt_rho_m_2": 0.9581389541016895,
+  "area_rpc_gt1_def1": 0.531676243774154,
+  "area_rpc_gt1_def2": 0.6279961902399059
+ },
+ "SLP s1961": {
+  "N": 92,
+  "T": 120,
+  "area_mean_rho_m_1": 0.6779134009145512,
+  "area_mean_rho_m_2": 0.668056329413866,
+  "area_mean_rho_m_1_minus_2": 0.009857071500685384,
+  "area_mean_sd_ratio_minus_rho_m_1": 0.006643553791825882,
+  "share_rho_m_1_gt_rho_m_2": 0.718730995184078,
+  "area_rpc_gt1_def1": 0.7805441663038263,
+  "area_rpc_gt1_def2": 0.7993414582535149
+ },
+ "PRECT s1978": {
+  "N": 112,
+  "T": 120,
+  "area_mean_rho_m_1": 0.6651345406902065,
+  "area_mean_rho_m_2": 0.6636087081124997,
+  "area_mean_rho_m_1_minus_2": 0.00152583257770681,
+  "area_mean_sd_ratio_minus_rho_m_1": 0.01601133384545407,
+  "share_rho_m_1_gt_rho_m_2": 0.6057323166811474,
+  "area_rpc_gt1_def1": 0.41531876625036623,
+  "area_rpc_gt1_def2": 0.4108438452505391
+ },
+ "TREFHT s1961": {
+  "N": 112,
+  "T": 120,
+  "area_mean_rho_m_1": 0.916835171128999,
+  "area_mean_rho_m_2": 0.9226826269464213,
+  "area_mean_rho_m_1_minus_2": -0.005847455817422309,
+  "area_mean_sd_ratio_minus_rho_m_1": 0.009955440335081153,
+  "share_rho_m_1_gt_rho_m_2": 0.08467469541938036,
+  "area_rpc_gt1_def1": 0.5843900873085665,
+  "area_rpc_gt1_def2": 0.47669314441971
+ }
+}

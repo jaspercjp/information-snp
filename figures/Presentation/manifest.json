@@ -1,0 +1,78 @@
+{
+  "entries": [
+    {
+      "command": "python scripts/exchangeability_check.py figure-slides",
+      "dest": "Presentation/ExchangeabilityMaps/pdf/exchangeability-all-models.pdf",
+      "note": "All members pooled (5 November models for DJF lead 2-4; 6 models for the decade). Rows: DJF lead months 2-4, one value per start date; the s1961/s1978 decade with each model's month-of-year climatology removed. Excess I(M; X, Y) where p <= 0.05, exact nulls (per-member detrend inside the test; per start date / 12-month blocks), 200 permutations. Inputs: $SNP_OUT/exchangeability_grid_{VAR}_2-4_redetrend.npz, _{VAR}_{s1961,s1978}moy_block12_redetrend.npz.",
+      "section": "ExchangeabilityMaps",
+      "sha256": "a315233543485c99935f465db91c85db60de52d6c02ee02958fdc4c1bc3e15da",
+      "source": "slides/pdf/exchangeability-all-models.pdf",
+      "workflow": "exchangeability_check"
+    },
+    {
+      "command": "python scripts/exchangeability_check.py figure-slides",
+      "dest": "Presentation/ExchangeabilityMaps/pdf/exchangeability-canesm5.pdf",
+      "note": "CanESM5 alone. Rows: DJF lead months 12-14 (CanESM5 starts in January, so its first full DJF is a year after the start), one value per start date; the s1961/s1978 decade, month-of-year climatology removed. Same statistic, nulls, colour scale and area axis as exchangeability-all-models. Inputs: $SNP_OUT/exchangeability_grid_{VAR}_CanESM5_12-14_redetrend.npz, _{VAR}_{s1961,s1978}moy_CanESM5_block12_redetrend.npz.",
+      "section": "ExchangeabilityMaps",
+      "sha256": "89b03aff8db3d0bff27860dbe48892d38d3e33e588b3e51e4bf0ef092269c8b5",
+      "source": "slides/pdf/exchangeability-canesm5.pdf",
+      "workflow": "exchangeability_check"
+    },
+    {
+      "command": "python scripts/exchangeability_check.py figure-slides",
+      "dest": "Presentation/ExchangeabilityMaps/png/exchangeability-all-models.png",
+      "note": "All members pooled (5 November models for DJF lead 2-4; 6 models for the decade). Rows: DJF lead months 2-4, one value per start date; the s1961/s1978 decade with each model's month-of-year climatology removed. Excess I(M; X, Y) where p <= 0.05, exact nulls (per-member detrend inside the test; per start date / 12-month blocks), 200 permutations. Inputs: $SNP_OUT/exchangeability_grid_{VAR}_2-4_redetrend.npz, _{VAR}_{s1961,s1978}moy_block12_redetrend.npz.",
+      "section": "ExchangeabilityMaps",
+      "sha256": "bf1915f215d728b0ae94cbd97d301c978158d92d9c31b257eaae5803f47a05a2",
+      "source": "slides/png/exchangeability-all-models.png",
+      "workflow": "exchangeability_check"
+    },
+    {
+      "command": "python scripts/exchangeability_check.py figure-slides",
+      "dest": "Presentation/ExchangeabilityMaps/png/exchangeability-canesm5.png",
+      "note": "CanESM5 alone. Rows: DJF lead months 12-14 (CanESM5 starts in January, so its first full DJF is a year after the start), one value per start date; the s1961/s1978 decade, month-of-year climatology removed. Same statistic, nulls, colour scale and area axis as exchangeability-all-models. Inputs: $SNP_OUT/exchangeability_grid_{VAR}_CanESM5_12-14_redetrend.npz, _{VAR}_{s1961,s1978}moy_CanESM5_block12_redetrend.npz.",
+      "section": "ExchangeabilityMaps",
+      "sha256": "3dee5c651b4eb8183e7700493f876ef0046354270f62cefc2a44e3df6e0835e4",
+      "source": "slides/png/exchangeability-canesm5.png",
+      "workflow": "exchangeability_check"
+    },
+    {
+      "command": "python scripts/plots.py slides",
+      "dest": "Presentation/RhoLambdaMaps/pdf/rho-lambda-lead2-4.pdf",
+      "note": "All members pooled (five November models), DJF lead months 2-4, one value per start date. Top: Pearson rho RPC; bottom: Knuth lambda RPC with lambda_m and lambda_o from s_-n (observations' T values only, never tiled). Dots: the 5-95% interval of 1000 Eade bootstrap draws contains 1 (rho: boot fd; lambda: boot olmloo, full-data bins); green rings: lambda changes by more than itself from 0.5x to 1.5x bins; grey: rho_o <= 0 or lambda undefined. Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP,PRECT,TREFHT}_2-4.npz (scripts/boot.py; .claude/scripts/rho_lambda_boot.sbatch).",
+      "section": "RhoLambdaMaps",
+      "sha256": "9cdb10ce2fdfa5b397dfb4f95c6e774592a886b768c7cc748fe923a958872a50",
+      "source": "slides/pdf/rho-lambda-lead2-4.pdf",
+      "workflow": "plots"
+    },
+    {
+      "command": "python scripts/plots.py slides",
+      "dest": "Presentation/RhoLambdaMaps/pdf/rho-lambda-moy.pdf",
+      "note": "All members pooled (six models), the monthly decade with each model's month-of-year climatology removed: SLP and TREFHT s1961moy, PRECT s1978moy. Same rows, tests and marks as rho-lambda-lead2-4 (bootstrap resamples whole years). Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP_s1961moy,PRECT_s1978moy,TREFHT_s1961moy}.npz.",
+      "section": "RhoLambdaMaps",
+      "sha256": "ffaed79e5842e62aff5093f2cacdc4bc4dcc08adcad739b81a8f83901e953639",
+      "source": "slides/pdf/rho-lambda-moy.pdf",
+      "workflow": "plots"
+    },
+    {
+      "command": "python scripts/plots.py slides",
+      "dest": "Presentation/RhoLambdaMaps/png/rho-lambda-lead2-4.png",
+      "note": "All members pooled (five November models), DJF lead months 2-4, one value per start date. Top: Pearson rho RPC; bottom: Knuth lambda RPC with lambda_m and lambda_o from s_-n (observations' T values only, never tiled). Dots: the 5-95% interval of 1000 Eade bootstrap draws contains 1 (rho: boot fd; lambda: boot olmloo, full-data bins); green rings: lambda changes by more than itself from 0.5x to 1.5x bins; grey: rho_o <= 0 or lambda undefined. Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP,PRECT,TREFHT}_2-4.npz (scripts/boot.py; .claude/scripts/rho_lambda_boot.sbatch).",
+      "section": "RhoLambdaMaps",
+      "sha256": "e4e77338df6d55d4411fecbec47a7c45991557ecf7db4c6a4cc4d68cacc684c2",
+      "source": "slides/png/rho-lambda-lead2-4.png",
+      "workflow": "plots"
+    },
+    {
+      "command": "python scripts/plots.py slides",
+      "dest": "Presentation/RhoLambdaMaps/png/rho-lambda-moy.png",
+      "note": "All members pooled (six models), the monthly decade with each model's month-of-year climatology removed: SLP and TREFHT s1961moy, PRECT s1978moy. Same rows, tests and marks as rho-lambda-lead2-4 (bootstrap resamples whole years). Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP_s1961moy,PRECT_s1978moy,TREFHT_s1961moy}.npz.",
+      "section": "RhoLambdaMaps",
+      "sha256": "8953b951f7b3344c957b8a848be9e8fda9697c47f9ba2e7fbdf7ea1fca307f5a",
+      "source": "slides/png/rho-lambda-moy.png",
+      "workflow": "plots"
+    }
+  ],
+  "generated_by": "scripts/figure_sets.py",
+  "schema": 1
+}

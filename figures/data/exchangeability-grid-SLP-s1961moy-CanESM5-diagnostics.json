@@ -1,0 +1,87 @@
+{
+ "case": "SLP s1961moy",
+ "model": "CanESM5",
+ "null": "exact (raw members, per-member detrend inside the test), 200 permutations",
+ "note": "rejecting-area diagnostics; reference run: block 12 over all 120 months, exchangeability-grid-SLP-s1961moy-CanESM5-block12-redetrend.json",
+ "zonal_share_I_MXY_p_le_0.05_block12": {
+  "90S-30S": 0.056,
+  "30S-30N": 0.147,
+  "30N-90N": 0.04
+ },
+ "block24": {
+  "diag": "block24",
+  "T": 120,
+  "block": 24,
+  "I_MXY": {
+   "area_obs": 0.0748,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.0686,
+   "null_area_max": 0.0784,
+   "p_field": 0.0199
+  },
+  "Delta": {
+   "area_obs": 0.0659,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.0614,
+   "null_area_max": 0.0781,
+   "p_field": 0.0249
+  }
+ },
+ "drop1": {
+  "diag": "drop1",
+  "T": 108,
+  "block": 12,
+  "I_MXY": {
+   "area_obs": 0.0996,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.0665,
+   "null_area_max": 0.1006,
+   "p_field": 0.01
+  },
+  "Delta": {
+   "area_obs": 0.0695,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.0613,
+   "null_area_max": 0.0901,
+   "p_field": 0.0149
+  }
+ },
+ "first5": {
+  "diag": "first5",
+  "T": 60,
+  "block": 12,
+  "I_MXY": {
+   "area_obs": 0.1331,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.0667,
+   "null_area_max": 0.0892,
+   "p_field": 0.005
+  },
+  "Delta": {
+   "area_obs": 0.1035,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.0618,
+   "null_area_max": 0.0716,
+   "p_field": 0.005
+  }
+ },
+ "last5": {
+  "diag": "last5",
+  "T": 60,
+  "block": 12,
+  "I_MXY": {
+   "area_obs": 0.075,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.0703,
+   "null_area_max": 0.0883,
+   "p_field": 0.0348
+  },
+  "Delta": {
+   "area_obs": 0.0539,
+   "null_area_mean": 0.05,
+   "null_area_95pct": 0.0613,
+   "null_area_max": 0.0739,
+   "p_field": 0.2637
+  }
+ }
+}
