@@ -51,6 +51,12 @@ AntarcticIceMeltFracture and DiffusionParameterCalibration (their ADR 0018); cod
   file in a set folder that no entry lists.
 - Run all of this on a compute node, not a Sherlock login node.
 
+### Manuscript
+
+| section | figure | source script |
+|---|---|---|
+| `SuppInformation` | `estimator-toys` (png, pdf): seven lambda estimators on four toy problems with a known lambda, n = 33, 51, 120 | `scripts/estimator_toys.py` |
+
 ### Presentation
 
 | section | figure | source script |

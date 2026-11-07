@@ -1,5 +1,24 @@
 {
-  "entries": [],
+  "entries": [
+    {
+      "command": "python scripts/estimator_toys.py",
+      "dest": "Manuscript/SuppInformation/pdf/estimator-toys.pdf",
+      "note": "Which lambda estimator for N ~ 50, T ~ 30: seven estimators (production Knuth bins on raw values; Knuth on normal scores with >= 3 bins; equal-count rank bins; rank bins minus a 200-permutation null; Gaussian copula; KSG k = 4 on normal scores; KSG on raw values) on four toy problems with a known exact lambda (independent 0; Gaussian 0.8; skewed y = (exp(2u) - 1)/2, 0.8; non-monotonic y = x^2 + 0.75 z, 0.825), n = 33, 51, 120 pairs, 500 seeded draws; median and 5-95%. Numbers in figures/data/estimator-toys.json.",
+      "section": "SuppInformation",
+      "sha256": "dc643b2d621a4ff770bdab979842c97637ed98d9cb93c7ddae1175f31c025508",
+      "source": "supp-info/pdf/estimator-toys.pdf",
+      "workflow": "estimator_toys"
+    },
+    {
+      "command": "python scripts/estimator_toys.py",
+      "dest": "Manuscript/SuppInformation/png/estimator-toys.png",
+      "note": "Which lambda estimator for N ~ 50, T ~ 30: seven estimators (production Knuth bins on raw values; Knuth on normal scores with >= 3 bins; equal-count rank bins; rank bins minus a 200-permutation null; Gaussian copula; KSG k = 4 on normal scores; KSG on raw values) on four toy problems with a known exact lambda (independent 0; Gaussian 0.8; skewed y = (exp(2u) - 1)/2, 0.8; non-monotonic y = x^2 + 0.75 z, 0.825), n = 33, 51, 120 pairs, 500 seeded draws; median and 5-95%. Numbers in figures/data/estimator-toys.json.",
+      "section": "SuppInformation",
+      "sha256": "99a85715d176bf780f0c0f6284beda0788f4d5a143e54fb67f2ae8eef802472c",
+      "source": "supp-info/png/estimator-toys.png",
+      "workflow": "estimator_toys"
+    }
+  ],
   "generated_by": "scripts/figure_sets.py",
   "schema": 1
 }
