@@ -1,7 +1,7 @@
 """Every map and binning figure, from the outputs of run.py and boot.py.
 
     python scripts/plots.py     -> figures/{main-text,supp-info}/{png,pdf}/, json in figures/data/
-    python scripts/plots.py slides [lead2-4] [moy]
+    python scripts/plots.py slides [lead2-4] [moy] [canesm5]
                                 -> figures/slides/{png,pdf}/rho-lambda-<name>, copied into
                                    figures/Presentation/RhoLambdaMaps/ (needs boot fd + olmloo)
 
@@ -360,11 +360,15 @@ def production(name, oloo=False):
 
 
 SLIDE_CASES = {"lead2-4": [("SLP", "2-4"), ("PRECT", "2-4"), ("TREFHT", "2-4")],
-               "moy": [("SLP", "s1961moy"), ("PRECT", "s1978moy"), ("TREFHT", "s1961moy")]}
+               "moy": [("SLP", "s1961moy"), ("PRECT", "s1978moy"), ("TREFHT", "s1961moy")],
+               "canesm5": [("SLP", "CanESM5_12-14"), ("PRECT", "CanESM5_12-14"),
+                           ("TREFHT", "CanESM5_12-14")]}
 SLIDE_TITLE = {"lead2-4": "Signal-to-noise, DJF lead months 2-4  ·  one value per start date, "
                           "five November models pooled",
                "moy": "Signal-to-noise, decade with the seasonal cycle removed  ·  monthly, s1961 "
-                      "(PRECT s1978), six models pooled"}
+                      "(PRECT s1978), six models pooled",
+               "canesm5": "Signal-to-noise, CanESM5 alone  ·  DJF lead months 12-14 (its first full "
+                          "DJF after a January start), one value per start date"}
 
 
 def production_slides(name):
@@ -372,8 +376,10 @@ def production_slides(name):
     s_-n (bottom) for SLP, PRECT, TREFHT. Dots: the 5-95% interval of 1000 Eade bootstrap draws
     contains 1 -- rho from boot fd, lambda from its own boot olmloo (full-data bins kept); green
     rings on lambda dots, |lambda(1.5x bins) - lambda(0.5x bins)| > lambda(1x bins); grey, rho_o <= 0
-    or lambda undefined. -> figures/slides/{png,pdf}/rho-lambda-<name> (+ json in figures/data),
-    copied into Presentation/ by its manifest."""
+    or lambda undefined. No title: what each slide shows is in figures/slides/rho-lambda-README.txt
+    (SLIDE_TITLE has the one-line version), copied next to the slides as
+    Presentation/RhoLambdaMaps/README.txt. -> figures/slides/{png,pdf}/rho-lambda-<name> (+ json in
+    figures/data), copied into Presentation/ by its manifest."""
     from matplotlib.lines import Line2D
     rc = {"font.size": 13, "axes.titlesize": 15, "axes.labelsize": 13}
     res = {"figure": f"rho-lambda-{name}", "cells": {}}
@@ -381,6 +387,7 @@ def production_slides(name):
         fig = plt.figure(figsize=(13.33, 6.6), layout="constrained")
         gs = fig.add_gridspec(3, 3, height_ratios=(1, 1, 0.16))
         axs = []
+        sizes = {int(np.load(out("boot_fd", v, c))["N"]) for v, c in SLIDE_CASES[name]}
         for k, (var, case) in enumerate(SLIDE_CASES[name]):
             bt = np.load(out("boot_fd", var, case))
             kl = np.load(out("boot_olmloo", var, case))
@@ -405,11 +412,12 @@ def production_slides(name):
                         f"> 1: {100 * a['sig_gt1']:.0f}%   < 1: {100 * a['sig_lt1']:.0f}%",
                         transform=ax.transAxes, ha="center", va="top", fontsize=11, color=MUTED)
                 if i == 0:
-                    ax.set_title(f"{var}   (N={N}, T={T})" if k == 0 else f"{var}   (T={T})")
+                    ax.set_title(f"{var}   (N={N}, T={T})" if k == 0 or len(sizes) > 1
+                                 else f"{var}   (T={T})")              # N once if shared
                 if k == 0:
-                    ax.text(-0.05, 0.5, ("$\\rho$ RPC\n(Pearson)", "$\\lambda$ RPC\n"
-                            "($\\lambda_o$ from $\\tilde{s}_{-n}$)")[i], transform=ax.transAxes,
-                            rotation=90, ha="right", va="center", fontsize=13, color=INK)
+                    ax.text(-0.04, 0.5, ("$\\rho$ RPC", "$\\lambda$ RPC")[i],
+                            transform=ax.transAxes, rotation=90, ha="right", va="center",
+                            fontsize=14, color=INK)
         cax = fig.add_subplot(gs[2, :2]).inset_axes([0.15, 0.55, 0.7, 0.3])
         cb = fig.colorbar(plt.cm.ScalarMappable(norm=RPC_NORM, cmap=DIV), cax=cax,
                           orientation="horizontal", label="RPC")
@@ -429,9 +437,8 @@ def production_slides(name):
                    label="λ changes by more than itself from 0.5× to 1.5× bins"),
             Line2D([], [], marker="s", ms=8, lw=0, color=BED,
                    label="$\\rho_o \\leq 0$ or $\\lambda$ undefined")],
-            loc="center left", bbox_to_anchor=(-0.02, 0.5), frameon=False, fontsize=10,
-            ncol=1).set_in_layout(False)
-        fig.suptitle(SLIDE_TITLE[name], x=0.01, ha="left", fontsize=15, fontweight="bold")
+            loc="center left", bbox_to_anchor=(-0.02, 0.5), frameon=True, fancybox=False,
+            edgecolor=MUTED, borderpad=0.6, fontsize=10, ncol=1).set_in_layout(False)
         sty.save(fig, f"rho-lambda-{name}", dpi=200, folder="slides")
         plt.close(fig)
     with open(sty.data_path(f"rho-lambda-{name}.json"), "w") as fh:

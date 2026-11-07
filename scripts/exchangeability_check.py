@@ -556,10 +556,10 @@ def figure_model(model="CanESM5", block=12, redetrend=True):
 
 
 SLIDE_ROWS = {
-    "all-models": (("2-4", "_redetrend", "DJF, one value per start date\n(lead months 2-4)"),
-                   ("moy", "_block12_redetrend", "Monthly decade,\nseasonal cycle removed")),
-    "canesm5": (("CanESM5_12-14", "_redetrend", "DJF, one value per start date\n(lead months 12-14)"),
-                ("moy", "_CanESM5_block12_redetrend", "Monthly decade,\nseasonal cycle removed")),
+    "all-models": (("2-4", "_redetrend", "DJF, lead months 2-4"),
+                   ("moy", "_block12_redetrend", "Decade, seasonal cycle removed")),
+    "canesm5": (("CanESM5_12-14", "_redetrend", "DJF, lead months 12-14"),
+                ("moy", "_CanESM5_block12_redetrend", "Decade, seasonal cycle removed")),
 }
 SLIDE_TITLE = {"all-models": "All models pooled: members are not exchangeable",
                "canesm5": "CanESM5 alone: its members compared with each other"}
@@ -579,13 +579,14 @@ def _slide_grids(which):
 
 
 def figure_slides(which=("all-models", "canesm5")):
-    """Talk slides (16:9 width, room left for a slide title), one per member set: excess I(M; X, Y) where p <= ALPHA (flat grey
-    elsewhere) for SLP, PRECT, TREFHT in two designs (rows), and the share of area with
-    p <= ALPHA against its permutation null (5-95% bar, full range line). Colour scale and area
-    axis are shared by every slide, so the slides compare directly. Exact nulls only: per start
-    date for the DJF rows, 12-month blocks for the decade, the per-member detrend inside the test.
-    -> figures/slides/{png,pdf}/exchangeability-<which>, copied into Presentation/ by the
-    manifest."""
+    """Talk slides (16:9 width), one per member set, maps only: excess I(M; X, Y) where
+    p <= ALPHA (flat grey elsewhere) for SLP, PRECT, TREFHT (columns) in two designs (rows), the
+    share of area with p <= ALPHA under each map. The colour scale is shared by both slides, so
+    they compare directly. Exact nulls only: per start date for the DJF rows, 12-month blocks for
+    the decade, the per-member detrend inside the test. No title: what the slides show, and each
+    case's rejecting area against its permutation null, go to figures/slides/exchangeability-
+    README.txt (rewritten here). -> figures/slides/{png,pdf}/exchangeability-<which>, copied
+    into Presentation/ExchangeabilityMaps/ by the manifest."""
     import matplotlib.pyplot as plt
     from matplotlib.colors import LinearSegmentedColormap, Normalize
     import plots as P
@@ -595,7 +596,6 @@ def figure_slides(which=("all-models", "canesm5")):
     vmax = float(np.ceil(np.percentile(sig_vals, 98) * 100) / 100)
     area = {(w, k): 100 * _area(z) for w, zz in Z.items() for k, z in zz.items()}
     nulls = {(w, k): 100 * z["field_null_area_I_MXY"] for w, zz in Z.items() for k, z in zz.items()}
-    xmax = 10 * np.ceil(1.08 * max(max(area.values()), max(n.max() for n in nulls.values())) / 10)
     cmap = LinearSegmentedColormap.from_list("seq_sig", P.SEQ(np.linspace(0.22, 1.0, 256)))
     cmap.set_bad(style.GRID)
     norm = Normalize(0.0, vmax)
@@ -603,12 +603,11 @@ def figure_slides(which=("all-models", "canesm5")):
           "ytick.labelsize": 12}
     for w in ([which] if isinstance(which, str) else which):
         with plt.rc_context(rc):
-            fig = plt.figure(figsize=(13.33, 6.2), layout="constrained")     # slide width
-            gs = fig.add_gridspec(2, 4, width_ratios=(1, 1, 1, 0.8))
+            fig = plt.figure(figsize=(13.33, 6.0), layout="constrained")
+            gs = fig.add_gridspec(2, 3)
             maps = []
             for (i, v), z in Z[w].items():
                 ax = fig.add_subplot(gs[i, SLIDE_VARS.index(v)], projection=P.PROJ)
-                ax.set_anchor("S" if i == 0 else "N")                 # rows hug each other
                 maps.append(ax)
                 sig = z["I_MXY_p"] <= ALPHA
                 P.show(ax, np.where(sig, z["I_MXY_corrected"], np.nan), z["lats"], z["lons"],
@@ -617,49 +616,65 @@ def figure_slides(which=("all-models", "canesm5")):
                     sp.set(color=P.MUTED, lw=0.6)
                 if i == 0:
                     ax.set_title(v)
-                ax.text(0.5, -0.04, f"{area[w, (i, v)]:.0f}% of area   (R={int(z['R'])}, "
-                        f"T={int(z['T'])})", transform=ax.transAxes, ha="center", va="top",
+                ax.text(0.5, -0.04, f"{area[w, (i, v)]:.0f}% of area rejects    R={int(z['R'])}, "
+                        f"T={int(z['T'])}", transform=ax.transAxes, ha="center", va="top",
                         fontsize=11, color=P.MUTED)
                 if SLIDE_VARS.index(v) == 0:
-                    ax.text(-0.06, 0.5, SLIDE_ROWS[w][i][2], transform=ax.transAxes, ha="right",
-                            va="center", rotation=90, fontsize=12, color=style.INK)
+                    ax.text(-0.04, 0.5, SLIDE_ROWS[w][i][2], transform=ax.transAxes, ha="right",
+                            va="center", rotation=90, fontsize=13, color=style.INK)
             cb = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), ax=maps,
-                              orientation="horizontal", shrink=0.5, pad=0.03, aspect=40,
+                              orientation="horizontal", shrink=0.42, pad=0.03, aspect=38,
                               extend="max", label="excess $I(M; X, Y)$ where $p \\leq 0.05$ (bits)")
             cb.outline.set(color=P.MUTED, lw=0.6)
             cb.solids.set_rasterized(True)
-            ax = fig.add_subplot(gs[:, 3])
-            rows = [(i, v) for i in (0, 1) for v in SLIDE_VARS]
-            y = np.array([6.6 - k - (0.6 if k >= 3 else 0) for k in range(6)])
-            for yy, k in zip(y, rows):
-                n = nulls[w, k]
-                ax.hlines(yy, n.min(), n.max(), color="0.62", lw=1.2)
-                ax.hlines(yy, *np.percentile(n, [5, 95]), color="0.62", lw=6)
-                ax.plot(area[w, k], yy, "o", ms=9, color=style.INK, zorder=3)
-                ax.text(area[w, k] + 0.012 * xmax, yy + 0.18, f"{area[w, k]:.0f}%", fontsize=12,
-                        va="bottom", ha="left", color=style.INK)
-            ax.axvline(100 * ALPHA, color="0.45", lw=0.8, zorder=0)
-            ax.set_yticks(y, [v for _, v in rows])
-            for yy, lab in ((y[:3].mean(), "DJF"), (y[3:].mean(), "decade")):
-                ax.text(-0.30, yy, lab, transform=ax.get_yaxis_transform(), rotation=90,
-                        ha="center", va="center", fontsize=12, color=P.MUTED)
-            ax.set_ylim(y.min() - 0.7, y.max() + 0.7)
-            ax.set_xlim(0, xmax)
-            ax.set_xlabel("area with $p \\leq 0.05$ (%)")
-            ax.set_title("Area rejecting exchangeability", loc="left")
-            ax.text(100 * ALPHA, y.min() - 0.62, " 5% expected", fontsize=10, color="0.35",
-                    va="bottom")
-            from matplotlib.lines import Line2D
-            ax.legend(handles=[Line2D([], [], color="0.62", lw=6, label="null, 5-95%"),
-                               Line2D([], [], color=style.INK, marker="o", ms=8, lw=0,
-                                      label="observed")],
-                      loc="upper right", frameon=False, fontsize=11, handlelength=1.4)
-            style.tidy(ax, grid=False)
-            ax.spines["left"].set_visible(False)
-            ax.tick_params(axis="y", length=0)
-            fig.suptitle(SLIDE_TITLE[w], x=0.01, ha="left", fontsize=17, fontweight="bold")
             style.save(fig, f"exchangeability-{w}", dpi=200, folder="slides")
             plt.close(fig)
+    _slides_readme(Z, area, nulls)
+
+
+def _slides_readme(Z, area, nulls):
+    """figures/slides/exchangeability-README.txt: what the two ExchangeabilityMaps slides show and
+    each case's rejecting area against its permutation null (the numbers the slides leave out)."""
+    lines = ["ExchangeabilityMaps: are the ensemble members exchangeable?",
+             "===========================================================", "",
+             "Two slides, same layout and colour scale: columns SLP, PRECT, TREFHT; colour is the",
+             "excess I(M; X, Y) (observed minus its permutation-null mean, bits) where p <= 0.05,",
+             "flat grey elsewhere. M is the member label, X the mean of the other members, Y the",
+             "member. Under exchangeable members about 5% of the area rejects by chance.", "",
+             "  exchangeability-all-models  all members pooled: SLP_TITLE_ALL",
+             "  exchangeability-canesm5     CanESM5 alone: SLP_TITLE_CAN", "",
+             "Rows", "  DJF          one value per start date. All models: lead months 2-4, the five",
+             "               November models (CanESM5 starts in January and is not in that pool).",
+             "               CanESM5: lead months 12-14, its first full DJF (one year longer lead).",
+             "  Decade       the monthly decade s1961 (PRECT s1978), each model's month-of-year",
+             "               climatology removed: one continuous 120-month run per member.", "",
+             "Test: I(M; X, Y) with a member-label permutation null, 200 permutations, the per-member",
+             "detrend done inside the test (on raw members, so every permuted member is detrended",
+             "like the observed ones). DJF: labels permuted per start date (exact). Decade: in",
+             "12-month blocks (validated for lag-1 autocorrelation up to about 0.5; above that, as in",
+             "tropical TREFHT, the null over-rejects). Field significance: the permutations' own",
+             "area shares (spatial correlation kept).", "",
+             "Rejecting area (%), observed | permutation null 5-95% | field p", ""]
+    for w, label in (("all-models", "all members"), ("canesm5", "CanESM5")):
+        for (i, v), z in Z[w].items():
+            n = nulls[w, (i, v)]
+            pf = (1 + (n >= area[w, (i, v)]).sum()) / (n.size + 1)
+            row = SLIDE_ROWS[w][i][2]
+            lines.append(f"  {label:12s} {row:32s} {v:7s} {area[w, (i, v)]:5.1f} | "
+                         f"{np.percentile(n, 5):4.1f}-{np.percentile(n, 95):4.1f} | "
+                         f"{pf:.3f}   R={int(z['R'])}, T={int(z['T'])}")
+    lines += ["", "Regenerate (compute node, repository root):",
+              "  python scripts/exchangeability_check.py grid --case VAR:CASE [--model CanESM5] "
+              "--block {1,12} --redetrend",
+              "  python scripts/exchangeability_check.py figure-slides",
+              "  python scripts/figure_set.py Presentation refresh && ... verify",
+              "Inputs: $SNP_OUT/exchangeability_grid_*_redetrend.npz; per-case JSON in figures/data.", ""]
+    text = "\n".join(lines).replace("SLP_TITLE_ALL", SLIDE_TITLE["all-models"].split(": ", 1)[1]) \
+        .replace("SLP_TITLE_CAN", SLIDE_TITLE["canesm5"].split(": ", 1)[1])
+    import figure_sets
+    path = figure_sets.figures_root() / "slides" / "exchangeability-README.txt"
+    path.write_text(text)
+    print(f"-> slides/{path.name}")
 
 
 def _area(z):
