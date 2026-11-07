@@ -55,11 +55,20 @@
       "workflow": "plots"
     },
     {
+      "command": "python scripts/plots.py slides canesm5",
+      "dest": "Presentation/RhoLambdaMaps/pdf/rho-lambda-canesm5.pdf",
+      "note": "CanESM5 alone, DJF lead months 12-14 (its counterpart of lead 2-4), production lambda (Knuth bins on raw values). See RhoLambdaMaps/README.txt.",
+      "section": "RhoLambdaMaps",
+      "sha256": "9357d710b23408b62d2267ec076bddb2fe54d005636de0bbee65cfcfa4439e28",
+      "source": "slides/pdf/rho-lambda-canesm5.pdf",
+      "workflow": "plots"
+    },
+    {
       "command": "python scripts/plots.py slides",
       "dest": "Presentation/RhoLambdaMaps/pdf/rho-lambda-lead2-4.pdf",
       "note": "All members pooled (five November models), DJF lead months 2-4, one value per start date. Top: Pearson rho RPC; bottom: Knuth lambda RPC with lambda_m and lambda_o from s_-n (observations' T values only, never tiled). Dots: the 5-95% interval of 1000 Eade bootstrap draws contains 1 (rho: boot fd; lambda: boot olmloo, full-data bins); green rings: lambda changes by more than itself from 0.5x to 1.5x bins; grey: rho_o <= 0 or lambda undefined. Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP,PRECT,TREFHT}_2-4.npz (scripts/boot.py; .claude/scripts/rho_lambda_boot.sbatch).",
       "section": "RhoLambdaMaps",
-      "sha256": "39882ea1ec1df35a7811dd39de53203b2041413f1edcbe07e988f101530f7cad",
+      "sha256": "23e85ff60f7df4dd31a64859e65beedefd1dae39bae5337c87999311b1208cf0",
       "source": "slides/pdf/rho-lambda-lead2-4.pdf",
       "workflow": "plots"
     },
@@ -68,8 +77,17 @@
       "dest": "Presentation/RhoLambdaMaps/pdf/rho-lambda-moy.pdf",
       "note": "All members pooled (six models), the monthly decade with each model's month-of-year climatology removed: SLP and TREFHT s1961moy, PRECT s1978moy. Same rows, tests and marks as rho-lambda-lead2-4 (bootstrap resamples whole years). Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP_s1961moy,PRECT_s1978moy,TREFHT_s1961moy}.npz.",
       "section": "RhoLambdaMaps",
-      "sha256": "0507bb6b1cfb6b5efc251dbf02c98db433cb468fb1fa60fa6a3d08ff68d3687d",
+      "sha256": "cb1df44bd6c3fe8407c02143c36a0b0d1d1c78f2dedf47e61b8965feacf6b11b",
       "source": "slides/pdf/rho-lambda-moy.pdf",
+      "workflow": "plots"
+    },
+    {
+      "command": "python scripts/plots.py slides canesm5",
+      "dest": "Presentation/RhoLambdaMaps/png/rho-lambda-canesm5.png",
+      "note": "CanESM5 alone, DJF lead months 12-14 (its counterpart of lead 2-4), production lambda (Knuth bins on raw values). See RhoLambdaMaps/README.txt.",
+      "section": "RhoLambdaMaps",
+      "sha256": "b5bde389310ef6dc368696c278681d5ee3f6b2bae840eefce1f5683f57e6b5cf",
+      "source": "slides/png/rho-lambda-canesm5.png",
       "workflow": "plots"
     },
     {
@@ -77,7 +95,7 @@
       "dest": "Presentation/RhoLambdaMaps/png/rho-lambda-lead2-4.png",
       "note": "All members pooled (five November models), DJF lead months 2-4, one value per start date. Top: Pearson rho RPC; bottom: Knuth lambda RPC with lambda_m and lambda_o from s_-n (observations' T values only, never tiled). Dots: the 5-95% interval of 1000 Eade bootstrap draws contains 1 (rho: boot fd; lambda: boot olmloo, full-data bins); green rings: lambda changes by more than itself from 0.5x to 1.5x bins; grey: rho_o <= 0 or lambda undefined. Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP,PRECT,TREFHT}_2-4.npz (scripts/boot.py; .claude/scripts/rho_lambda_boot.sbatch).",
       "section": "RhoLambdaMaps",
-      "sha256": "32421ed14cac6f46758f6797a6420a0977ec1d709144f3a3eb08a7936719499a",
+      "sha256": "ddeb0f8545e9c48901d71318aa99d85c64c23edbdfa7c32fe8ec478f79d5a2c5",
       "source": "slides/png/rho-lambda-lead2-4.png",
       "workflow": "plots"
     },
@@ -86,7 +104,7 @@
       "dest": "Presentation/RhoLambdaMaps/png/rho-lambda-moy.png",
       "note": "All members pooled (six models), the monthly decade with each model's month-of-year climatology removed: SLP and TREFHT s1961moy, PRECT s1978moy. Same rows, tests and marks as rho-lambda-lead2-4 (bootstrap resamples whole years). Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP_s1961moy,PRECT_s1978moy,TREFHT_s1961moy}.npz.",
       "section": "RhoLambdaMaps",
-      "sha256": "b4e1883916617c088d50274f0610a90fe996dabc9c7437029757936139f6c8ba",
+      "sha256": "4676609d84413c4c71c533fba2c4971c97e5becb5dc0e68516e82e7119a9c99b",
       "source": "slides/png/rho-lambda-moy.png",
       "workflow": "plots"
     },
@@ -104,7 +122,7 @@
       "dest": "Presentation/ToyModels/pdf/monotonic-lambda-rho.pdf",
       "note": "rho vs lambda as a monotonic (exponential) non-linearity grows; exact lambda = r = 0.8 throughout. N = 51, 500 seeded draws; see ToyModels/README.txt.",
       "section": "ToyModels",
-      "sha256": "576a86478909f89dec96fa60ee87717b4d04685fca9ce725ed7d36344c2ce506",
+      "sha256": "bd675db5c427bc5482f9dbb697a3c68909a5c79fb3cacdb27a405272eb1d11be",
       "source": "slides/pdf/monotonic-lambda-rho.pdf",
       "workflow": "monotonic_demo"
     },
@@ -113,7 +131,7 @@
       "dest": "Presentation/ToyModels/png/monotonic-lambda-rho.png",
       "note": "rho vs lambda as a monotonic (exponential) non-linearity grows; exact lambda = r = 0.8 throughout. N = 51, 500 seeded draws; see ToyModels/README.txt.",
       "section": "ToyModels",
-      "sha256": "bb9e76e218821f2cd9586f26d859333fc509701bcd9d6cef0333a4213173bc00",
+      "sha256": "cf50c2b5e2287064d58aa241a577ddf35e75cb693773f5039aa5f0e25d768a9b",
       "source": "slides/png/monotonic-lambda-rho.png",
       "workflow": "monotonic_demo"
     }

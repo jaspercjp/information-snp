@@ -9,6 +9,9 @@ seeded stream per case, so every mode sees the same draws. Modes:
     lmloo   Knuth lambda with lambda_m = lambda(I(f; s_-n)), s_-n sized on its T centres; each
             draw keeps the full-data bins (Knuth on exactly repeated years resolves the repeats)
     olmloo  lmloo with lambda_o = lambda(I(s_-n; o)), s_-n sized the same way
+    olmloo_ns  olmloo on normal scores (jugaad.cell scores=True): every variable rank-transformed
+            to a standard normal marginal before Knuth sizing and binning, in the full-data fit
+            and in every draw (the bins stay the full-data counts)
 """
 import argparse
 import time
@@ -20,7 +23,8 @@ from data import load, out
 
 KN = dict(rule="knuth", tiled=False)
 LAM = {"knuth": KN, "lmloo": dict(KN, s="loo", loo_size="T"),
-       "olmloo": dict(KN, s="loo", loo_size="T", o_vs="loo")}
+       "olmloo": dict(KN, s="loo", loo_size="T", o_vs="loo"),
+       "olmloo_ns": dict(KN, s="loo", loo_size="T", o_vs="loo", scores=True)}
 
 
 def draws(var, case, N, T, n, seed=2014):

@@ -157,23 +157,23 @@ def figure(res, n, r, seed):
 
         ax = axs[1]
         aa = np.linspace(0, 2, 200)
-        ax.plot(aa, rho_exact(aa, r), color=blue, lw=2, label="$\\rho$, exact")
+        ax.plot(aa, rho_exact(aa, r), color=blue, lw=2, label="ρ, exact")
         lo, md, hi = q("rho")
         ax.fill_between(A, lo, hi, color=blue, alpha=0.18, lw=0)
-        ax.plot(A, md, "o", color=blue, ms=6, label=f"$\\rho$, sample of $N$ = {n:,} (median, IQR)")
-        ax.axhline(r, color=green, lw=2, label="$\\lambda$, exact $= r$")
+        ax.plot(A, md, "o", color=blue, ms=6, label=f"ρ, sample of $N$ = {n:,} (median, IQR)")
+        ax.axhline(r, color=green, lw=2, label="λ, exact = $r$")
         lo, md, hi = q("lam_rank")
         ax.fill_between(A, lo, hi, color=green, alpha=0.18, lw=0)
-        ax.plot(A, md, "D", color=green, ms=6, label="$\\lambda$, rank bins (median, IQR)")
+        ax.plot(A, md, "D", color=green, ms=6, label="λ, rank bins (median, IQR)")
         ax.set_xlabel("strength of the monotonic non-linearity $a$")
-        ax.set_ylabel("$\\rho$ or $\\lambda$")
+        ax.set_ylabel("ρ or λ")
         ax.set_ylim(0, 1.05)
         ax.legend(frameon=True, fancybox=False, loc="lower left")
         style.tidy(ax)
-        style.panel_label(ax, "b", "$\\rho$ falls, $\\lambda$ should not")
+        style.panel_label(ax, "b", "ρ falls, λ should not")
 
         ax = axs[2]
-        ax.axhline(r, color=style.INK, lw=2, label="exact $= r$")
+        ax.axhline(r, color=style.INK, lw=2, label="exact = $r$")
         for k, c, m, ls, lab in (("lam_rank", green, "D", "-", "rank (equal-count) bins"),
                                  ("lam_knuth", orange, "s", "-", "Knuth bins (production)"),
                                  ("lam_knuth_ns", yellow, "o", "-",
@@ -185,15 +185,15 @@ def figure(res, n, r, seed):
                     else "none", mew=1.4)
         zero = 100 * (res["lam_knuth"] <= 1e-9).mean(0)
         if zero.max() > 0:
-            ax.text(0.98, 0.97, f"Knuth: $\\lambda$ = 0 in {zero.min():.0f}-{zero.max():.0f}% of "
+            ax.text(0.98, 0.97, f"Knuth: λ = 0 in {zero.min():.0f}-{zero.max():.0f}% of "
                     "draws\n(one bin chosen for a variable)", transform=ax.transAxes, ha="right",
                     va="top", fontsize=10.5, color=style.MUTED)
         ax.set_xlabel("strength of the monotonic non-linearity $a$")
-        ax.set_ylabel("$\\lambda$")
+        ax.set_ylabel("λ")
         ax.set_ylim(0, 1.05)
         ax.legend(frameon=True, fancybox=False, loc="lower left")
         style.tidy(ax)
-        style.panel_label(ax, "c", "$\\lambda$ estimators")
+        style.panel_label(ax, "c", "λ estimators")
         style.save(fig, NAME, dpi=200, folder="slides")
         plt.close(fig)
 

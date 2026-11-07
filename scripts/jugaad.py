@@ -73,13 +73,33 @@ def lam_bits(I):
     return np.sqrt(1 - np.power(2.0, -2 * np.maximum(np.asarray(I), 0.0)))
 
 
+def normal_scores(a):
+    """Rank transform to a standard normal marginal: Phi^-1((rank - 1/2) / n) over the finite
+    values of `a` (any shape; ties share their average rank, NaN stays NaN). Non-parametric: only
+    the ordering of the values is kept, so it is unchanged by any increasing transform of `a`."""
+    from scipy.special import ndtri
+    from scipy.stats import rankdata
+    a = np.asarray(a, dtype=float)
+    out = np.full(a.shape, np.nan)
+    ok = np.isfinite(a)
+    if ok.any():
+        out[ok] = ndtri((rankdata(a[ok]) - 0.5) / ok.sum())
+    return out
+
+
 def cell(f, o, s, p=None, rule="fd", alts=THESIS_ALTS, tiled=True, loo_size="pooled",
-         maxM=KNUTH_MAX, B=None, bins=None):
+         maxM=KNUTH_MAX, B=None, bins=None, scores=False):
     """One cell: f, p (N, T); o (T,); s (T,) or (N, T) s_-n. -> (I_o, I_m, (B_f, B_o, B_s, B_p)).
 
     tiled: o and a 1-D s are sized on their tiled series (thesis) or their T values (cap T).
     loo_size: (N, T) axes are sized on all N*T rows ("pooled") or their T centres (cap T).
-    bins: fixed (B_f, B_o, B_s, B_p) before alt, skipping the rule."""
+    bins: fixed (B_f, B_o, B_s, B_p) before alt, skipping the rule.
+    scores: replace each variable (f over its N T values, o over its T, s and p over all theirs) by
+    its normal scores before sizing and binning, so lambda depends only on ranks (invariant to
+    any monotonic distortion of a variable; equal-width bins on raw skewed values are not)."""
+    if scores:
+        f, o, s = normal_scores(f), normal_scores(o), normal_scores(s)
+        p = None if p is None else normal_scores(p)
     f = np.nan_to_num(np.asarray(f, dtype=float))
     N, T = f.shape
     f_j, o_j = f.ravel(), np.tile(o, N)
