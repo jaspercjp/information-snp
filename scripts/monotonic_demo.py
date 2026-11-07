@@ -1,7 +1,8 @@
 """Toy problem: a monotonic non-linearity lowers Pearson rho but leaves lambda unchanged.
 
     python scripts/monotonic_demo.py [--recompute] [--seed S] [--draws 20] [--n 1000000] [--r 0.8]
-        -> figures/slides/{png,pdf}/monotonic-lambda-rho, curves in figures/data/monotonic-lambda-rho.npz
+        -> figures/slides/{png,pdf}/monotonic-lambda-rho (panels a-e) and monotonic-lambda-rho-short
+           (a-d), curves in figures/data/monotonic-lambda-rho.npz
            (the npz is reused unless --recompute or the settings change)
 
 Model, per draw: x, z ~ N(0, 1) independent, N samples each;
@@ -147,7 +148,9 @@ def corner(ax, letter, note=None, y=0.95, x=0.03):
                     ha="left", va="center", fontsize=12, color=style.INK, zorder=20)
 
 
-def figure(res, n, r, seed):
+def figure(res, n, r, seed, short=False):
+    """The slide: (a)-(c) scatters, (d) rho and lambda, (e) the lambda estimators; short=True drops
+    (e) -> figures/slides/{png,pdf}/<NAME>-short."""
     import matplotlib.pyplot as plt
     rc = {"font.size": 13, "axes.titlesize": 14, "axes.labelsize": 13, "xtick.labelsize": 12,
           "ytick.labelsize": 12, "legend.fontsize": 11}
@@ -155,8 +158,9 @@ def figure(res, n, r, seed):
     one = lambda k: res[k][0]                                          # noqa: E731  draw 0
     logging.getLogger("fontTools").setLevel(logging.WARNING)       # infomeasure turns on INFO
     with plt.rc_context(rc):
-        fig = plt.figure(figsize=(13.33, 4.8), layout="constrained")
-        gs = fig.add_gridspec(3, 3, width_ratios=(1, 1.15, 1.15))
+        fig = plt.figure(figsize=(9.0 if short else 13.33, 4.8), layout="constrained")
+        gs = fig.add_gridspec(3, 2 if short else 3,
+                              width_ratios=(1, 1.15) if short else (1, 1.15, 1.15))
         x, u = draw_xu(n, r, seed, 0)                              # one draw, three values of a
         m = min(n, 100_000)
         for i, a in enumerate((0.0, 1.0, 2.0)):
@@ -174,7 +178,7 @@ def figure(res, n, r, seed):
                 ax.set_xticklabels([])
             else:
                 ax.set_xlabel("x (signal)")
-        axs = [None, fig.add_subplot(gs[:, 1]), fig.add_subplot(gs[:, 2])]
+        axs = [None, fig.add_subplot(gs[:, 1]), None if short else fig.add_subplot(gs[:, 2])]
 
         ax = axs[1]
         ax.plot(A, one("rho"), "o-", color=blue, ms=6, lw=2, label="ρ (Pearson)")
@@ -185,6 +189,10 @@ def figure(res, n, r, seed):
         ax.legend(frameon=True, fancybox=False, loc="lower left", fontsize=10)
         style.tidy(ax, grid=False)
         corner(ax, "d")
+        if short:
+            style.save(fig, NAME + "-short", dpi=200, folder="slides")
+            plt.close(fig)
+            return
 
         ax = axs[2]
         ax.axhline(r, color=style.INK, lw=2, label="exact = r")
@@ -227,6 +235,7 @@ def main():
         res = compute(a.draws, a.n, a.r, a.seed)
         np.savez_compressed(path, a=A, rho_exact=rho_exact(A, a.r), **res, **settings)
     figure(res, a.n, a.r, a.seed)
+    figure(res, a.n, a.r, a.seed, short=True)
     for k in res:
         md = np.median(res[k], axis=0)
         print(f"{k:10s} median at a = 0, 1, 2: {md[0]:.3f} {md[4]:.3f} {md[8]:.3f}")

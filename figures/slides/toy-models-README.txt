@@ -2,6 +2,7 @@ ToyModels: rho and lambda on synthetic data
 ===========================================
 
 monotonic-lambda-rho   A monotonic non-linearity lowers Pearson rho but not lambda.
+monotonic-lambda-rho-short   The same, panels (a)-(d) only (no estimator comparison).
 estimator-toys         Which lambda estimator for N ~ 50, T ~ 30 (also in Manuscript/SuppInformation).
 
 Model, one seeded draw of N = 1,000,000 pairs (enough that one sample suffices):

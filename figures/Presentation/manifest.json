@@ -113,7 +113,7 @@
       "dest": "Presentation/ToyModels/README.txt",
       "note": "Setup, panels and reading of the ToyModels slides.",
       "section": "ToyModels",
-      "sha256": "df9fadef6ac3a193cd182e8d4f265176646804b5fc027f12c0b7d4527b297c04",
+      "sha256": "5b521532734420a7c4d4d0b4b530f21493b6654db5fde90241da74405db989e2",
       "source": "slides/toy-models-README.txt",
       "workflow": "monotonic_demo"
     },
@@ -125,6 +125,15 @@
       "sha256": "00faa008ce2ab6c1a52470e345433c2a44decedefd7622119b7a274770ed82c4",
       "source": "supp-info/pdf/estimator-toys.pdf",
       "workflow": "estimator_toys"
+    },
+    {
+      "command": "python scripts/monotonic_demo.py",
+      "dest": "Presentation/ToyModels/pdf/monotonic-lambda-rho-short.pdf",
+      "note": "monotonic-lambda-rho without panel (e): the three scatters (a)-(c) and rho vs lambda (d). See ToyModels/README.txt.",
+      "section": "ToyModels",
+      "sha256": "e74c394707151832966211df317e8f9247e5330d2c84a5cd706d3a6edd92a97b",
+      "source": "slides/pdf/monotonic-lambda-rho-short.pdf",
+      "workflow": "monotonic_demo"
     },
     {
       "command": "python scripts/monotonic_demo.py",
@@ -143,6 +152,15 @@
       "sha256": "d348abbcec9dc4ea69d635ddd93669e30ae1b70f88051dab4163338d76e783e2",
       "source": "supp-info/png/estimator-toys.png",
       "workflow": "estimator_toys"
+    },
+    {
+      "command": "python scripts/monotonic_demo.py",
+      "dest": "Presentation/ToyModels/png/monotonic-lambda-rho-short.png",
+      "note": "monotonic-lambda-rho without panel (e): the three scatters (a)-(c) and rho vs lambda (d). See ToyModels/README.txt.",
+      "section": "ToyModels",
+      "sha256": "2c9328128bf4932b8fd610ec4c41180253523f0a5b99c70b5141c2c29a109d74",
+      "source": "slides/png/monotonic-lambda-rho-short.png",
+      "workflow": "monotonic_demo"
     },
     {
       "command": "python scripts/monotonic_demo.py",
