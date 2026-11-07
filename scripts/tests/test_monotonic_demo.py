@@ -36,6 +36,15 @@ def test_rank_lambda_is_the_same_at_every_a():
     assert np.allclose(vals, vals[0])
 
 
+
+def test_knuth_on_normal_scores_is_the_same_at_every_a():
+    rng = np.random.default_rng(2)
+    x = rng.standard_normal(51)
+    u = 0.8 * x + 0.6 * rng.standard_normal(51)
+    vals = [M.lam_knuth_ns(x, M.g(u, a)) for a in M.A]
+    assert np.allclose(vals, vals[0]) and vals[0] > 0
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

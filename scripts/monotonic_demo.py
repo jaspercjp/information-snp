@@ -23,6 +23,12 @@ single bin for a variable in 14-28% of draws and lambda is then exactly 0.
                  only ranks, which g_a keeps, so it is the same number at every a (exactly flat)
     lambda Knuth the production estimator (jugaad, boot olmloo): plug-in MI in bits on equal-width
                  bins, Knuth's bin count for each variable on its own N values (cap min(KNUTH_MAX, N))
+    lambda Knuth, normal scores
+                 the production estimator after a rank transform of each variable to normal scores
+                 (Phi^-1 of (rank - 1/2)/N): Gaussian marginals, so Knuth's count is sensible and
+                 the estimate depends only on ranks (exactly the same at every a). The proposed fix.
+                 (Knuth on the plain ranks fails: a uniform histogram is best fitted by ONE bin, so
+                 lambda = 0 in every draw.)
     lambda KSG   infomeasure's Kraskov-Stoegbauer-Grassberger estimator, k = 4 (nats)
 No bias correction. Common random numbers: every a reuses the same x and z of a draw (seeded per
 draw, [seed, d]), so the curves move only with a. Points: medians over the draws; bands: 25-75%.
@@ -73,13 +79,26 @@ def lam_knuth(x, y, Bx):
     return float(J.lam_bits(J.mi_bits(x, y, (Bx, J.knuth_bins(y, cap)))))
 
 
+def normal_scores(v):
+    """Phi^-1((rank - 1/2) / N): the rank transform to a standard normal marginal."""
+    from scipy.special import ndtri
+    from scipy.stats import rankdata
+    return ndtri((rankdata(v) - 0.5) / v.size)
+
+
+def lam_knuth_ns(x, y):
+    """The production Knuth lambda on normal scores of x and y."""
+    xs, ys = normal_scores(x), normal_scores(y)
+    return lam_knuth(xs, ys, J.knuth_bins(xs, min(J.KNUTH_MAX, x.size)))
+
+
 def lam_ksg(x, y):
     import infomeasure as im
     I = im.mutual_information(x, y, approach="metric", k=4)          # nats
     return float(np.sqrt(1 - np.exp(-2 * max(I, 0.0))))
 
 
-KEYS = ("rho", "lam_rank", "lam_knuth", "lam_ksg")
+KEYS = ("rho", "lam_rank", "lam_knuth", "lam_knuth_ns", "lam_ksg")
 
 
 def draw_xu(n, r, seed, d):
@@ -95,7 +114,7 @@ def one(args):
     x, u = draw_xu(n, r, seed, d)
     y = g(u, a)
     return (np.corrcoef(x, y)[0, 1], lam_rank(x, y, E.n_bins(n)),
-            lam_knuth(x, y, J.knuth_bins(x, min(J.KNUTH_MAX, n))), lam_ksg(x, y))
+            lam_knuth(x, y, J.knuth_bins(x, min(J.KNUTH_MAX, n))), lam_knuth_ns(x, y), lam_ksg(x, y))
 
 
 def compute(draws, n, r, seed):
@@ -155,12 +174,15 @@ def figure(res, n, r, seed):
 
         ax = axs[2]
         ax.axhline(r, color=style.INK, lw=2, label="exact $= r$")
-        for k, c, m, lab in (("lam_rank", green, "D", "rank (equal-count) bins"),
-                             ("lam_knuth", orange, "s", "Knuth bins (production)"),
-                             ("lam_ksg", yellow, "^", "KSG, $k$ = 4")):
+        for k, c, m, ls, lab in (("lam_rank", green, "D", "-", "rank (equal-count) bins"),
+                                 ("lam_knuth", orange, "s", "-", "Knuth bins (production)"),
+                                 ("lam_knuth_ns", yellow, "o", "-",
+                                  "Knuth bins on normal scores (fix)"),
+                                 ("lam_ksg", style.MUTED, "^", "--", "KSG, $k$ = 4")):
             lo, md, hi = q(k)
             ax.fill_between(A, lo, hi, color=c, alpha=0.18, lw=0)
-            ax.plot(A, md, m + "-", color=c, ms=6, lw=1.2, label=lab)
+            ax.plot(A, md, m + ls, color=c, ms=6, lw=1.2, label=lab, mfc=c if k != "lam_knuth_ns"
+                    else "none", mew=1.4)
         zero = 100 * (res["lam_knuth"] <= 1e-9).mean(0)
         if zero.max() > 0:
             ax.text(0.98, 0.97, f"Knuth: $\\lambda$ = 0 in {zero.min():.0f}-{zero.max():.0f}% of "

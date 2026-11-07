@@ -24,13 +24,20 @@ Panels
       Knuth bins   the production estimator (equal-width bins, Knuth's count per variable, cap
                    200); not invariant: as y skews, most of it falls in the lowest bins and lambda
                    collapses, 0.80 -> 0.77 -> 0.28 at a = 0, 1, 2
+      Knuth bins on normal scores   the proposed fix: the production estimator after a rank
+                   transform of each variable to normal scores, Phi^-1((rank - 1/2)/N). It depends
+                   only on ranks, so it is exactly the same at every a: 0.801 (it overlaps the
+                   rank-bin and KSG points at this N). Knuth on the plain ranks fails: a uniform
+                   histogram is best fitted by one bin, so lambda = 0 in every draw.
       KSG, k = 4   nearest-neighbour estimator (infomeasure): 0.80 at every a at this N
 
 Reading: the sample rho matches the exact curve (0.800, 0.611, 0.239 vs 0.80, 0.61, 0.22). It
 needs this N: with a skewed y the correlation is set by rare extremes (at a = 2 the median sample
 rho is 0.30 at N = 1e4, 0.25 at 1e5). At N = 51 (the T of SLP lead 2-4; --n 51 --draws 500) the
 sample rho falls only to 0.52 at a = 2, KSG drifts to 0.68, and Knuth's rule picks a single bin
-for a variable in 14-28% of draws, which makes the production lambda exactly 0.
+for a variable in 14-28% of draws, which makes the production lambda exactly 0. Knuth on normal
+scores at N = 51 (300 draws): 0.726 at every a and never 0 (Knuth picks 4 bins on the Gaussian
+marginals), against the production 0.73 / 0.66 / 0.67 at a = 0 / 1 / 2 with 16-26% zeros.
 
 Regenerate (compute node, repository root):
   python scripts/monotonic_demo.py [--recompute] [--draws 20] [--n 1000000] [--r 0.8]
