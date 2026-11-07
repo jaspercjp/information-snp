@@ -131,7 +131,7 @@
       "dest": "Presentation/ToyModels/pdf/monotonic-lambda-rho-short.pdf",
       "note": "monotonic-lambda-rho without panel (e): the three scatters (a)-(c) and rho vs lambda (d). See ToyModels/README.txt.",
       "section": "ToyModels",
-      "sha256": "e74c394707151832966211df317e8f9247e5330d2c84a5cd706d3a6edd92a97b",
+      "sha256": "b299c8e89a7851dd27b64da1c4c44604dee143b8045c8204d6adc11a0ff675b1",
       "source": "slides/pdf/monotonic-lambda-rho-short.pdf",
       "workflow": "monotonic_demo"
     },
@@ -140,7 +140,7 @@
       "dest": "Presentation/ToyModels/pdf/monotonic-lambda-rho.pdf",
       "note": "rho vs lambda as a monotonic (exponential) non-linearity grows; exact lambda = r = 0.8 throughout. N = 51, 500 seeded draws; see ToyModels/README.txt.",
       "section": "ToyModels",
-      "sha256": "d22dd5fd0e2c7bf67a2c37e76dc29334834ced619f9490b8dab0f9beee1c4357",
+      "sha256": "024644a3bbb4f6ec71a30e3a853b7c04b52c0dda71152303e5105ca1c36497ef",
       "source": "slides/pdf/monotonic-lambda-rho.pdf",
       "workflow": "monotonic_demo"
     },
@@ -158,7 +158,7 @@
       "dest": "Presentation/ToyModels/png/monotonic-lambda-rho-short.png",
       "note": "monotonic-lambda-rho without panel (e): the three scatters (a)-(c) and rho vs lambda (d). See ToyModels/README.txt.",
       "section": "ToyModels",
-      "sha256": "2c9328128bf4932b8fd610ec4c41180253523f0a5b99c70b5141c2c29a109d74",
+      "sha256": "29ad74b3870e66be2f11ffc4a5506000785e0ed3132938f4961ea6bbc469ac0b",
       "source": "slides/png/monotonic-lambda-rho-short.png",
       "workflow": "monotonic_demo"
     },
@@ -167,7 +167,7 @@
       "dest": "Presentation/ToyModels/png/monotonic-lambda-rho.png",
       "note": "rho vs lambda as a monotonic (exponential) non-linearity grows; exact lambda = r = 0.8 throughout. N = 51, 500 seeded draws; see ToyModels/README.txt.",
       "section": "ToyModels",
-      "sha256": "8193183195199acce244008aed4c508a29c4d614730cf1bc2046119d52b64145",
+      "sha256": "75f479ebeb9c09324cebd422d9b219352882da2ba6f4b46ec67e02ef65c2fbc4",
       "source": "slides/png/monotonic-lambda-rho.png",
       "workflow": "monotonic_demo"
     }

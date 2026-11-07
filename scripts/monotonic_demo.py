@@ -181,8 +181,8 @@ def figure(res, n, r, seed, short=False):
         axs = [None, fig.add_subplot(gs[:, 1]), None if short else fig.add_subplot(gs[:, 2])]
 
         ax = axs[1]
-        ax.plot(A, one("rho"), "o-", color=blue, ms=6, lw=2, label="ρ (Pearson)")
-        ax.plot(A, one("lam_ksg_ns"), "D-", color=green, ms=6, lw=2, label="λ (KSG on normal scores)")
+        ax.plot(A, one("rho"), "o-", color=blue, ms=6, lw=2, label="Pearson ρ")
+        ax.plot(A, one("lam_ksg_ns"), "D-", color=green, ms=6, lw=2, label="Granger-Lin λ")
         ax.set_xlabel("strength of non-linearity a")
         ax.set_ylabel("ρ or λ")
         ax.set_ylim(0, 1.05)
