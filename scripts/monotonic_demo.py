@@ -169,7 +169,7 @@ def figure(res, n, r, seed):
             ax.set_ylabel("y", fontsize=12)
             ax.yaxis.set_major_locator(plt.MaxNLocator(3))
             ax.tick_params(axis="y", labelsize=10)
-            style.tidy(ax)
+            style.tidy(ax, grid=False)
             if i < 2:
                 ax.set_xticklabels([])
             else:
@@ -183,7 +183,7 @@ def figure(res, n, r, seed):
         ax.set_ylabel("ρ or λ")
         ax.set_ylim(0, 1.05)
         ax.legend(frameon=True, fancybox=False, loc="lower left", fontsize=10)
-        style.tidy(ax)
+        style.tidy(ax, grid=False)
         corner(ax, "d")
 
         ax = axs[2]
@@ -204,7 +204,7 @@ def figure(res, n, r, seed):
         ax.set_ylabel("λ")
         ax.set_ylim(0, 1.05)
         ax.legend(frameon=True, fancybox=False, loc="lower left")
-        style.tidy(ax)
+        style.tidy(ax, grid=False)
         corner(ax, "e")
         style.save(fig, NAME, dpi=200, folder="slides")
         plt.close(fig)
