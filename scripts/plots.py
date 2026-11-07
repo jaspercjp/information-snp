@@ -376,7 +376,7 @@ def production_slides(name):
     s_-n (bottom) for SLP, PRECT, TREFHT. Dots: the 5-95% interval of 1000 Eade bootstrap draws
     contains 1 -- rho from boot fd, lambda from its own boot olmloo (full-data bins kept); green
     rings on lambda dots, |lambda(1.5x bins) - lambda(0.5x bins)| > lambda(1x bins); grey, rho_o <= 0
-    or lambda undefined. No title: what each slide shows is in figures/slides/rho-lambda-README.txt
+    or lambda_m ~ 0 (<= tables.FLOOR, where the ratio is not defined). No title: what each slide shows is in figures/slides/rho-lambda-README.txt
     (SLIDE_TITLE has the one-line version), copied next to the slides as
     Presentation/RhoLambdaMaps/README.txt. -> figures/slides/{png,pdf}/rho-lambda-<name> (+ json in
     figures/data), copied into Presentation/ by its manifest."""
@@ -436,7 +436,7 @@ def production_slides(name):
             Line2D([], [], marker="o", ms=8, lw=0, mfc="none", mec=GREEN, mew=1.2,
                    label="λ changes by more than itself from 0.5× to 1.5× bins"),
             Line2D([], [], marker="s", ms=8, lw=0, color=BED,
-                   label="$\\rho_o \\leq 0$ or $\\lambda$ undefined")],
+                   label="$\\rho_o \\leq 0$ or $\\lambda_m \\approx 0$")],
             loc="center left", bbox_to_anchor=(-0.02, 0.5), frameon=True, fancybox=False,
             edgecolor=MUTED, borderpad=0.6, fontsize=10, ncol=1).set_in_layout(False)
         sty.save(fig, f"rho-lambda-{name}", dpi=200, folder="slides")

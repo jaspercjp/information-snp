@@ -16,7 +16,7 @@ Marks
               monthly decade -- and N-3 members without). rho and lambda have separate bootstraps;
               lambda's keeps the full-data bins.
   green ring  on a dot: lambda changes by more than itself between 0.5x and 1.5x the bin count.
-  grey        rho_o <= 0, or lambda undefined (lambda_m <= 0.02).
+  grey        rho_o <= 0, or lambda_m ~ 0 (<= 0.02, where lambda_o / lambda_m is not defined).
   under each map: share of the area not significant, significantly > 1, significantly < 1.
 
 Slides
