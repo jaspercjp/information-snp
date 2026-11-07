@@ -15,8 +15,8 @@ rho(x, y) = a r / sqrt(exp(a^2) - 1) falls (0.80, 0.61, 0.22 at a = 0, 1, 2).
 Every a reuses the same x and z of a draw (common random numbers).
 
 Panels
-  (a) 100,000 samples of one draw at a = 0, 1, 2, one grey; y on its own scale (0.1-99.9% range
-      shown): the cloud goes from symmetric to strongly skewed as a grows.
+  (a) 100,000 samples of one draw at a = 0, 1, 2, one grey; each panel has its own y axis
+      (0.1-99.9% range shown): the cloud goes from symmetric to strongly skewed as a grows.
   (b) rho: exact curve and the sample value (median and interquartile range over the draws);
       lambda: exact (= r) and KSG on normal scores, the estimator the maps now use (0.800 at
       every a).
@@ -25,7 +25,7 @@ Panels
                    at every a
       rank bins    plug-in MI on 100 x 100 equal-count bins; sees only ranks, which g_a keeps,
                    so it is exactly flat: 0.801 at every a
-      Knuth bins   the production estimator (equal-width bins, Knuth's count per variable, cap
+      Knuth bins   the old production estimator (equal-width bins, Knuth's count per variable, cap
                    200); not invariant: as y skews, most of it falls in the lowest bins and lambda
                    collapses, 0.80 -> 0.77 -> 0.28 at a = 0, 1, 2
       Knuth bins on normal scores   the proposed fix: the production estimator after a rank
@@ -33,7 +33,8 @@ Panels
                    only on ranks, so it is exactly the same at every a: 0.801 (it overlaps the
                    rank-bin and KSG points at this N). Knuth on the plain ranks fails: a uniform
                    histogram is best fitted by one bin, so lambda = 0 in every draw.
-      KSG, k = 4   nearest-neighbour estimator (infomeasure): 0.80 at every a at this N
+      KSG on raw values   KSG, k = 4, without the rank transform (infomeasure): 0.80 at every a
+                   at this N, but it drifts with the skew at small N
 
 Reading: the sample rho matches the exact curve (0.800, 0.611, 0.239 vs 0.80, 0.61, 0.22). It
 needs this N: with a skewed y the correlation is set by rare extremes (at a = 2 the median sample
@@ -45,7 +46,7 @@ marginals), against the production 0.73 / 0.66 / 0.67 at a = 0 / 1 / 2 with 16-2
 
 Regenerate (compute node, repository root):
   python scripts/monotonic_demo.py [--recompute] [--draws 20] [--n 1000000] [--r 0.8]
-      (~5 min on 16 cores; KSG takes ~25 s per call at this N)
+      (~8 min on 16 cores; KSG takes ~25 s per call at this N)
   python scripts/figure_set.py Presentation refresh && ... verify
 Curves: figures/data/monotonic-lambda-rho.npz; tests: scripts/tests/test_monotonic_demo.py.
 
