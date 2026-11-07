@@ -57,6 +57,7 @@ AntarcticIceMeltFracture and DiffusionParameterCalibration (their ADR 0018); cod
 |---|---|---|
 | `ExchangeabilityMaps` | `exchangeability-all-models`, `exchangeability-canesm5` (png, pdf) | `scripts/exchangeability_check.py figure-slides` |
 | `RhoLambdaMaps` | `rho-lambda-lead2-4`, `rho-lambda-moy`, `rho-lambda-canesm5` (CanESM5, DJF lead 12-14) (png, pdf) | `scripts/plots.py slides` (needs `boot.py` fd + olmloo for the six cases: `.claude/scripts/rho_lambda_boot.sbatch`) |
+| `ToyModels` | `monotonic-lambda-rho` (png, pdf): a monotonic non-linearity lowers rho, not lambda | `scripts/monotonic_demo.py` |
 
 ## Style
 
