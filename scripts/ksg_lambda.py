@@ -7,14 +7,17 @@
 
 Per grid cell, F (N, T) members, o (T,) observations, s the member mean, s_-n the mean of the others:
     lambda_o = lambda(I(o; s))        KSG on the T pairs (o_t, s_t): o never repeated per member
-    lambda_m = <lambda(I(f_n; s_-n))>_n  KSG on each member's T pairs (f_nt, s_-n,t), averaged over a
-                                      seeded random 16 of the members (all if fewer): the analogue
+    lambda_m = lambda(<I(f_n; s_-n)>_n)  KSG on each member's T pairs (f_nt, s_-n,t); the raw I
+                                      (negative values kept) averaged over a seeded random 16 of
+                                      the members (all if fewer), then one lambda: the analogue
                                       of rho_m = <corr(f_n, s_-n)>_n (jugaad.rho_measures). Pooling
                                       the N T pairs is wrong for KSG: s_-n,t is nearly the same for
                                       every member at a time t, so the pooled sample is T tight
                                       clusters and KSG overestimates I (lambda_m 0.64 vs rho_m 0.29
                                       on SLP lead 2-4); per member, lambda_o and lambda_m are both
-                                      from T pairs, so their small-sample biases match.
+                                      from T pairs, so their small-sample biases match. Averaging
+                                      lambdas clipped at 0 instead biases lambda_m up where the
+                                      dependence is weak (0.15 vs rho_m 0.03 in the moy decade).
     RPC = lambda_o / lambda_m,  lambda = sqrt(1 - exp(-2 I)), I in nats, clipped at 0
 Each variable is replaced by its normal scores Phi^-1((rank - 1/2)/n) over its own sample (o and s
 over T; f and s_-n over N T) before KSG, so lambda depends only on ranks; then a 1e-9 jitter
@@ -57,11 +60,16 @@ def lam(I):
     return float(np.sqrt(1 - np.exp(-2 * max(I, 0.0))))
 
 
-def ksg_lambda(x, y, rng):
-    """lambda from KSG on normal scores of x and y, ties broken by a tiny jitter."""
+def ksg_scores_mi(x, y, rng):
+    """KSG I (nats, unclipped) on normal scores of x and y, ties broken by a tiny jitter."""
     xs = J.normal_scores(x) + JITTER * rng.standard_normal(x.size)
     ys = J.normal_scores(y) + JITTER * rng.standard_normal(y.size)
-    return lam(ksg_mi(xs, ys))
+    return ksg_mi(xs, ys)
+
+
+def ksg_lambda(x, y, rng):
+    """lambda from KSG on normal scores of x and y."""
+    return lam(ksg_scores_mi(x, y, rng))
 
 
 def cell(f, o, rng, m=M_MEMBERS):
@@ -70,8 +78,8 @@ def cell(f, o, rng, m=M_MEMBERS):
     s = f.mean(0)
     s_loo = (f.sum(0, keepdims=True) - f) / (N - 1)
     lo = ksg_lambda(o, s, rng)
-    lm = float(np.mean([ksg_lambda(f[n], s_loo[n], rng)
-                        for n in rng.choice(N, min(m, N), replace=False)]))
+    lm = lam(float(np.mean([ksg_scores_mi(f[n], s_loo[n], rng)
+                            for n in rng.choice(N, min(m, N), replace=False)])))
     return lo, lm
 
 
