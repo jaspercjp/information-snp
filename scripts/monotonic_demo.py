@@ -136,6 +136,17 @@ def compute(draws, n, r, seed):
     return {k: vals[..., i] for i, k in enumerate(KEYS)}
 
 
+def corner(ax, letter, note=None, y=0.95, x=0.03):
+    """Bold (letter) in the upper-left corner of ax, and an optional note to its right, both
+    centred on the same height y (axes fraction)."""
+    t = ax.text(x, y, f"({letter})", transform=ax.transAxes, ha="left", va="center",
+                fontsize=14, fontweight="bold", color=style.INK, zorder=20,
+                bbox=dict(boxstyle="square,pad=0.15", fc="white", ec="none"))
+    if note:
+        ax.annotate(note, xy=(1, 0.5), xycoords=t, xytext=(6, 0), textcoords="offset points",
+                    ha="left", va="center", fontsize=12, color=style.INK, zorder=20)
+
+
 def figure(res, n, r, seed):
     import matplotlib.pyplot as plt
     rc = {"font.size": 13, "axes.titlesize": 14, "axes.labelsize": 13, "xtick.labelsize": 12,
@@ -154,9 +165,7 @@ def figure(res, n, r, seed):
             ax.plot(x[:m], y, ",", color="0.3", alpha=0.25, rasterized=True)
             ax.set_ylim(*np.percentile(y, [0.1, 99.9]))
             ax.set_xlim(-4, 4)
-            style.panel_label(ax, "abc"[i], inside=True)              # bold (a)-(c), upper left
-            ax.text(0.115, 0.975, f"a = {a:g}", transform=ax.transAxes, ha="left", va="top",
-                    fontsize=12, color=style.INK, zorder=20)
+            corner(ax, "abc"[i], f"a = {a:g}", y=0.86)
             ax.set_ylabel("y", fontsize=12)
             ax.yaxis.set_major_locator(plt.MaxNLocator(3))
             ax.tick_params(axis="y", labelsize=10)
@@ -170,12 +179,12 @@ def figure(res, n, r, seed):
         ax = axs[1]
         ax.plot(A, one("rho"), "o-", color=blue, ms=6, lw=2, label="ρ (Pearson)")
         ax.plot(A, one("lam_ksg_ns"), "D-", color=green, ms=6, lw=2, label="λ (KSG on normal scores)")
-        ax.set_xlabel("strength of the monotonic non-linearity a")
+        ax.set_xlabel("strength of non-linearity a")
         ax.set_ylabel("ρ or λ")
         ax.set_ylim(0, 1.05)
         ax.legend(frameon=True, fancybox=False, loc="lower left", fontsize=10)
         style.tidy(ax)
-        style.panel_label(ax, "d", "ρ falls, λ should not")
+        corner(ax, "d")
 
         ax = axs[2]
         ax.axhline(r, color=style.INK, lw=2, label="exact = r")
@@ -191,12 +200,12 @@ def figure(res, n, r, seed):
             ax.text(0.98, 0.97, f"Knuth: λ = 0 in {zero.min():.0f}-{zero.max():.0f}% of "
                     "draws\n(one bin chosen for a variable)", transform=ax.transAxes, ha="right",
                     va="top", fontsize=10.5, color=style.MUTED)
-        ax.set_xlabel("strength of the monotonic non-linearity a")
+        ax.set_xlabel("strength of non-linearity a")
         ax.set_ylabel("λ")
         ax.set_ylim(0, 1.05)
         ax.legend(frameon=True, fancybox=False, loc="lower left")
         style.tidy(ax)
-        style.panel_label(ax, "e", "λ estimators")
+        corner(ax, "e")
         style.save(fig, NAME, dpi=200, folder="slides")
         plt.close(fig)
 
