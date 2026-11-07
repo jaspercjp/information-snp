@@ -3,7 +3,7 @@ ToyModels: rho and lambda on synthetic data
 
 monotonic-lambda-rho   A monotonic non-linearity lowers Pearson rho but not lambda.
 
-Model, per draw of N = 51 pairs (the T of SLP lead 2-4), 500 seeded draws:
+Model, per draw of N = 1,000,000 pairs, 20 draws (seeded per draw):
   x, z ~ N(0, 1) independent          x plays the predictable signal (ensemble mean)
   u = r x + sqrt(1 - r^2) z, r = 0.8  (x, u) bivariate Gaussian, correlation r
   y = g_a(u) = (exp(a u) - 1) / a     y plays the observations; g_0(u) = u; increasing, skewed
@@ -14,21 +14,26 @@ rho(x, y) = a r / sqrt(exp(a^2) - 1) falls (0.80, 0.61, 0.22 at a = 0, 1, 2).
 Every a reuses the same x and z of a draw (common random numbers).
 
 Panels
-  (a) one draw at a = 0, 1, 2; y standardised.
+  (a) 100,000 samples of one draw at a = 0, 1, 2; y on its own scale (0.1-99.9% range shown):
+      the cloud goes from symmetric to strongly skewed as a grows.
   (b) rho: exact curve and the sample value (median and interquartile range over the draws);
       lambda: exact (= r) and the rank-bin estimate.
   (c) three lambda estimators against the exact lambda:
-      rank bins    plug-in MI on 4 x 4 equal-count bins; sees only ranks, which g_a keeps, so it
-                   is exactly flat (its level, 0.77, is below r: coarse bins on 51 points)
-      Knuth bins   the production estimator (equal-width bins, Knuth's count per variable on its
-                   51 values); it picks a single bin for a variable in 14-28% of draws, which
-                   makes lambda exactly 0
-      KSG, k = 4   nearest-neighbour estimator (infomeasure); drifts down as y skews
+      rank bins    plug-in MI on 100 x 100 equal-count bins; sees only ranks, which g_a keeps,
+                   so it is exactly flat: 0.801 at every a
+      Knuth bins   the production estimator (equal-width bins, Knuth's count per variable, cap
+                   200); not invariant: as y skews, most of it falls in the lowest bins and lambda
+                   collapses, 0.80 -> 0.77 -> 0.28 at a = 0, 1, 2
+      KSG, k = 4   nearest-neighbour estimator (infomeasure): 0.80 at every a at this N
 
-Reading: at N = 51 the sample rho falls much less than the exact rho (0.52 vs 0.22 at a = 2):
-with a skewed y the population rho is set by rare extremes that 51 samples seldom contain.
+Reading: the sample rho matches the exact curve (0.800, 0.611, 0.239 vs 0.80, 0.61, 0.22). It
+needs this N: with a skewed y the correlation is set by rare extremes (at a = 2 the median sample
+rho is 0.30 at N = 1e4, 0.25 at 1e5). At N = 51 (the T of SLP lead 2-4; --n 51 --draws 500) the
+sample rho falls only to 0.52 at a = 2, KSG drifts to 0.68, and Knuth's rule picks a single bin
+for a variable in 14-28% of draws, which makes the production lambda exactly 0.
 
 Regenerate (compute node, repository root):
-  python scripts/monotonic_demo.py [--recompute] [--draws 500] [--n 51] [--r 0.8]
+  python scripts/monotonic_demo.py [--recompute] [--draws 20] [--n 1000000] [--r 0.8]
+      (~5 min on 16 cores; KSG takes ~25 s per call at this N)
   python scripts/figure_set.py Presentation refresh && ... verify
 Curves: figures/data/monotonic-lambda-rho.npz; tests: scripts/tests/test_monotonic_demo.py.
