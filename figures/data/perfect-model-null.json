@@ -1,0 +1,344 @@
+{
+ "rho SLP 2-4": {
+  "above": {
+   "area_obs": 0.06547280338327868,
+   "null_area_median": 0.041920625755499936,
+   "null_area_95pct": 0.09463534478310368,
+   "p_field": 0.25396825396825395
+  },
+  "below": {
+   "area_obs": 0.0073520391262642025,
+   "null_area_median": 0.024043098982005618,
+   "null_area_95pct": 0.1797672717599636,
+   "p_field": 0.9206349206349206
+  },
+  "N": 62,
+  "T": 51,
+  "alpha": 0.1,
+  "n_models": 5,
+  "null": "leave one model out, paired"
+ },
+ "lam SLP 2-4": {
+  "above": {
+   "area_obs": 0.028831344368727516,
+   "null_area_median": 0.048441579937580054,
+   "null_area_95pct": 0.07580305340431542,
+   "p_field": 0.746031746031746
+  },
+  "below": {
+   "area_obs": 0.0,
+   "null_area_median": 0.002514778461989351,
+   "null_area_95pct": 0.07608962694464878,
+   "p_field": 1.0
+  },
+  "N": 62,
+  "T": 51,
+  "alpha": 0.1,
+  "n_models": 5,
+  "null": "leave one model out, paired"
+ },
+ "rho PRECT 2-4": {
+  "above": {
+   "area_obs": 0.07692971854369868,
+   "null_area_median": 0.036544049054325234,
+   "null_area_95pct": 0.07464183290601774,
+   "p_field": 0.047619047619047616
+  },
+  "below": {
+   "area_obs": 0.01498943282180629,
+   "null_area_median": 0.03369172860143202,
+   "null_area_95pct": 0.13473546775986586,
+   "p_field": 1.0
+  },
+  "N": 62,
+  "T": 33,
+  "alpha": 0.1,
+  "n_models": 5,
+  "null": "leave one model out, paired"
+ },
+ "lam PRECT 2-4": {
+  "above": {
+   "area_obs": 0.018613943755647375,
+   "null_area_median": 0.044649449286896306,
+   "null_area_95pct": 0.06238309290017937,
+   "p_field": 1.0
+  },
+  "below": {
+   "area_obs": 0.0005991072041174877,
+   "null_area_median": 0.0012535661922365737,
+   "null_area_95pct": 0.020483665695416684,
+   "p_field": 0.7777777777777778
+  },
+  "N": 62,
+  "T": 33,
+  "alpha": 0.1,
+  "n_models": 5,
+  "null": "leave one model out, paired"
+ },
+ "rho TREFHT 2-4": {
+  "above": {
+   "area_obs": 0.11583754709714777,
+   "null_area_median": 0.03500960886109597,
+   "null_area_95pct": 0.10572442579921905,
+   "p_field": 0.06349206349206349
+  },
+  "below": {
+   "area_obs": 0.013858083378189761,
+   "null_area_median": 0.02618818124662048,
+   "null_area_95pct": 0.21312450620009776,
+   "p_field": 0.7777777777777778
+  },
+  "N": 62,
+  "T": 52,
+  "alpha": 0.1,
+  "n_models": 5,
+  "null": "leave one model out, paired"
+ },
+ "lam TREFHT 2-4": {
+  "above": {
+   "area_obs": 0.04741622361274781,
+   "null_area_median": 0.0416807192322363,
+   "null_area_95pct": 0.08616685769540011,
+   "p_field": 0.47619047619047616
+  },
+  "below": {
+   "area_obs": 0.0010796452720055086,
+   "null_area_median": 0.005220859132018572,
+   "null_area_95pct": 0.09570170229836257,
+   "p_field": 0.9206349206349206
+  },
+  "N": 62,
+  "T": 52,
+  "alpha": 0.1,
+  "n_models": 5,
+  "null": "leave one model out, paired"
+ },
+ "rho SLP s1961moy": {
+  "above": {
+   "area_obs": 0.03517193010982063,
+   "null_area_median": 0.019343208103767592,
+   "null_area_95pct": 0.12101170849350767,
+   "p_field": 0.3010752688172043
+  },
+  "below": {
+   "area_obs": 0.017643496284584056,
+   "null_area_median": 0.039124597675437,
+   "null_area_95pct": 0.1040322491828074,
+   "p_field": 0.8924731182795699
+  },
+  "N": 92,
+  "T": 120,
+  "alpha": 0.1,
+  "n_models": 6,
+  "null": "leave one model out, paired"
+ },
+ "lam SLP s1961moy": {
+  "above": {
+   "area_obs": 0.0002100995770187413,
+   "null_area_median": 0.03874589370028082,
+   "null_area_95pct": 0.07447018085281727,
+   "p_field": 1.0
+  },
+  "below": {
+   "area_obs": 0.0,
+   "null_area_median": 0.0,
+   "null_area_95pct": 0.0008001542873961701,
+   "p_field": 1.0
+  },
+  "N": 92,
+  "T": 120,
+  "alpha": 0.1,
+  "n_models": 6,
+  "null": "leave one model out, paired"
+ },
+ "rho PRECT s1978moy": {
+  "above": {
+   "area_obs": 0.01123032955833248,
+   "null_area_median": 0.03484113537540943,
+   "null_area_95pct": 0.0927299234455338,
+   "p_field": 0.9469026548672567
+  },
+  "below": {
+   "area_obs": 0.019202704478471708,
+   "null_area_median": 0.04002403098196064,
+   "null_area_95pct": 0.07465181929314613,
+   "p_field": 1.0
+  },
+  "N": 112,
+  "T": 120,
+  "alpha": 0.1,
+  "n_models": 6,
+  "null": "leave one model out, paired"
+ },
+ "lam PRECT s1978moy": {
+  "above": {
+   "area_obs": 0.0010276096887054192,
+   "null_area_median": 0.043798402060639306,
+   "null_area_95pct": 0.056412666726022805,
+   "p_field": 1.0
+  },
+  "below": {
+   "area_obs": 0.00045304034019471445,
+   "null_area_median": 0.0026737500441739153,
+   "null_area_95pct": 0.006840871304010541,
+   "p_field": 1.0
+  },
+  "N": 112,
+  "T": 120,
+  "alpha": 0.1,
+  "n_models": 6,
+  "null": "leave one model out, paired"
+ },
+ "rho TREFHT s1961moy": {
+  "above": {
+   "area_obs": 0.025891476682175455,
+   "null_area_median": 0.03315630622079194,
+   "null_area_95pct": 0.11245882578938776,
+   "p_field": 0.5929203539823009
+  },
+  "below": {
+   "area_obs": 0.05069704682507312,
+   "null_area_median": 0.04084043272702285,
+   "null_area_95pct": 0.08601341376750235,
+   "p_field": 0.36283185840707965
+  },
+  "N": 112,
+  "T": 120,
+  "alpha": 0.1,
+  "n_models": 6,
+  "null": "leave one model out, paired"
+ },
+ "lam TREFHT s1961moy": {
+  "above": {
+   "area_obs": 0.0057747211964846905,
+   "null_area_median": 0.03521828372323285,
+   "null_area_95pct": 0.09425955546575308,
+   "p_field": 1.0
+  },
+  "below": {
+   "area_obs": 0.001147101926138246,
+   "null_area_median": 0.0019984821642440517,
+   "null_area_95pct": 0.012033014873782995,
+   "p_field": 0.6814159292035398
+  },
+  "N": 112,
+  "T": 120,
+  "alpha": 0.1,
+  "n_models": 6,
+  "null": "leave one model out, paired"
+ },
+ "rho SLP CanESM5_12-14": {
+  "above": {
+   "area_obs": 0.0015006327498892423,
+   "null_area_median": 0.018167595429640474,
+   "null_area_95pct": 0.0680446746871528,
+   "p_field": 0.9523809523809523
+  },
+  "below": {
+   "area_obs": 0.2408142800284067,
+   "null_area_median": 0.014321636293142922,
+   "null_area_95pct": 0.07357312874672708,
+   "p_field": 0.047619047619047616
+  },
+  "N": 20,
+  "T": 58,
+  "alpha": 0.1,
+  "n_models": 1,
+  "null": "leave one member out"
+ },
+ "lam SLP CanESM5_12-14": {
+  "above": {
+   "area_obs": 0.0071468657657645426,
+   "null_area_median": 0.02830215507935761,
+   "null_area_95pct": 0.050273505046223174,
+   "p_field": 0.9523809523809523
+  },
+  "below": {
+   "area_obs": 0.10873615538136458,
+   "null_area_median": 0.007660265725971359,
+   "null_area_95pct": 0.04194232766304761,
+   "p_field": 0.047619047619047616
+  },
+  "N": 20,
+  "T": 58,
+  "alpha": 0.1,
+  "n_models": 1,
+  "null": "leave one member out"
+ },
+ "rho PRECT CanESM5_12-14": {
+  "above": {
+   "area_obs": 0.007282904297894009,
+   "null_area_median": 0.03783829581233332,
+   "null_area_95pct": 0.05559964333103388,
+   "p_field": 1.0
+  },
+  "below": {
+   "area_obs": 0.15871978022798636,
+   "null_area_median": 0.0352935408192538,
+   "null_area_95pct": 0.06531294066437812,
+   "p_field": 0.024390243902439025
+  },
+  "N": 40,
+  "T": 42,
+  "alpha": 0.1,
+  "n_models": 1,
+  "null": "leave one member out"
+ },
+ "lam PRECT CanESM5_12-14": {
+  "above": {
+   "area_obs": 0.021506502842959546,
+   "null_area_median": 0.038850231728590756,
+   "null_area_95pct": 0.04941678699658683,
+   "p_field": 1.0
+  },
+  "below": {
+   "area_obs": 0.0553545139593005,
+   "null_area_median": 0.003304623893710353,
+   "null_area_95pct": 0.015376095258133772,
+   "p_field": 0.024390243902439025
+  },
+  "N": 40,
+  "T": 42,
+  "alpha": 0.1,
+  "n_models": 1,
+  "null": "leave one member out"
+ },
+ "rho TREFHT CanESM5_12-14": {
+  "above": {
+   "area_obs": 0.0028567996703268237,
+   "null_area_median": 0.04011287079946475,
+   "null_area_95pct": 0.09125334867301395,
+   "p_field": 1.0
+  },
+  "below": {
+   "area_obs": 0.4919960458777789,
+   "null_area_median": 0.037527913620099655,
+   "null_area_95pct": 0.10092673425616698,
+   "p_field": 0.024390243902439025
+  },
+  "N": 40,
+  "T": 60,
+  "alpha": 0.1,
+  "n_models": 1,
+  "null": "leave one member out"
+ },
+ "lam TREFHT CanESM5_12-14": {
+  "above": {
+   "area_obs": 0.009281844029667247,
+   "null_area_median": 0.045767026253600435,
+   "null_area_95pct": 0.06922491288647713,
+   "p_field": 1.0
+  },
+  "below": {
+   "area_obs": 0.2310768003178726,
+   "null_area_median": 0.015402969048933075,
+   "null_area_95pct": 0.03709449841930985,
+   "p_field": 0.024390243902439025
+  },
+  "N": 40,
+  "T": 60,
+  "alpha": 0.1,
+  "n_models": 1,
+  "null": "leave one member out"
+ }
+}
