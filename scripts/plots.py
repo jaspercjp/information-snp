@@ -371,14 +371,15 @@ SLIDE_TITLE = {"lead2-4": "Signal-to-noise, DJF lead months 2-4  ·  one value p
                           "DJF after a January start), one value per start date"}
 
 
-def production_slides(name, lam="ksg"):
+def production_slides(name, lam="ksg", stipple=True):
     """Talk slide (16:9 width): rho RPC (top) and lambda RPC (bottom) for SLP, PRECT, TREFHT.
     lambda: KSG on normal scores (ksg_lambda.py; boot_ksg), lambda_o from the T pairs (o, s) and
     lambda_m from the member-averaged I(f_n; s_-n). lambda="knuth" draws the former production
     lambda instead (Knuth bins on raw values, boot olmloo, with green rings where it is
     bin-sensitive). Dots: the 5-95% interval of the Eade bootstrap draws contains 1 (rho: 1000 draws
     of boot fd; lambda: 200 of boot_ksg); grey, rho_o <= 0 or lambda_m ~ 0 (<= tables.FLOOR, where
-    the ratio is not defined). No title: what each slide shows is in figures/slides/rho-lambda-README.txt
+    the ratio is not defined). stipple=False: the same maps without dots or rings, to see the colours
+    (the significance shares stay under each map), saved as rho-lambda-<name>-nostipple. No title: what each slide shows is in figures/slides/rho-lambda-README.txt
     (SLIDE_TITLE has the one-line version), copied next to the slides as
     Presentation/RhoLambdaMaps/README.txt. -> figures/slides/{png,pdf}/rho-lambda-<name> (+ json in
     figures/data), copied into Presentation/ by its manifest."""
@@ -408,7 +409,12 @@ def production_slides(name, lam="ksg"):
                 ax = fig.add_subplot(gs[i, k], projection=PROJ)
                 axs.append(ax)
                 lo, hi = q(B, 5), q(B, 95)
-                ns, rg, valid = rpc_panel(ax, r, lats, lons, lo, hi, keep, ring, GREEN, s)
+                if stipple:
+                    ns, rg, valid = rpc_panel(ax, r, lats, lons, lo, hi, keep, ring, GREEN, s)
+                else:                                              # same numbers, no marks drawn
+                    _, _, valid = rpc_panel(ax, r, lats, lons, None, None, keep, None, GREEN, s)
+                    ns = valid & (lo <= 1) & (hi >= 1)
+                    rg = ns & ring if ring is not None else np.zeros_like(ns)
                 a = {"not_sig": wfrac(W, ns, valid), "sig_gt1": wfrac(W, valid & (lo > 1), valid),
                      "sig_lt1": wfrac(W, valid & (hi < 1), valid), "ring": wfrac(W, rg, valid),
                      "grey": 1 - float((W * valid).sum() / W.sum()), "N": N, "T": T,
@@ -437,8 +443,9 @@ def production_slides(name, lam="ksg"):
         leg_ax = fig.add_subplot(gs[2, 2])
         leg_ax.set_axis_off()
         handles = [Line2D([], [], color=INK, marker="o", ms=5, lw=0,
-                          label="not significant: bootstrap 5-95% interval contains 1")]
-        if lam != "ksg":
+                          label="not significant: bootstrap 5-95% interval contains 1")] \
+            if stipple else []
+        if lam != "ksg" and stipple:
             handles.append(Line2D([], [], marker="o", ms=8, lw=0, mfc="none", mec=GREEN, mew=1.2,
                                   label="λ changes by more than itself from 0.5× to 1.5× bins"))
         handles.append(Line2D([], [], marker="s", ms=8, lw=0, color=BED,
@@ -446,10 +453,12 @@ def production_slides(name, lam="ksg"):
         leg_ax.legend(handles=handles,
             loc="center left", bbox_to_anchor=(-0.02, 0.5), frameon=True, fancybox=False,
             edgecolor=MUTED, borderpad=0.6, fontsize=10, ncol=1).set_in_layout(False)
-        sty.save(fig, f"rho-lambda-{name}", dpi=200, folder="slides")
+        sty.save(fig, f"rho-lambda-{name}" + ("" if stipple else "-nostipple"), dpi=200,
+                 folder="slides")
         plt.close(fig)
-    with open(sty.data_path(f"rho-lambda-{name}.json"), "w") as fh:
-        json.dump(res, fh, indent=1)
+    if stipple:
+        with open(sty.data_path(f"rho-lambda-{name}.json"), "w") as fh:
+            json.dump(res, fh, indent=1)
 
 
 KSG_ROW = ("λ RPC, Knuth bins (old)", "λ RPC, KSG on normal scores (new)")
@@ -553,6 +562,7 @@ def main():
     if sys.argv[1:2] == ["slides"]:
         for name in sys.argv[2:] or SLIDE_CASES:
             production_slides(name)
+            production_slides(name, stipple=False)
         return
     ds = [load_case(*c) for c in CASES]
     for case in dict.fromkeys(d["case"] for d in ds):

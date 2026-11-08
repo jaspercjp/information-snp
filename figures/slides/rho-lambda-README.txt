@@ -36,6 +36,9 @@ Slides
                        its first full DJF, the single-model counterpart of lead 2-4 (one year longer
                        lead). N = 20 (SLP), 40 (PRECT, TREFHT); T = 58, 42, 60.
 
+No-stipple versions: rho-lambda-<slide>-nostipple are the same maps without the dots, to see the
+colours; the shares under each map are unchanged (they still say how much is significant).
+
 Regenerate (on a compute node, from the repository root)
   bootstraps  rho: scripts/boot.py VAR CASE fd (.claude/scripts/rho_lambda_boot*.sbatch);
               lambda: scripts/ksg_lambda.py run/merge VAR CASE (.claude/scripts/ksg_lambda.sbatch)
