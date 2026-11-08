@@ -50,7 +50,7 @@
       "dest": "Presentation/RhoLambdaMaps/README.txt",
       "note": "What each RhoLambdaMaps slide shows (data, rows, tests, marks, sample sizes) and how to regenerate it; the slides carry no title.",
       "section": "RhoLambdaMaps",
-      "sha256": "f3340a9fa4db75fad21be0f5b4085205d5ef8b5384aafbe77bbdb19ef4641f01",
+      "sha256": "005a56ded0413ad2611e95a03f9b994510a1280f9ada54e519f68c55ebcc1ca4",
       "source": "slides/rho-lambda-README.txt",
       "workflow": "plots"
     },
@@ -59,7 +59,7 @@
       "dest": "Presentation/RhoLambdaMaps/pdf/rho-lambda-canesm5.pdf",
       "note": "CanESM5 alone, DJF lead months 12-14 (its counterpart of lead 2-4), production lambda (Knuth bins on raw values). See RhoLambdaMaps/README.txt.",
       "section": "RhoLambdaMaps",
-      "sha256": "9357d710b23408b62d2267ec076bddb2fe54d005636de0bbee65cfcfa4439e28",
+      "sha256": "07c8890b33493d0e7e3e5968b0c96331cb1921c87ad38bfdd105492cbf910bab",
       "source": "slides/pdf/rho-lambda-canesm5.pdf",
       "workflow": "plots"
     },
@@ -68,7 +68,7 @@
       "dest": "Presentation/RhoLambdaMaps/pdf/rho-lambda-lead2-4.pdf",
       "note": "All members pooled (five November models), DJF lead months 2-4, one value per start date. Top: Pearson rho RPC; bottom: Knuth lambda RPC with lambda_m and lambda_o from s_-n (observations' T values only, never tiled). Dots: the 5-95% interval of 1000 Eade bootstrap draws contains 1 (rho: boot fd; lambda: boot olmloo, full-data bins); green rings: lambda changes by more than itself from 0.5x to 1.5x bins; grey: rho_o <= 0 or lambda undefined. Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP,PRECT,TREFHT}_2-4.npz (scripts/boot.py; .claude/scripts/rho_lambda_boot.sbatch).",
       "section": "RhoLambdaMaps",
-      "sha256": "23e85ff60f7df4dd31a64859e65beedefd1dae39bae5337c87999311b1208cf0",
+      "sha256": "d57edeaa334a3a725df9bafa8b1a95e07f7c31bfe945c18331ebd0424c3ac73b",
       "source": "slides/pdf/rho-lambda-lead2-4.pdf",
       "workflow": "plots"
     },
@@ -77,7 +77,7 @@
       "dest": "Presentation/RhoLambdaMaps/pdf/rho-lambda-moy.pdf",
       "note": "All members pooled (six models), the monthly decade with each model's month-of-year climatology removed: SLP and TREFHT s1961moy, PRECT s1978moy. Same rows, tests and marks as rho-lambda-lead2-4 (bootstrap resamples whole years). Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP_s1961moy,PRECT_s1978moy,TREFHT_s1961moy}.npz.",
       "section": "RhoLambdaMaps",
-      "sha256": "cb1df44bd6c3fe8407c02143c36a0b0d1d1c78f2dedf47e61b8965feacf6b11b",
+      "sha256": "986cdad1ee67eb3d2ac74f2745fb5b5117e8315e514698d8f5222c1bf4c884e7",
       "source": "slides/pdf/rho-lambda-moy.pdf",
       "workflow": "plots"
     },
@@ -86,7 +86,7 @@
       "dest": "Presentation/RhoLambdaMaps/png/rho-lambda-canesm5.png",
       "note": "CanESM5 alone, DJF lead months 12-14 (its counterpart of lead 2-4), production lambda (Knuth bins on raw values). See RhoLambdaMaps/README.txt.",
       "section": "RhoLambdaMaps",
-      "sha256": "b5bde389310ef6dc368696c278681d5ee3f6b2bae840eefce1f5683f57e6b5cf",
+      "sha256": "07dca546c9136f6f22a2b96a9d9c7437b8c7fad86695336726f4fe339c637ce0",
       "source": "slides/png/rho-lambda-canesm5.png",
       "workflow": "plots"
     },
@@ -95,7 +95,7 @@
       "dest": "Presentation/RhoLambdaMaps/png/rho-lambda-lead2-4.png",
       "note": "All members pooled (five November models), DJF lead months 2-4, one value per start date. Top: Pearson rho RPC; bottom: Knuth lambda RPC with lambda_m and lambda_o from s_-n (observations' T values only, never tiled). Dots: the 5-95% interval of 1000 Eade bootstrap draws contains 1 (rho: boot fd; lambda: boot olmloo, full-data bins); green rings: lambda changes by more than itself from 0.5x to 1.5x bins; grey: rho_o <= 0 or lambda undefined. Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP,PRECT,TREFHT}_2-4.npz (scripts/boot.py; .claude/scripts/rho_lambda_boot.sbatch).",
       "section": "RhoLambdaMaps",
-      "sha256": "ddeb0f8545e9c48901d71318aa99d85c64c23edbdfa7c32fe8ec478f79d5a2c5",
+      "sha256": "c82972ee425a6cbf81fc504dd51dd914fb5f3744eac5a1b28925e29e1d30447b",
       "source": "slides/png/rho-lambda-lead2-4.png",
       "workflow": "plots"
     },
@@ -104,7 +104,7 @@
       "dest": "Presentation/RhoLambdaMaps/png/rho-lambda-moy.png",
       "note": "All members pooled (six models), the monthly decade with each model's month-of-year climatology removed: SLP and TREFHT s1961moy, PRECT s1978moy. Same rows, tests and marks as rho-lambda-lead2-4 (bootstrap resamples whole years). Inputs: $SNP_OUT/boot_{fd,olmloo}_{SLP_s1961moy,PRECT_s1978moy,TREFHT_s1961moy}.npz.",
       "section": "RhoLambdaMaps",
-      "sha256": "4676609d84413c4c71c533fba2c4971c97e5becb5dc0e68516e82e7119a9c99b",
+      "sha256": "6b8c79b96e00ec855de4cbab3c182f79da8616441008aa4ebe4a107acf0c79b7",
       "source": "slides/png/rho-lambda-moy.png",
       "workflow": "plots"
     },

@@ -5,17 +5,23 @@ Each slide: columns SLP, PRECT, TREFHT; top row rho RPC, bottom row lambda RPC.
 Colour: RPC from 0 to >=2, white at 1.
 
   rho RPC     Pearson rho_o / rho_m (ensemble mean vs observations; vs the members).
-  lambda RPC  Granger-Lin lambda_o / lambda_m from Knuth-binned mutual information, with lambda_m
-              and lambda_o both from the leave-one-out ensemble mean s_-n:
-              lambda_o from I(s_-n; o), using the observations' T values only (never repeated per
-              member); lambda_m from I(f; s_-n).
+  lambda RPC  Granger-Lin lambda_o / lambda_m, lambda = sqrt(1 - exp(-2 I)), with I from the KSG
+              nearest-neighbour estimator (k = 4) on normal scores, Phi^-1((rank - 1/2)/n), of each
+              variable (scripts/ksg_lambda.py): rank-based, so no assumption on the distributions
+              and no change under any monotonic distortion (skew):
+              lambda_o from I(o; s) on the T pairs of observations and ensemble mean (never
+              repeated per member); lambda_m from I(f_n; s_-n), each member against the mean of the
+              others on its T pairs, averaged over a seeded 16 members, then one lambda.
+              Until 2026-11-07 these slides used Knuth-binned MI on raw values, which is biased at
+              T ~ 30-60 (zero in many cells, inflated lambda_o) and collapses under skew; the
+              comparison is in figures/slides/lambda-ksg-vs-knuth-* and the choice in
+              ToyModels/estimator-toys.
 
 Marks
-  black dot   not significant: the 5-95% interval of 1000 Eade et al. (2014) bootstrap draws
+  black dot   not significant: the 5-95% interval of the Eade et al. (2014) bootstrap draws
               contains 1 (time resampled with replacement -- start dates, or whole years for the
-              monthly decade -- and N-3 members without). rho and lambda have separate bootstraps;
-              lambda's keeps the full-data bins.
-  green ring  on a dot: lambda changes by more than itself between 0.5x and 1.5x the bin count.
+              monthly decade -- and N-3 members without); rho 1000 draws, lambda 200. At these T the
+              lambda intervals are wide: a dot means "cannot tell", not "RPC = 1".
   grey        rho_o <= 0, or lambda_m ~ 0 (<= 0.02, where lambda_o / lambda_m is not defined).
   under each map: share of the area not significant, significantly > 1, significantly < 1.
 
@@ -31,7 +37,8 @@ Slides
                        lead). N = 20 (SLP), 40 (PRECT, TREFHT); T = 58, 42, 60.
 
 Regenerate (on a compute node, from the repository root)
-  bootstraps  scripts/boot.py VAR CASE {fd,olmloo}  (.claude/scripts/rho_lambda_boot*.sbatch)
+  bootstraps  rho: scripts/boot.py VAR CASE fd (.claude/scripts/rho_lambda_boot*.sbatch);
+              lambda: scripts/ksg_lambda.py run/merge VAR CASE (.claude/scripts/ksg_lambda.sbatch)
   slides      python scripts/plots.py slides [lead2-4] [moy] [canesm5]
   set         python scripts/figure_set.py Presentation refresh && ... verify
 Area shares: figures/data/rho-lambda-<slide>.json.

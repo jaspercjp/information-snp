@@ -371,12 +371,14 @@ SLIDE_TITLE = {"lead2-4": "Signal-to-noise, DJF lead months 2-4  ·  one value p
                           "DJF after a January start), one value per start date"}
 
 
-def production_slides(name):
-    """Talk slide (16:9 width): rho RPC (top) and Knuth lambda RPC with lambda_m and lambda_o from
-    s_-n (bottom) for SLP, PRECT, TREFHT. Dots: the 5-95% interval of 1000 Eade bootstrap draws
-    contains 1 -- rho from boot fd, lambda from its own boot olmloo (full-data bins kept); green
-    rings on lambda dots, |lambda(1.5x bins) - lambda(0.5x bins)| > lambda(1x bins); grey, rho_o <= 0
-    or lambda_m ~ 0 (<= tables.FLOOR, where the ratio is not defined). No title: what each slide shows is in figures/slides/rho-lambda-README.txt
+def production_slides(name, lam="ksg"):
+    """Talk slide (16:9 width): rho RPC (top) and lambda RPC (bottom) for SLP, PRECT, TREFHT.
+    lambda: KSG on normal scores (ksg_lambda.py; boot_ksg), lambda_o from the T pairs (o, s) and
+    lambda_m from the member-averaged I(f_n; s_-n). lambda="knuth" draws the former production
+    lambda instead (Knuth bins on raw values, boot olmloo, with green rings where it is
+    bin-sensitive). Dots: the 5-95% interval of the Eade bootstrap draws contains 1 (rho: 1000 draws
+    of boot fd; lambda: 200 of boot_ksg); grey, rho_o <= 0 or lambda_m ~ 0 (<= tables.FLOOR, where
+    the ratio is not defined). No title: what each slide shows is in figures/slides/rho-lambda-README.txt
     (SLIDE_TITLE has the one-line version), copied next to the slides as
     Presentation/RhoLambdaMaps/README.txt. -> figures/slides/{png,pdf}/rho-lambda-<name> (+ json in
     figures/data), copied into Presentation/ by its manifest."""
@@ -390,15 +392,18 @@ def production_slides(name):
         sizes = {int(np.load(out("boot_fd", v, c))["N"]) for v, c in SLIDE_CASES[name]}
         for k, (var, case) in enumerate(SLIDE_CASES[name]):
             bt = np.load(out("boot_fd", var, case))
-            kl = np.load(out("boot_olmloo", var, case))
+            kl = np.load(out("boot_ksg" if lam == "ksg" else "boot_olmloo", var, case))
             lats, lons, N, T = bt["lats"], bt["lons"], int(bt["N"]), int(bt["T"])
             W = np.cos(np.deg2rad(lats))[:, None] * np.ones(lons.size)
             w = np.sqrt(np.median(np.abs(np.diff(lats))) * np.median(np.abs(np.diff(lons))))
             s = (np.sqrt(1.6) * np.sqrt(w / 1.875)) ** 2             # as production()
             keep = bt["rho_o"] > 0
-            band = ratio(kl["lam_o"], kl["lam_m"])
-            rows = (("rho", bt["rpc_rho"], bt["B_rho"], None),
-                    ("lambda", band[1], kl["B_lam"], np.abs(band[2] - band[0]) > band[1]))
+            if lam == "ksg":
+                lam_row = ("lambda", kl["rpc"], kl["B_lam"], None)
+            else:
+                band = ratio(kl["lam_o"], kl["lam_m"])
+                lam_row = ("lambda", band[1], kl["B_lam"], np.abs(band[2] - band[0]) > band[1])
+            rows = (("rho", bt["rpc_rho"], bt["B_rho"], None), lam_row)
             for i, (key, r, B, ring) in enumerate(rows):
                 ax = fig.add_subplot(gs[i, k], projection=PROJ)
                 axs.append(ax)
@@ -406,7 +411,8 @@ def production_slides(name):
                 ns, rg, valid = rpc_panel(ax, r, lats, lons, lo, hi, keep, ring, GREEN, s)
                 a = {"not_sig": wfrac(W, ns, valid), "sig_gt1": wfrac(W, valid & (lo > 1), valid),
                      "sig_lt1": wfrac(W, valid & (hi < 1), valid), "ring": wfrac(W, rg, valid),
-                     "grey": 1 - float((W * valid).sum() / W.sum()), "N": N, "T": T}
+                     "grey": 1 - float((W * valid).sum() / W.sum()), "N": N, "T": T,
+                     "estimator": "pearson" if key == "rho" else lam, "n_boot": int(B.shape[0])}
                 res["cells"][f"{key} {var} {case}"] = a
                 ax.text(0.5, -0.04, f"not significant {100 * a['not_sig']:.0f}%   "
                         f"> 1: {100 * a['sig_gt1']:.0f}%   < 1: {100 * a['sig_lt1']:.0f}%",
@@ -430,13 +436,14 @@ def production_slides(name):
             a.set_axis_off()
         leg_ax = fig.add_subplot(gs[2, 2])
         leg_ax.set_axis_off()
-        leg_ax.legend(handles=[
-            Line2D([], [], color=INK, marker="o", ms=5, lw=0,
-                   label="not significant: bootstrap 5-95% interval contains 1"),
-            Line2D([], [], marker="o", ms=8, lw=0, mfc="none", mec=GREEN, mew=1.2,
-                   label="λ changes by more than itself from 0.5× to 1.5× bins"),
-            Line2D([], [], marker="s", ms=8, lw=0, color=BED,
-                   label="ρ$_\\mathregular{o}$ ≤ 0 or λ$_\\mathregular{m}$ ≈ 0")],
+        handles = [Line2D([], [], color=INK, marker="o", ms=5, lw=0,
+                          label="not significant: bootstrap 5-95% interval contains 1")]
+        if lam != "ksg":
+            handles.append(Line2D([], [], marker="o", ms=8, lw=0, mfc="none", mec=GREEN, mew=1.2,
+                                  label="λ changes by more than itself from 0.5× to 1.5× bins"))
+        handles.append(Line2D([], [], marker="s", ms=8, lw=0, color=BED,
+                              label="ρ$_\\mathregular{o}$ ≤ 0 or λ$_\\mathregular{m}$ ≈ 0"))
+        leg_ax.legend(handles=handles,
             loc="center left", bbox_to_anchor=(-0.02, 0.5), frameon=True, fancybox=False,
             edgecolor=MUTED, borderpad=0.6, fontsize=10, ncol=1).set_in_layout(False)
         sty.save(fig, f"rho-lambda-{name}", dpi=200, folder="slides")
